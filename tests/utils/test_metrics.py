@@ -15,4 +15,4 @@ def test_euclidean_distance():
     dataset: Dataset = new_dataset
     D = pairwise_distances(dataset)
     _D = np.column_stack([*pdist(dataset, batch_size=2)])
-    assert np.allclose(D, _D)
+    assert np.allclose(D, _D) and D.shape == _D.shape
