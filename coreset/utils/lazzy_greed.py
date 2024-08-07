@@ -1,14 +1,34 @@
-from coreset.utils.dataset import Dataset
+#############################################
+### |S| <= 1 + log max F( e | [] ) | S* | ###
+#############################################
+
+from typing import Callable
 import numpy as np
+import heapq
+
+from coreset.utils.dataset import Dataset
 
 
 def facility_location(subset: np.array):
     return subset.max(axis=1).sum()
 
 
-def lazzygreed():
+def lazzygreed(dataset, size: int | float, tol: float, utility_function: Callable):
+    if not bool(size) ^ bool(tol):
+        raise ValueError
+
+
+def submodular(dataset):
     pass
 
 
-def submodular():
-    pass
+class Coreset(Dataset):
+
+    def __init__(self, name="") -> None:
+        super().__init__(None, name)
+
+    def __add__(self, elemen):
+        pass
+
+    def __radd__(self, elemen):
+        return self.__add__(elemen)

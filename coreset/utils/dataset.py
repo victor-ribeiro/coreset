@@ -36,7 +36,7 @@ class Dataset:
 
     @property
     def empty(self):
-        return self._buffer
+        return bool(self._buffer)
 
     @property
     def index(self):
