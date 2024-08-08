@@ -7,13 +7,16 @@ import numpy as np
 import heapq
 
 from coreset.utils.dataset import Dataset
+from coreset.utils.metrics import pdist
 
 
 def facility_location(subset: np.array):
     return subset.max(axis=1).sum()
 
 
-def lazzygreed(dataset, size: int | float, tol: float, utility_function: Callable):
+def lazzygreed(
+    dataset, size: int | float, tol: float, utility_function: Callable, sample=1
+):
     if not bool(size) ^ bool(tol):
         raise ValueError
 
