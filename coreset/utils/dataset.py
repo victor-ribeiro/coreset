@@ -35,7 +35,7 @@ class Dataset:
 
     @property
     def columns(self):
-        return self._buffer.columns.values
+        return self._buffer.columns.values.tolist()
 
     @property
     def empty(self):
@@ -43,7 +43,7 @@ class Dataset:
 
     @property
     def index(self):
-        return self._buffer.index.values
+        return self._buffer.index.values.tolist()
 
     @property
     def size(self):
