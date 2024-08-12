@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 class Dataset:
@@ -6,6 +7,7 @@ class Dataset:
     def __init__(self, data=None, name="") -> None:
         self._buffer = data
         self.name = name
+        self._buffer.index = range(len(self))
 
     def __len__(self):
         return len(self._buffer)
@@ -43,7 +45,7 @@ class Dataset:
 
     @property
     def index(self):
-        return self._buffer.index.values
+        return self._buffer.index.values.tolist()
 
     @property
     def size(self):
