@@ -18,7 +18,6 @@ def pdist(dataset, metric="euclidean", batch_size=1):
     for start in range(0, n, batch_size):
         end = start + batch_size
         batch = dataset[start:end]
-        # yield pairwise_distances(dataset, batch, metric=metric)
         yield pairwise_distances(batch, dataset, metric=metric)
 
 

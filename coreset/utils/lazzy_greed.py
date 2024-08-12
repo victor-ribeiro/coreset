@@ -1,7 +1,7 @@
 ###############################################
 ### |S| <= 1 + log max F( e | [] ) x | S* | ###
 ###############################################
-
+import math
 from typing import Callable
 import numpy as np
 from dataclasses import dataclass, field
@@ -32,11 +32,28 @@ def lazzy_greed(V, marginal_func, max_elemen=1):
 
 
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+
     dataset = np.random.normal(0, 1, (100, 2))
-    d = similarity(dataset, batch_size=32)
-    for _ in d:
-        print(_.shape)
-        break
+    d = similarity(dataset, batch_size=1)
+    score = np.zeros(len(dataset))
+    aux = 0
+    for i, _ in enumerate(d):
+        inc = (
+            (np.log(1 + 1 / _.max(axis=1).sum() * _.sum(axis=1)) - score[i])
+            * 1
+            / score[i]
+        )
+        # inc = np.log(1 + 1  * _.sum(axis=1)) - aux
+        score[i] = max(inc, score[i])
+    # inc *= 1 / inc
+    # score = np.sort(1 / score, kind="heapsort")
+    score = np.sort(score, kind="heapsort")
+    # plt.plot(1 / score * score, marker="o")
+    plt.plot(score)
+    plt.show()
+    # print(f"{inc=}{aux=}")
+    # aux = max(inc, aux)
     # from sklearn.metrics import pairwise_distances
     # import numpy as np
 
