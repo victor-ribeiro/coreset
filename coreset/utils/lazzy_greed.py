@@ -3,55 +3,44 @@
 ###############################################
 
 from typing import Callable
-import heapq
 import numpy as np
-from collections import UserList
+from dataclasses import dataclass, field
 
 from coreset.utils.dataset import Dataset
 from coreset.utils.metrics import pdist
 
 
 class Coreset(Dataset):
+    def __init__(self, data=None, name="", alpha=1.0) -> None:
+        super().__init__(data, name)
 
-    def __init__(self, name="") -> None:
-        super().__init__(None, name)
+        self.idx = np.arange((n := len(self)))
+        self.score = np.zeros(n)
 
-    def __add__(self, elemen):
+    def similatiry(self):
         pass
 
-    def __radd__(self, elemen):
-        return self.__add__(elemen)
+
+# teste de cache
+def marginal_utility(S, e):
+    return np.log
 
 
-def _push(heap, e):
-    heap.append(e)
-    heapq._siftdown_max(heap, e, len(heap))
+# teste de cache
+def facility_loc(S: np.array):
+    return S.max(axis=0).sum()
 
 
-def queue(V, util_func=None):
-    order = []
-    heapq.heapify(order)
-    [_push(order, i) for i in range(len(V))]
-    yield from order
-
-
-def lazzygreed(
-    dataset, size: int | float, tol: float, utility_function: Callable, sample=1
-):
-    if not bool(size) ^ bool(tol):
-        raise ValueError
-    for D in pdist(dataset):
-        pass
+def lazzy_greed(V, marginal_func, max_elemen=1):
+    pass
 
 
 if __name__ == "__main__":
+    from sklearn.metrics import pairwise_distances
     import numpy as np
 
-    new = []
-
-    q = np.random.normal(0, 100, 10).astype(int).tolist()
-    q = queue(q)
-    for coisa in q:
-        print(coisa)
-
-    # print(q)
+    dataset = np.random.normal(0, 1, (10, 2))
+    d = pairwise_distances(dataset)
+    print(d)
+    d -= d.max() * -1
+    print(np.diag(d))
