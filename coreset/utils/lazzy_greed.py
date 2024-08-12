@@ -11,12 +11,14 @@ from coreset.utils.metrics import *
 
 
 class LazzyGreed:
-    def __init__(self, similarity: str | Callable = "pdist") -> None:
-        pass
+
+    def __init__(self, similarity: str | Callable = "similarity") -> None:
+        self.score = 0
 
 
 # teste de cache
-def marginal_utility(S, e):
+def marginal_utility(e, S=None):
+
     return np.log
 
 
@@ -30,7 +32,11 @@ def lazzy_greed(V, marginal_func, max_elemen=1):
 
 
 if __name__ == "__main__":
-    pass
+    dataset = np.random.normal(0, 1, (100, 2))
+    d = similarity(dataset, batch_size=32)
+    for _ in d:
+        print(_.shape)
+        break
     # from sklearn.metrics import pairwise_distances
     # import numpy as np
 
