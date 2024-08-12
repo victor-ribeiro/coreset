@@ -43,7 +43,7 @@ class Dataset:
 
     @property
     def index(self):
-        return self._buffer.index.values.tolist()
+        return self._buffer.index.values
 
     @property
     def size(self):
