@@ -10,55 +10,50 @@ from coreset.utils.dataset import Dataset
 from coreset.utils.metrics import *
 
 
-class LazzyGreed:
+class Coreset(Dataset):
+    def __init__(self, data=None, name="", k=1) -> None:
+        super().__init__(data, name)
+        self.S = np.zeros(k, dtype=int)
+        self.score = np.zeros(len(self), dtype=float)
 
-    def __init__(self, similarity: str | Callable = "similarity") -> None:
-        self.score = 0
-
-
-# teste de cache
-def marginal_utility(e, S=None):
-
-    return np.log
-
-
-# teste de cache
-def facility_loc(S: np.array):
-    return S.max(axis=0).sum()
+    @classmethod
+    def max_norm(cls, sset):
+        return sset.max(axis=1).sum()
+        # return sset.max()
 
 
-def lazzy_greed(V, marginal_func, max_elemen=1):
-    pass
+class FacilityLocation:
+    def __init__(self, dist_fn="similarity", alpha=1) -> None:
+        self.score = np.log(1 + alpha)
+        self.alpha = alpha
+        self.dist_fn = METRICS[dist_fn]
+        self.max_lim = None
+
+    def __call__(self, dataset: Dataset = None):
+        pass
+
+    def gain(self, dataset):
+        if not np.any(dataset):
+            return self.score
+        max_ref = np.zeros(len(dataset))
+        for d in self.dist_fn(dataset):
+            max_norm = Coreset.max_norm(d)
+            yield np.log(
+                1 + (self.alpha / max_norm) * np.maximum(max_ref, d).sum(axis=1)
+            ) * (1 / self.score) - self.score
+
+    # def score(self):
+    #     if not sset:
+    #         return np.log(1 + self.alpha)
 
 
 if __name__ == "__main__":
+    import numpy as np
     import matplotlib.pyplot as plt
 
-    dataset = np.random.normal(0, 1, (100, 2))
-    d = similarity(dataset, batch_size=1)
-    score = np.zeros(len(dataset))
-    aux = 0
-    for i, _ in enumerate(d):
-        inc = (
-            (np.log(1 + 1 / _.max(axis=1).sum() * _.sum(axis=1)) - score[i])
-            * 1
-            / score[i]
-        )
-        # inc = np.log(1 + 1  * _.sum(axis=1)) - aux
-        score[i] = max(inc, score[i])
-    # inc *= 1 / inc
-    # score = np.sort(1 / score, kind="heapsort")
+    ds = np.random.normal(0, 1, (100, 2))
+    gain_fn = FacilityLocation()
+    score = np.array([val for val in gain_fn(ds)]).flatten()
     score = np.sort(score, kind="heapsort")
-    # plt.plot(1 / score * score, marker="o")
     plt.plot(score)
     plt.show()
-    # print(f"{inc=}{aux=}")
-    # aux = max(inc, aux)
-    # from sklearn.metrics import pairwise_distances
-    # import numpy as np
-
-    # dataset = np.random.normal(0, 1, (10, 2))
-    # d = pairwise_distances(dataset)
-    # print(d)
-    # d -= d.max() * -1
-    # print(np.diag(d))
