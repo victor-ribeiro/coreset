@@ -14,7 +14,6 @@ def _register(fn):
     return fn
 
 
-@lru_cache
 def pdist(dataset, metric="euclidean", batch_size=1):
     n = len(dataset)
     for start in range(0, n, batch_size):

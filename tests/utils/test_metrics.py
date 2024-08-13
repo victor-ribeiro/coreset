@@ -8,7 +8,7 @@ from coreset.utils.dataset import Dataset
 
 @lambda _: _()
 def new_dataset():
-    return np.random.normal(0, 1, (10, 4))
+    return np.random.normal(0, 1, (10, 6))
 
 
 def test_custom_dataset_euclidean_distance():
