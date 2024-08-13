@@ -1,59 +1,64 @@
 ###############################################
 ### |S| <= 1 + log max F( e | [] ) x | S* | ###
 ###############################################
-import math
-from typing import Callable
-import numpy as np
-from dataclasses import dataclass, field
 
-from coreset.utils.dataset import Dataset
+import heapq
+import numpy as np
+from functools import lru_cache, reduce
 from coreset.utils.metrics import *
 
 
-class Coreset(Dataset):
-    def __init__(self, data=None, name="", k=1) -> None:
-        super().__init__(data, name)
-        self.S = np.zeros(k, dtype=int)
-        self.score = np.zeros(len(self), dtype=float)
+class Queue(list):
+    def __init__(self, *iterable):
+        super().__init__(*iterable)
+        heapq._heapify_max(self)
 
-    @classmethod
-    def max_norm(cls, sset):
-        return sset.max(axis=1).sum()
-        # return sset.max()
+    def append(self, item: "Any"):
+        super().append(item)
+        heapq._siftdown_max(self, 0, len(self) - 1)
+
+    def pop(self, index=-1):
+        el = super().pop(index)
+        if not self:
+            return el
+        val, self[0] = self[0], el
+        heapq._siftup_max(self, 0)
+        return val
+
+    @property
+    def head(self):
+        return self.pop()
+
+    def push(self, item):
+        self.append(item)
 
 
-class FacilityLocation:
-    def __init__(self, dist_fn="similarity", alpha=1) -> None:
-        self.score = np.log(1 + alpha)
-        self.alpha = alpha
-        self.dist_fn = METRICS[dist_fn]
-        self.max_lim = None
+@lru_cache
+def L_s0(alpha=1):
+    return np.log(1 + alpha)
 
-    def __call__(self, dataset: Dataset = None):
-        pass
 
-    def gain(self, dataset):
-        if not np.any(dataset):
-            return self.score
-        max_ref = np.zeros(len(dataset))
-        for d in self.dist_fn(dataset):
-            max_norm = Coreset.max_norm(d)
-            yield np.log(
-                1 + (self.alpha / max_norm) * np.maximum(max_ref, d).sum(axis=1)
-            ) * (1 / self.score) - self.score
+def sset_norm(diff_mtx):
+    max_nom = map(lambda x: x.max(axis=1), diff_mtx)
 
-    # def score(self):
-    #     if not sset:
-    #         return np.log(1 + self.alpha)
+
+def utility_score(e, argmax, base_loc):
+    norm = 1 / base_loc
+    F_s = norm * np.log(1 + np.maximum(e, argmax))
 
 
 if __name__ == "__main__":
-    import numpy as np
-    import matplotlib.pyplot as plt
+    import random
 
-    ds = np.random.normal(0, 1, (100, 2))
-    gain_fn = FacilityLocation()
-    score = np.array([val for val in gain_fn(ds)]).flatten()
-    score = np.sort(score, kind="heapsort")
-    plt.plot(score)
-    plt.show()
+    coisa = [(np.random.normal(0, 1), i) for i in range(5)]
+    random.shuffle(coisa)
+    print(f"{coisa=}")
+    fila = Queue()
+    while coisa:
+        item = coisa.pop()
+        fila.push(item)
+
+        # print(f"{fila=}")
+    while fila:
+        val = fila.head
+        print(val)
