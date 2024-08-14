@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.metrics import pairwise_distances
-from functools import lru_cache
-from datetime import datetime
+from functools import lru_cache, cache
+
 
 __all__ = ["METRICS"]
 
@@ -15,19 +15,6 @@ def _register(fn):
     return fn
 
 
-def elapse_time(func):
-    def inner(*args, **kwargs):
-        start = datetime.now().timestamp()
-        result = func(*args, **kwargs)
-        end = datetime.now().timestamp()
-        print(f"elapsed time {end - start} seconds")
-        return result
-
-    return inner
-
-
-@elapse_time
-@lru_cache
 def pdist(dataset, metric="euclidean", batch_size=1):
     n = len(dataset)
     for start in range(0, n, batch_size):

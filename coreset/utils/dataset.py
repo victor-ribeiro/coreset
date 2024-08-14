@@ -19,6 +19,11 @@ class Dataset:
         buff = None
 
         match idx:
+            # case list():
+            #     try:
+            #         buff = self._buffer.iloc[idx].values
+            #     except IndexError:
+            #         buff = self._buffer.loc[:, idx].values
             case str():
                 buff = self._buffer.loc[:, idx].values
             case int():
@@ -32,7 +37,11 @@ class Dataset:
                 except Exception as e:
                     return e
             case _:
-                buff = self._buffer[idx].values
+                try:
+                    buff = self._buffer[idx].values
+                except IndexError:
+                    buff = self._buffer.iloc[idx].values
+
         return buff
 
     @property
