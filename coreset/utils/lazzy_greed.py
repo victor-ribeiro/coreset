@@ -7,6 +7,7 @@ import math
 import numpy as np
 from functools import lru_cache, partial, reduce
 from itertools import batched
+from datetime import datetime
 
 from coreset.utils.metrics import METRICS
 from coreset.utils.dataset import Dataset
@@ -75,8 +76,6 @@ def lazy_greed(
         )
     ):
         size = len(D)
-        # scores = map(lambda d: utility_score(d, argmax, alpha), D)
-        # [q.push(val, idx) for val, idx in zip(scores, zip(V, range(size)))]
         [q.push(base_inc, idx) for idx in zip(V, range(size))]
 
         print(
@@ -146,16 +145,23 @@ if __name__ == "__main__":
     ytest = test.pop("label")
 
     model = HistGradientBoostingClassifier()
+    start = datetime.now().timestamp()
     model.fit(train, ytrain)
     print(classification_report(ytest, model.predict(test)))
+    end = datetime.now().timestamp()
+
+    print(end - start)
 
     dataset = Dataset(train)
+    start = datetime.now().timestamp()
     sset, vals = lazy_greed(dataset, base_inc, alpha=1, K=100, batch_size=512)
     dataset = dataset[sset]
 
     outro_model = HistGradientBoostingClassifier()
     outro_model.fit(dataset, ytrain.iloc[sset])
     print(classification_report(ytest, outro_model.predict(test)))
+    end = datetime.now().timestamp()
+    print(end - start)
 
-    plt.plot(vals)
-    plt.show()
+    # plt.plot(vals)
+    # plt.show()
