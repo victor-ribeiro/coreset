@@ -17,4 +17,3 @@ def test_custom_dataset_euclidean_distance():
     _D = pdist(Dataset(dataset), batch_size=2)
     _D = np.vstack([*_D])
     assert np.allclose(D, _D) and D.shape == _D.shape
-    # assert D.shape == _D.shape

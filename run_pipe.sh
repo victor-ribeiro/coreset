@@ -1,5 +1,17 @@
 #/bin/bash
 
+echo '[BUILDING]'
+
+dir_pth=$(pwd)
+for folder in experiments data .config;
+do
+    if [ ! -d ];
+    then
+        mkdir $dir_pth/$folder
+        echo "${$folder^^}_HOME=dir_ptt/$folder" >> .env
+    fi
+done
+
 echo '[TESTING]';
 
 poetry run pytest --no-header -v
