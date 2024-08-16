@@ -5,10 +5,11 @@ echo '[BUILDING]'
 dir_pth=$(pwd)
 for folder in experiments data .config;
 do
-    if [ ! -d ];
+    if [ ! -d  $folder]
     then
+        echo "${$folder^^}_HOME=$dir_pth/$folder"
         mkdir $dir_pth/$folder
-        echo "${$folder^^}_HOME=dir_ptt/$folder" >> .env
+        echo "${$folder^^}_HOME=$dir_pth/$folder" >> .env
     fi
 done
 
