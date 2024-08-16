@@ -12,7 +12,14 @@ pandas = "^2.2.2"
 scikit-learn = "^1.5.1"
 matplotlib = "^3.9.1.post1"
 xgboost = "^2.1.1"
+python-dotenv = "^1.0.1"
+poetry-dotenv-plugin = "^0.2.0"
 
+[tool.poetry.scripts]
+adult='experiments.adult:main'
+
+[tool.poe]
+envfile='.env'
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.2"

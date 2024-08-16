@@ -1,6 +1,10 @@
 import os
 
+
+# def main():
 print(os.environ.get("DATA_HOME"))
+
+
 # import pandas as pd
 # import numpy as np
 

@@ -29,4 +29,5 @@ do
         echo "$up_name=$dir_pth/$name" >> .env
     fi
 done
-export POETRY_DOTENV_LOCATION=.env && poetry run python experiments/adult.py
+
+poetry run python experiments/adult.py
