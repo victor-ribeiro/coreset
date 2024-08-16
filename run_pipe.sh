@@ -5,7 +5,7 @@ echo '[BUILDING]'
 dir_pth=$(pwd)
 for folder in experiments data .config;
 do
-    if [ ! -d  $folder]
+    if [ !-d  $folder];
     then
         echo "${$folder^^}_HOME=$dir_pth/$folder"
         mkdir $dir_pth/$folder
