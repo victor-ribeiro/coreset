@@ -9,8 +9,8 @@ from functools import lru_cache, partial, reduce
 from itertools import batched
 from datetime import datetime
 
-from coreset.utils.metrics import METRICS
-from coreset.utils.dataset import Dataset
+from coreset.metrics import METRICS
+from coreset.dataset import Dataset
 
 
 class Queue(list):
@@ -67,7 +67,6 @@ def lazy_greed(
     q = Queue()
     sset = []
     vals = []
-    count = 0
 
     for i, (D, V) in enumerate(
         zip(
@@ -78,48 +77,89 @@ def lazy_greed(
         size = len(D)
         [q.push(base_inc, idx) for idx in zip(V, range(size))]
 
-        print(
-            f"batch #{i} com {len(sset)} amostras [{(1+i)/(dataset.size / batch_size):.2f}]"
-        )
-        if len(sset) >= K:
-            break
+        # if len(sset) >= K:
+        #     break
         while q and len(sset) < K:
             _, idx_s = q.head
             s = D[idx_s[1]]
             score_s = utility_score(s, argmax, alpha)  # F( e | S )
             inc = score_s - score
-            if inc >= 0:
-                if not q:
-                    argmax = np.maximum(argmax, s)
-                    score = utility_score(s, argmax, alpha)
-                    sset.append(idx_s[0])
-                    vals.append(score)
-                    # continue
-                    break
-                score_t, idx_t = q.head
-                if inc < score_t:
-                    q.push(inc, idx_s)
-                    # continue
-                    # break
+            if inc < 0:
+                continue
+            if not q:
+                break
+            score_t, idx_t = q.head
+            if inc > score_t:
                 argmax = np.maximum(argmax, s)
                 score = utility_score(s, argmax, alpha)
                 sset.append(idx_s[0])
                 vals.append(score)
                 q.push(score_t, idx_t)
+            q.push(inc, idx_s)
+        else:
+            argmax = np.maximum(argmax, s)
+            score = utility_score(s, argmax, alpha)
+            sset.append(idx_s[0])
+            vals.append(score)
     return sset, vals
 
 
 # def lazy_greed(
-#     dataset: Dataset, base_inc, norm_fn, alpha=1, metric="similarity", k=0.1
+#     dataset: Dataset,
+#     base_inc,
+#     alpha=1,
+#     metric="similarity",
+#     K=1,
+#     batch_size=32,
 # ):
-#     size = len(dataset)
-#     if k <= 1:
-#         k = math.ceil(size * k)
-#     print(k)
-#     score = np.ones(size)
-#     score = np.log(1 + score)
-#     gain = 0
-#     coreset = np.zeros(k)
+#     # basic config
+#     base_inc = base_inc(alpha)
+#     argmax = np.zeros(dataset.size)
+#     score = 0
+#     metric = METRICS[metric]
+#     q = Queue()
+#     sset = []
+#     vals = []
+#     count = 0
+
+#     for i, (D, V) in enumerate(
+#         zip(
+#             metric(dataset, batch_size=batch_size),
+#             batched(dataset.index, batch_size),
+#         )
+#     ):
+#         size = len(D)
+#         [q.push(base_inc, idx) for idx in zip(V, range(size))]
+
+#         print(
+#             f"batch #{i} com {len(sset)} amostras [{(1+i)/(dataset.size / batch_size):.2f}]"
+#         )
+#         if len(sset) >= K:
+#             break
+#         while q and len(sset) < K:
+#             _, idx_s = q.head
+#             s = D[idx_s[1]]
+#             score_s = utility_score(s, argmax, alpha)  # F( e | S )
+#             inc = score_s - score
+#             if inc >= 0:
+#                 if not q:
+#                     argmax = np.maximum(argmax, s)
+#                     score = utility_score(s, argmax, alpha)
+#                     sset.append(idx_s[0])
+#                     vals.append(score)
+#                     # continue
+#                     break
+#                 score_t, idx_t = q.head
+#                 if inc < score_t:
+#                     q.push(inc, idx_s)
+#                     # continue
+#                     # break
+#                 argmax = np.maximum(argmax, s)
+#                 score = utility_score(s, argmax, alpha)
+#                 sset.append(idx_s[0])
+#                 vals.append(score)
+#                 q.push(score_t, idx_t)
+#     return sset, vals
 
 
 if __name__ == "__main__":
@@ -154,7 +194,7 @@ if __name__ == "__main__":
 
     dataset = Dataset(train)
     start = datetime.now().timestamp()
-    sset, vals = lazy_greed(dataset, base_inc, alpha=1, K=100, batch_size=512)
+    sset, vals = lazy_greed(dataset, base_inc, alpha=1, K=1000, batch_size=1024)
     dataset = dataset[sset]
 
     outro_model = HistGradientBoostingClassifier()
@@ -162,6 +202,3 @@ if __name__ == "__main__":
     print(classification_report(ytest, outro_model.predict(test)))
     end = datetime.now().timestamp()
     print(end - start)
-
-    # plt.plot(vals)
-    # plt.show()

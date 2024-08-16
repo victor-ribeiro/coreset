@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from coreset.utils.dataset import Dataset
+from coreset.dataset import Dataset
 
 
 @lambda _: _()

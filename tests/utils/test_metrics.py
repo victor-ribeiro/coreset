@@ -2,8 +2,8 @@ from sklearn.metrics import pairwise_distances
 import numpy as np
 import pandas as pd
 
-from coreset.utils.metrics import pdist
-from coreset.utils.dataset import Dataset
+from coreset.metrics import pdist
+from coreset.dataset import Dataset
 
 
 @lambda _: _()
