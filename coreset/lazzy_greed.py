@@ -104,64 +104,6 @@ def lazy_greed(
     return sset, vals
 
 
-# def lazy_greed(
-#     dataset: Dataset,
-#     base_inc,
-#     alpha=1,
-#     metric="similarity",
-#     K=1,
-#     batch_size=32,
-# ):
-#     # basic config
-#     base_inc = base_inc(alpha)
-#     argmax = np.zeros(dataset.size)
-#     score = 0
-#     metric = METRICS[metric]
-#     q = Queue()
-#     sset = []
-#     vals = []
-#     count = 0
-
-#     for i, (D, V) in enumerate(
-#         zip(
-#             metric(dataset, batch_size=batch_size),
-#             batched(dataset.index, batch_size),
-#         )
-#     ):
-#         size = len(D)
-#         [q.push(base_inc, idx) for idx in zip(V, range(size))]
-
-#         print(
-#             f"batch #{i} com {len(sset)} amostras [{(1+i)/(dataset.size / batch_size):.2f}]"
-#         )
-#         if len(sset) >= K:
-#             break
-#         while q and len(sset) < K:
-#             _, idx_s = q.head
-#             s = D[idx_s[1]]
-#             score_s = utility_score(s, argmax, alpha)  # F( e | S )
-#             inc = score_s - score
-#             if inc >= 0:
-#                 if not q:
-#                     argmax = np.maximum(argmax, s)
-#                     score = utility_score(s, argmax, alpha)
-#                     sset.append(idx_s[0])
-#                     vals.append(score)
-#                     # continue
-#                     break
-#                 score_t, idx_t = q.head
-#                 if inc < score_t:
-#                     q.push(inc, idx_s)
-#                     # continue
-#                     # break
-#                 argmax = np.maximum(argmax, s)
-#                 score = utility_score(s, argmax, alpha)
-#                 sset.append(idx_s[0])
-#                 vals.append(score)
-#                 q.push(score_t, idx_t)
-#     return sset, vals
-
-
 if __name__ == "__main__":
     import pandas as pd
     import matplotlib.pyplot as plt
@@ -173,10 +115,9 @@ if __name__ == "__main__":
 
     ft, lbl = make_classification(
         n_samples=10_000,
-        n_features=7,
-        n_clusters_per_class=2,
-        n_classes=2,
-        n_informative=4,
+        n_features=20,
+        n_informative=10,
+        n_classes=10,
     )
     data = pd.DataFrame(ft)
     data["label"] = lbl
@@ -194,7 +135,7 @@ if __name__ == "__main__":
 
     dataset = Dataset(train)
     start = datetime.now().timestamp()
-    sset, vals = lazy_greed(dataset, base_inc, alpha=1, K=1000, batch_size=1024)
+    sset, vals = lazy_greed(dataset, base_inc, alpha=2, K=100, batch_size=1024)
     dataset = dataset[sset]
 
     outro_model = HistGradientBoostingClassifier()

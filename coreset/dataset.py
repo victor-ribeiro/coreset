@@ -4,16 +4,22 @@ import numpy as np
 
 class Dataset:
 
-    def __init__(self, data=None, name="") -> None:
+    def __init__(self, data=None, name="", label=None) -> None:
         self._buffer = data
         self.name = name
         self._buffer.index = range(len(self))
+
+        self.label = self._buffer.pop(label) if label else None
 
     def __len__(self):
         return len(self._buffer)
 
     def __iter__(self):
-        yield from self._buffer.values
+        buff = self._buffer.values
+        if self.label:
+            yield from zip(buff, self.label)
+        else:
+            yield from buff
 
     def __getitem__(self, idx):
         buff = None
@@ -56,3 +62,7 @@ class Dataset:
     @property
     def size(self):
         return self.__len__()
+
+
+class Sampler:
+    pass
