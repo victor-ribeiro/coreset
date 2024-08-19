@@ -1,8 +1,7 @@
 import os
 
 
-# def main():
-print(os.environ.get("DATA_HOME"))
+DATA_HOME = print(os.environ.get("DATA_HOME"))
 
 
 # import pandas as pd

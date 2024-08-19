@@ -10,7 +10,7 @@ from itertools import batched
 from datetime import datetime
 
 from coreset.metrics import METRICS
-from coreset.dataset import Dataset
+from coreset.dataset.dataset import Dataset
 
 
 class Queue(list):

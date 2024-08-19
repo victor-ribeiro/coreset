@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from functools import wraps
-from coreset.dataset import Dataset
+from coreset.dataset.dataset import Dataset
 
 
 def _make_dataset(data, label=None):
@@ -9,7 +9,7 @@ def _make_dataset(data, label=None):
     return Dataset(buff, label=label)
 
 
-class transform_function:
+class TransformFunction:
 
     def __init__(self, func, *args, **kwargs) -> None:
 
@@ -21,7 +21,7 @@ class transform_function:
         return self.func(dataset, *self.named_args, **self.unnamed_args)
 
 
-def pipeline(*chain: transform_function):
+def pipeline(*chain: TransformFunction):
     def inner(dataset):
         result = dataset._buffer
         for func in chain:

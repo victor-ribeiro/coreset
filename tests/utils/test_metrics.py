@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 from coreset.metrics import pdist
-from coreset.dataset import Dataset
+from coreset.dataset.dataset import Dataset
 
 
 @lambda _: _()
