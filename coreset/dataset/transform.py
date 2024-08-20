@@ -1,12 +1,15 @@
 import numpy as np
 import pandas as pd
-from functools import wraps
+
 from coreset.dataset.dataset import Dataset
 
 
-def _make_dataset(data, label=None):
-    buff = pd.DataFrame(data)
-    return Dataset(buff, label=label)
+def make_dataset(label=None):
+    def inner(data):
+        buff = pd.DataFrame(data)
+        return Dataset(buff, label=label)
+
+    return inner
 
 
 class TransformFunction:

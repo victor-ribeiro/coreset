@@ -9,7 +9,7 @@ class Dataset:
         self.name = name
         self._buffer.index = range(len(self))
 
-        self.label = self._buffer.pop(label) if label else None
+        self.label = self._buffer.pop(label).values if label else None
 
     def __len__(self):
         return len(self._buffer)
@@ -62,7 +62,3 @@ class Dataset:
     @property
     def size(self):
         return self.__len__()
-
-
-class Sampler:
-    pass

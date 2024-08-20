@@ -55,7 +55,6 @@ cover/
 *.mo
 *.pot
 
-<<<<<<< HEAD
 # Django stuff:
 *.log
 local_settings.py
@@ -65,32 +64,23 @@ db.sqlite3-journal
 # Flask stuff:
 instance/
 .webassets-cache
-=======
-
->>>>>>> 150a7ee (project init)
 
 # Scrapy stuff:
 .scrapy
 
-<<<<<<< HEAD
 # Sphinx documentation
 docs/_build/
-=======
->>>>>>> 150a7ee (project init)
 
 # PyBuilder
 .pybuilder/
 target/
 
-<<<<<<< HEAD
 # Jupyter Notebook
 .ipynb_checkpoints
 
 # IPython
 profile_default/
 ipython_config.py
-=======
->>>>>>> 150a7ee (project init)
 
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
@@ -109,11 +99,7 @@ ipython_config.py
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
 #   commonly ignored for libraries.
 #   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-<<<<<<< HEAD
 #poetry.lock
-=======
-poetry.lock
->>>>>>> 150a7ee (project init)
 
 # pdm
 #   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
@@ -128,13 +114,10 @@ poetry.lock
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
 
-<<<<<<< HEAD
 # Celery stuff
 celerybeat-schedule
 celerybeat.pid
 
-=======
->>>>>>> 150a7ee (project init)
 # SageMath parsed files
 *.sage.py
 
@@ -147,13 +130,10 @@ ENV/
 env.bak/
 venv.bak/
 
-<<<<<<< HEAD
 # Spyder project settings
 .spyderproject
 .spyproject
 
-=======
->>>>>>> 150a7ee (project init)
 # Rope project settings
 .ropeproject
 
@@ -179,8 +159,10 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-<<<<<<< HEAD
 #.idea/
-=======
-#.idea/
->>>>>>> 150a7ee (project init)
+
+data/
+*.csv
+
+experiments/
+*.csv
