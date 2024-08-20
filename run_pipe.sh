@@ -30,6 +30,6 @@ do
     fi
 done
 
-export POETRY_DOTENV_LOCATION=.env && poetry run python experiments/adult.py
+# export POETRY_DOTENV_LOCATION=.env && poetry run python experiments/adult.py
 
 echo $(cat $POETRY_DOTENV_LOCATION)
