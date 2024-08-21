@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.metrics import pairwise_distances
 from functools import lru_cache, cache
+from itertools import batched
 
 
 __all__ = ["METRICS"]
@@ -17,10 +18,10 @@ def _register(fn):
 
 def pdist(dataset, metric="euclidean", batch_size=1):
     n = len(dataset)
-    for start in range(0, n, batch_size):
-        end = start + batch_size
-        batch = dataset[start:end]
-        yield pairwise_distances(batch, dataset, metric=metric)
+    yield from (
+        pairwise_distances(batch, dataset, metric=metric)
+        for batch in batched(dataset, batch_size)
+    )
 
 
 def similarity(dataset, metric="euclidean", batch_size=1):

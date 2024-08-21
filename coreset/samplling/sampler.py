@@ -6,7 +6,7 @@ METHOD = {"coreset": lazy_greed, "random": None}
 
 
 class Sampler:
-    @singledispatchmethod
+
     def __init__(self, method: str = "random") -> None:
         self.method = METHOD[method]
 

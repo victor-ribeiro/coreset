@@ -1,8 +1,12 @@
 import pandas as pd
 import numpy as np
 
+from coreset.dataset.numpy_utils import array
 
+
+@array
 class Dataset:
+    __slots__ = ("_buffer", "name", "_buffer", "label")
 
     def __init__(self, data=None, name="", label=None) -> None:
         self._buffer = data
@@ -16,10 +20,10 @@ class Dataset:
 
     def __iter__(self):
         buff = self._buffer.values
-        if self.label:
-            yield from zip(buff, self.label)
-        else:
-            yield from buff
+        # if self.label:
+        #     yield from zip(buff, self.label)
+        # else:
+        yield from buff
 
     def __getitem__(self, idx):
         buff = None
@@ -27,24 +31,25 @@ class Dataset:
         match idx:
             case list():
                 try:
-                    buff = self._buffer.iloc[idx].values
-                except:
-                    buff = self._buffer.loc[:, idx].values
+                    buff = self._buffer.iloc[idx]
+                except IndexError:
+                    buff = self._buffer.loc[:, idx]
             case str():
-                buff = self._buffer.loc[:, idx].values
+                buff = self._buffer.loc[:, idx]
             case int():
-                buff = self._buffer.iloc[idx, :].values
+                buff = self._buffer.iloc[idx, :]
             case tuple():
                 rols, cols = idx
                 try:
-                    buff = self._buffer.iloc[rols, cols].values
+                    buff = self._buffer.iloc[rols, cols]
                 except IndexError:
-                    buff = self._buffer.loc[rols, cols].values
+                    buff = self._buffer.loc[rols, cols]
                 except Exception as e:
                     return e
             case _:
-                buff = self._buffer[idx].values
-
+                buff = self._buffer[idx]
+        buff = Dataset(buff)
+        buff.label = self.label[idx]
         return buff
 
     @property
@@ -57,7 +62,7 @@ class Dataset:
 
     @property
     def index(self):
-        return self._buffer.index.values.tolist()
+        return self._buffer.index.values  # .tolist()
 
     @property
     def size(self):

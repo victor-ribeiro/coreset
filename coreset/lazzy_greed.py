@@ -5,11 +5,13 @@
 import heapq
 import math
 import numpy as np
-from functools import lru_cache, partial, reduce
+from functools import lru_cache, partial, reduce, singledispatch
+from typing import Any
 from itertools import batched
 from datetime import datetime
 
 from coreset.metrics import METRICS
+from coreset.utils import timeit
 from coreset.dataset.dataset import Dataset
 
 REDUCE = {"mean": np.mean, "sum": np.sum}
@@ -53,6 +55,7 @@ def utility_score(e, sset, /, alpha=1, reduce="mean"):
     return norm * math.log(1 + REDUCE[reduce](argmax) * f_norm)
 
 
+@timeit
 def lazy_greed(
     dataset: Dataset,
     base_inc=base_inc,
@@ -64,22 +67,20 @@ def lazy_greed(
 ):
     # basic config
     base_inc = base_inc(alpha)
-    argmax = np.zeros(dataset.size)
+    argmax = np.zeros(len(dataset))
     score = 0
     q = Queue()
     sset = []
     vals = []
 
-    for i, (D, V) in enumerate(
-        zip(
-            METRICS[metric](dataset, batch_size=batch_size),
-            batched(dataset.index, batch_size),
-        )
+    for D, V in zip(
+        METRICS[metric](dataset, batch_size=batch_size),
+        batched(dataset.index, batch_size),
     ):
         size = len(D)
         [q.push(base_inc, idx) for idx in zip(V, range(size))]
 
-        while q and len(sset) < K:
+        while len(sset) <= K and q:
             _, idx_s = q.head
             s = D[idx_s[1]]
             score_s = utility_score(s, argmax, alpha=alpha, reduce=reduce_fn)
@@ -101,44 +102,5 @@ def lazy_greed(
             score = utility_score(s, argmax, alpha)
             sset.append(idx_s[0])
             vals.append(score)
+
     return sset, vals
-
-
-if __name__ == "__main__":
-    import pandas as pd
-    import matplotlib.pyplot as plt
-
-    from sklearn.datasets import make_classification
-    from sklearn.model_selection import train_test_split
-    from sklearn.ensemble import HistGradientBoostingClassifier
-    from sklearn.metrics import classification_report
-
-    ft, lbl = make_classification(
-        n_samples=10_000,
-        n_features=7,
-        n_classes=2,
-    )
-    data = pd.DataFrame(ft)
-    data["label"] = lbl
-    train, test = train_test_split(data, test_size=0.1)
-    ytrain = train.pop("label")
-    ytest = test.pop("label")
-
-    model = HistGradientBoostingClassifier()
-    start = datetime.now().timestamp()
-    model.fit(train, ytrain)
-    print(classification_report(ytest, model.predict(test)))
-    end = datetime.now().timestamp()
-
-    print(end - start)
-
-    dataset = Dataset(train)
-    start = datetime.now().timestamp()
-    sset, vals = lazy_greed(dataset, base_inc, alpha=2, K=50, batch_size=1024)
-    dataset = dataset[sset]
-
-    outro_model = HistGradientBoostingClassifier()
-    outro_model.fit(dataset, ytrain.iloc[sset])
-    print(classification_report(ytest, outro_model.predict(test)))
-    end = datetime.now().timestamp()
-    print(end - start)

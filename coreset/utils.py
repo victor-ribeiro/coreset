@@ -1,10 +1,12 @@
-import os
-from pathlib import Path
+from datetime import datetime
 
-ROUTE = {
-    "DATA_HOME": Path(os.environ.get("DATA_HOME")),
-    "EXPERIMENTS_HOME": Path(os.environ.get("EXPERIMENTS_HOME")),
-}
 
-if __name__ == "__main__":
-    pass
+def timeit(f_):
+    def inner(*args, **kwargs):
+        start = datetime.now().timestamp()
+        out = f_(*args, **kwargs)
+        end = datetime.now().timestamp()
+        print(f"[RUNNING] {f_.__name__} :: {end - start:.4f}.S")
+        return out
+
+    return inner

@@ -2,7 +2,7 @@
 
 echo '[TESTING]';
 
-poetry run pytest --no-header -v
+# poetry run pytest --no-header -v
 
 if [ $? = 0 ] 
 then
@@ -30,6 +30,8 @@ do
     fi
 done
 
+# scp -r ../CORESET vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/
+
 # export POETRY_DOTENV_LOCATION=.env && poetry run python experiments/adult.py
 
-echo $(cat $POETRY_DOTENV_LOCATION)
+# echo $(cat $POETRY_DOTENV_LOCATION)

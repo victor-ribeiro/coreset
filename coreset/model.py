@@ -1,11 +1,16 @@
 from enum import Enum, auto
 from dataclasses import dataclass
 from typing import Any, Protocol, Dict, TypeVar
-
+from functools import singledispatchmethod
 from coreset.dataset.dataset import Dataset
+from coreset.utils import timeit
+import numpy as np
 
 
 class Learner(Protocol):
+    def fit(self, X, y):
+        pass
+
     def predict(self, X):
         pass
 
@@ -26,40 +31,17 @@ class Model:
     def __post_init__(self):
         self.hyper = self.learner.__dict__
 
-    def __call__(self, X, /) -> Any:
-        return self.learner.predict(X)
+    def __call__(self, X: Dataset, /) -> Any:
+        return self.learner.predict(X._buffer)
+
+    def fit(self):
+        X_ = self.dataset._buffer.astype(float)
+        y_ = self.dataset.label
+        self.learner = self.learner.fit(X_, y_)
 
 
-def train_model(task: TaskKind):
-    def deco(f_):
-        def inner(model: Model, dataset: Dataset):
-            match task:
-                case TaskKind.CLASSIFICATION:
-                    print("classificação")
-                case TaskKind.REGRESSION:
-                    print("regressão")
-            return f_
-
-        return inner
-
-    return deco
-
-
-@train_model(TaskKind.CLASSIFICATION)
-def make_classification(f_):
-    def inner(*args, kwargs):
-        pass
-
-    return inner
-
-
-@train_model(TaskKind.CLASSIFICATION)
-def make_regression(f_):
-    def inner(*args, **kwargs):
-        pass
-
-    return inner
-
-
-if __name__ == "__main__":
-    pass
+@timeit
+def train_model(learner, dataset):
+    model = Model(learner, dataset)
+    model.fit()
+    return model
