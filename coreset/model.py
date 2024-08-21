@@ -25,6 +25,7 @@ class TaskKind(Enum):
 class Model:
     learner: Learner
     dataset: Dataset
+    label: list
     hyper: Dict = None
     _fited = False
 
@@ -32,16 +33,16 @@ class Model:
         self.hyper = self.learner.__dict__
 
     def __call__(self, X: Dataset, /) -> Any:
-        return self.learner.predict(X._buffer)
+        return self.learner.predict(X)
 
     def fit(self):
-        X_ = self.dataset._buffer.astype(float)
-        y_ = self.dataset.label
+        X_ = self.dataset.values.astype(float)
+        y_ = self.label
         self.learner = self.learner.fit(X_, y_)
 
 
 @timeit
-def train_model(learner, dataset):
-    model = Model(learner, dataset)
+def train_model(learner, dataset, label):
+    model = Model(learner, dataset, label)
     model.fit()
     return model

@@ -30,7 +30,7 @@ do
     fi
 done
 
-scp -r ../CORESET vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/
+scp -r ../CORESET vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/coreset
 
 # export POETRY_DOTENV_LOCATION=.env && poetry run python experiments/adult.py
 

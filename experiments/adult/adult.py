@@ -1,21 +1,24 @@
 import os
-import random
+
 import pandas as pd
 import numpy as np
 from itertools import product
 from pathlib import Path
+from functools import partial
+
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import normalize
 from sklearn.metrics import precision_score, f1_score, recall_score
 from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.decomposition import PCA
+from xgboost import XGBClassifier
+
 from dotenv import load_dotenv
 from datetime import datetime
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from xgboost import XGBClassifier
 
 from coreset.dataset.dataset import Dataset
 from coreset.dataset.transform import TransformFunction, pipeline
@@ -51,46 +54,43 @@ names = [
 tgt_name = names[-1]
 
 
-@TransformFunction(
-    "native-country",
-    "marital-status",
-    "workclass",
-    "occupation",
-    "relationship",
-    "education",
-    "race",
-    n_features=n_feat,
-)
-def hash_encoding(dataset, *hash_names, n_features=15):
-    corpus = (
-        dataset[list(hash_names)]
-        .apply(
-            lambda x: "".join(str(x)),
-            axis="columns",
+def hash_encoding(*hash_names, n_features=15):
+    def inner(dataset):
+        corpus = (
+            dataset[list(hash_names)]
+            .apply(
+                lambda x: "".join(str(x)),
+                axis="columns",
+            )
+            .values
         )
-        .values
-    )
 
-    encoder = HashingVectorizer(n_features=n_features)
-    encoded = encoder.fit_transform(corpus).toarray()
-    encoded = pd.DataFrame(encoded)
-    dataset = pd.concat([dataset, encoded], axis="columns", join="inner")
-    dataset = dataset.drop(columns=list(hash_names))
-    dataset.columns = dataset.columns.astype(str)
-    return dataset
+        encoder = HashingVectorizer(n_features=n_features)
+        encoded = encoder.fit_transform(corpus).toarray()
+        encoded = pd.DataFrame(encoded)
+        dataset = pd.concat([dataset, encoded], axis="columns", join="inner")
+        dataset = dataset.drop(columns=list(hash_names))
+        dataset.columns = dataset.columns.astype(str)
+        return dataset
+
+    return inner
 
 
-@TransformFunction("sex")
-def oht_coding(dataset, *names):
-    return pd.get_dummies(dataset, columns=list(names), drop_first=False)
+def oht_coding(*names):
+    def inner(dataset):
+        return pd.get_dummies(dataset, columns=list(names), drop_first=False)
+
+    return inner
 
 
 def split_dataset(dataset, test_size=0.2, label=tgt_name):
-    train, test = train_test_split(dataset, test_size=test_size, shuffle=True)
-    return (Dataset(train, label=label), Dataset(test, label=label))
+    train, test = train_test_split(
+        dataset, test_size=test_size, shuffle=True, stratify=dataset[label]
+    )
+    train_l, test_l = train.pop(label).values, test.pop(label).values
+    return (train.values, train_l), (test.values, test_l)
 
 
-@TransformFunction()
 def norm_(dataset):
     y = dataset.pop(tgt_name).values
     names = dataset.columns
@@ -100,7 +100,21 @@ def norm_(dataset):
 
 
 # coding_task = pipeline(hash_encoding, oht_coding, norm_)
-coding_task = pipeline(hash_encoding, oht_coding)
+coding_task = pipeline(
+    hash_encoding(
+        "native-country",
+        "marital-status",
+        "workclass",
+        "occupation",
+        "relationship",
+        "education",
+        "race",
+        "age",
+        "fnlwgt",
+        n_features=n_feat,
+    ),
+    oht_coding("sex"),
+)
 
 if __name__ == "__main__":
 
@@ -108,41 +122,43 @@ if __name__ == "__main__":
     dataset.columns = names
     dataset.replace(" ?", np.nan, inplace=True)
     dataset.dropna(axis="index")
-    dataset.label = dataset.label.map({" >50K": 1, " <=50K": 0})
+    dataset[tgt_name] = dataset.label.map({" >50K": 1, " <=50K": 0})
 
     # dataset = Dataset(dataset, tgt_name)
-    dataset = coding_task(dataset)
-    print(dataset.shape)
+    dataset = coding_task(dataset).astype(float)
+
     result = []
     experiments = (split_dataset(dataset) for _ in range(n))
-    for j, (i, (train_ds, test_ds)) in product(
-        [0.01, 0.05, 0.1], enumerate(experiments)
-    ):
+    for j, (i, (train, test)) in product([0.01, 0.05, 0.1], enumerate(experiments)):
         #########################################################################
         ################################ coreset ################################
         #########################################################################
-        print(f"training {i} coreset[{j}]")
+        train_ds, train_label = train
+        test_ds, test_label = test
+        train_ds = normalize(train_ds, axis=0)
+        test_ds = normalize(test_ds, axis=0)
+
+        print(f"training {i} coreset[{j}] : {len(train_ds)} :")
         sset = []
         idx = map(
-            lambda L, w, alpha: lazy_greed(
-                train_ds[train_ds.label == L],
-                alpha=alpha,
-                reduce_fn="mean",
-                K=int(int(len(train_ds) * j) * w),
+            lambda L: lazy_greed(
+                train_ds[train_label == L],
+                alpha=1,
+                reduce_fn="sum",
+                metric="similarity",
+                K=int(int(len(train_ds) * j) / 2),
                 batch_size=2000,
             )[0],
-            [0, 1],
-            [0.3, 0.7],
-            [0.1, 4],
+            [0, 1],  # label
         )
         _start = datetime.now().timestamp()
-        _ = [sset.extend(sub) for sub in idx]
-        random.shuffle(sset)
-        sset = train_ds[sset]
-        core_boost = train_model(XGBClassifier(), sset)
+        [sset.extend(sub) for sub in idx]
+        core_boost = XGBClassifier()
+        core_boost.fit(train_ds[sset], train_label[sset])
+
         _stop = datetime.now().timestamp()
         for metric in [precision_score, f1_score, recall_score]:
-            core_m = metric(test_ds.label, core_boost(test_ds), average=None)
+            core_m = metric(test_label, core_boost.predict(test_ds), average=None)
             core_m = dict(zip([0, 1], core_m))
             core_m["metric"] = metric.__name__
             core_m["coreset"] = j
@@ -154,13 +170,12 @@ if __name__ == "__main__":
         #########################################################################
         ############################### baseline ################################
         #########################################################################
-        # experiments = (split_dataset(dataset) for _ in range(n))
-        # for i, (train_ds, test_ds) in enumerate(experiments):
         start = datetime.now().timestamp()
-        boost = train_model(XGBClassifier(), train_ds)
+        boost = XGBClassifier()
+        boost.fit(train_ds, train_label)
         stop = datetime.now().timestamp()
         for metric in [precision_score, f1_score, recall_score]:
-            m_ = metric(test_ds.label, boost(test_ds), average=None)
+            m_ = metric(test_label, boost.predict(test_ds), average=None)
             m_ = dict(zip([0, 1], m_))
             m_["metric"] = metric.__name__
             m_["coreset"] = 1

@@ -1,14 +1,12 @@
 ###############################################
 ### |S| <= 1 + log max F( e | [] ) x | S* | ###
 ###############################################
-
 import heapq
 import math
 import numpy as np
-from functools import lru_cache, partial, reduce, singledispatch
+from numba import jit
 from typing import Any
 from itertools import batched
-from datetime import datetime
 
 from coreset.metrics import METRICS
 from coreset.utils import timeit
@@ -57,7 +55,7 @@ def utility_score(e, sset, /, alpha=1, reduce="mean"):
 
 @timeit
 def lazy_greed(
-    dataset: Dataset,
+    dataset,
     base_inc=base_inc,
     alpha=1,
     metric="similarity",
@@ -68,6 +66,7 @@ def lazy_greed(
     # basic config
     base_inc = base_inc(alpha)
     argmax = np.zeros(len(dataset))
+    idx = np.arange(len(dataset))
     score = 0
     q = Queue()
     sset = []
@@ -75,18 +74,18 @@ def lazy_greed(
 
     for D, V in zip(
         METRICS[metric](dataset, batch_size=batch_size),
-        batched(dataset.index, batch_size),
+        batched(idx, batch_size),
     ):
         size = len(D)
         [q.push(base_inc, idx) for idx in zip(V, range(size))]
-
-        while len(sset) <= K and q:
+        while len(sset) < K and q:
             _, idx_s = q.head
             s = D[idx_s[1]]
             score_s = utility_score(s, argmax, alpha=alpha, reduce=reduce_fn)
             inc = score_s - score
             if inc < 0:
                 continue
+                # break
             if not q:
                 break
             score_t, idx_t = q.head

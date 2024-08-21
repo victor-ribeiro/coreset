@@ -36,10 +36,10 @@ class TransformFunction:
 
 
 def pipeline(*chain: TransformFunction, label=None):
-    @make_dataset(label=label)
+    # @make_dataset(label=label)
     @timeit
     def inner(dataset):
-        result = dataset._buffer
+        result = dataset
         for func in chain:
             result = func(result)
         return result
