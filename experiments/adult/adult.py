@@ -139,20 +139,21 @@ if __name__ == "__main__":
         test_ds = normalize(test_ds, axis=0)
 
         print(f"training {i} coreset[{j}] : {len(train_ds)} :")
-        sset = []
-        idx = map(
-            lambda L: lazy_greed(
-                train_ds[train_label == L],
-                alpha=1,
-                reduce_fn="sum",
-                metric="similarity",
-                K=int(int(len(train_ds) * j) / 2),
-                batch_size=2000,
-            )[0],
-            [0, 1],  # label
-        )
         _start = datetime.now().timestamp()
-        [sset.extend(sub) for sub in idx]
+        sset, _ = lazy_greed(train_ds, K=int(len(train_ds) * j), batch_size=2000)
+        # sset = []
+        # idx = map(
+        #     lambda L: lazy_greed(
+        #         train_ds[train_label == L],
+        #         alpha=1,
+        #         reduce_fn="sum",
+        #         metric="similarity",
+        #         K=int(int(len(train_ds) * j) / 2),
+        #         batch_size=2000,
+        #     )[0],
+        #     [0, 1],  # label
+        # )
+        # [sset.extend(sub) for sub in idx]
         core_boost = XGBClassifier()
         core_boost.fit(train_ds[sset], train_label[sset])
 
