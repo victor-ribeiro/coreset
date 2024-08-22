@@ -33,6 +33,8 @@ done
 for folder in $(ls experiments);
 do
     echo '[RUNNING]' experiments/$folder
+    poetry run python experiments/$folder
+    echo DONE
 done
 
 # scp -r ../CORESET vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/coreset
