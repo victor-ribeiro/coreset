@@ -24,7 +24,6 @@ MAX_SIZE = len(data) * 0.8
 if __name__ == "__main__":
     # sampling strategies
     rgn_smpln = [
-        random_sampler(n_samples=int(MAX_SIZE * 0.005)),
         random_sampler(n_samples=int(MAX_SIZE * 0.01)),
         random_sampler(n_samples=int(MAX_SIZE * 0.02)),
         random_sampler(n_samples=int(MAX_SIZE * 0.05)),
@@ -33,13 +32,12 @@ if __name__ == "__main__":
         random_sampler(n_samples=int(MAX_SIZE * 0.25)),
     ]
     lazy_smpln = [
-        partial(lazy_greed, K=int(MAX_SIZE * 0.005), batch_size=64),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.01), batch_size=64),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.02), batch_size=64),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.05), batch_size=64),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.10), batch_size=64),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.15), batch_size=64),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.25), batch_size=64),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.01), batch_size=2000),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.02), batch_size=2000),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.05), batch_size=2000),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.10), batch_size=2000),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.15), batch_size=2000),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.25), batch_size=2000),
     ]
     smpln = rgn_smpln + lazy_smpln
 
