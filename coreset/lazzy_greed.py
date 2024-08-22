@@ -77,14 +77,13 @@ def lazy_greed(
     ):
         size = len(D)
         [q.push(base_inc, idx) for idx in zip(V, range(size))]
-        while len(sset) < K and q:
+        while q and len(sset) <= K:
             _, idx_s = q.head
             s = D[idx_s[1]]
             score_s = utility_score(s, argmax, alpha=alpha, reduce=reduce_fn)
             inc = score_s - score
             if inc < 0:
-                # continue
-                break
+                continue
             if not q:
                 break
             score_t, idx_t = q.head
