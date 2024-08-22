@@ -2,7 +2,7 @@ from typing import Any
 import pandas as pd
 
 from coreset.dataset.transform import pipeline
-from coreset.utils import transform_fn, split_dataset
+from coreset.utils import split_dataset
 
 
 class Experiment:
@@ -13,21 +13,23 @@ class Experiment:
         "preprocessing",
         "metrics",
         "result",
+        "repeat",
     )
 
-    def __init__(self, data, model, lbl_name) -> None:
+    def __init__(self, data, model, lbl_name, repeat=1, name="") -> None:
         self._data = data
         self.model = model
         self.lbl_name = lbl_name
+        self.repeat = repeat
         self.preprocessing = []
         self.metrics = []
         self.result = []
 
-    def __call__(self, repeat, sampler=None) -> Any:
+    def __call__(self, sampler=None) -> Any:
         preprocessing = pipeline(
             *self.preprocessing, split_dataset(label=self.lbl_name)
         )
-        for _ in range(repeat):
+        for _ in range(self.repeat):
             data = self._data
             model = self.model()
             (X_train, y_train), (X_test, y_test) = preprocessing(data)
@@ -42,10 +44,14 @@ class Experiment:
 
             for metric in self.metrics:
                 result = {}
-                result["metric"] = metric.__name__
-                result["value"] = metric(y_test, pred)
+                try:
+                    result["sampler"] = sampler.func.__name__ if sampler else None
+                except:
+                    result["sampler"] = sampler.__name__ if sampler else None
                 result["sample_size"] = len(X_train)
                 result["sample_prop"] = len(X_train) / n_samples
+                result["metric"] = metric.__name__
+                result["value"] = metric(y_test, pred)
                 self.result.append(result)
         return pd.DataFrame.from_records(self.result)
 

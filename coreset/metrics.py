@@ -18,9 +18,6 @@ def _register(fn):
     return fn
 
 
-# @np.vectorize
-
-
 def pdist(dataset, metric="euclidean", batch_size=1):
     yield from (
         pairwise_distances(batch, dataset, metric=metric)
