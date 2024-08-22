@@ -5,7 +5,7 @@ from coreset.dataset.transform import pipeline
 from coreset.utils import split_dataset
 
 
-class Experiment:
+class BaseExperiment:
     __slots__ = (
         "_data",
         "model",
@@ -50,7 +50,10 @@ class Experiment:
                     result["sampler"] = sampler.__name__ if sampler else None
                 result["sample_size"] = len(X_train)
                 result["sample_prop"] = len(X_train) / n_samples
-                result["metric"] = metric.__name__
+                try:
+                    result["metric"] = metric.__name__
+                except:
+                    result["metric"] = metric.func.__name__
                 result["value"] = metric(y_test, pred)
                 self.result.append(result)
         return pd.DataFrame.from_records(self.result)

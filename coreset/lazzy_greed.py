@@ -95,10 +95,4 @@ def lazy_greed(
                 vals.append(score)
                 q.push(score_t, idx_t)
             q.push(inc, idx_s)
-        # else:
-        #     argmax = np.maximum(argmax, s)
-        #     score = utility_score(s, argmax, alpha)
-        #     sset.append(idx_s[0])
-        #     vals.append(score)
-
     return sset

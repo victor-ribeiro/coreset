@@ -82,9 +82,6 @@ def random_sampler(n_samples, random_state=42):
         size = len(data)
         sset = range(size)
         sset = random.choices(sset, k=n_samples)
-        random.shuffle(sset)
-        random.shuffle(sset)
-        random.shuffle(sset)
         return sset
 
     return inner
