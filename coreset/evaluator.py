@@ -4,6 +4,8 @@ import pandas as pd
 from coreset.dataset.transform import pipeline
 from coreset.utils import split_dataset
 
+REPEAT = 100
+
 
 class BaseExperiment:
     __slots__ = (

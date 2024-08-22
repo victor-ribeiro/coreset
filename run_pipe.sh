@@ -30,7 +30,12 @@ do
     fi
 done
 
-scp -r ../CORESET vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/coreset
+for folder in $(ls experiments);
+do
+    echo '[RUNNING]' experiments/$folder
+done
+
+# scp -r ../CORESET vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/coreset
 
 # export POETRY_DOTENV_LOCATION=.env && poetry run python experiments/adult.py
 

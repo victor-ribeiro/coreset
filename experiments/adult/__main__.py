@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
 from functools import partial
-from xgboost import XGBClassifier
+from xgboost import XGBRFClassifier
 
 
 from sklearn.metrics import precision_score, f1_score, recall_score
 
-from coreset.evaluator import BaseExperiment
+from coreset.evaluator import BaseExperiment, REPEAT
 from coreset.lazzy_greed import lazy_greed
 from coreset.utils import hash_encoding, oht_coding, random_sampler
 from coreset.environ import load_config
@@ -41,7 +41,9 @@ if __name__ == "__main__":
     ]
     smpln = rgn_smpln + lazy_smpln
 
-    adult = BaseExperiment(data, model=XGBClassifier, lbl_name=tgt_name, repeat=1)
+    adult = BaseExperiment(
+        data, model=XGBRFClassifier, lbl_name=tgt_name, repeat=REPEAT
+    )
 
     adult.register_preprocessing(
         hash_encoding(
@@ -59,4 +61,4 @@ if __name__ == "__main__":
     for sampler in smpln:
         adult(sampler=sampler)
     result = adult()  # base de comparação
-    print(result)
+    result.to_csv(outfile, index=False)

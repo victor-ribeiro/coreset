@@ -1,13 +1,13 @@
 import pandas as pd
 from functools import partial
-from xgboost import XGBClassifier
+from xgboost import XGBRFRegressor
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 from coreset.environ import load_config
 from coreset.utils import random_sampler, hash_encoding, transform_fn
 from coreset.lazzy_greed import lazy_greed
-from coreset.evaluator import BaseExperiment
+from coreset.evaluator import BaseExperiment, REPEAT
 
 
 outfile, DATA_HOME, names, tgt_name = load_config()
@@ -50,7 +50,9 @@ if __name__ == "__main__":
         partial(lazy_greed, K=int(max_size * 0.25), batch_size=64),
     ]
     smpln = rgn_smpln + lazy_smpln
-    nursery = BaseExperiment(dataset, model=XGBClassifier, lbl_name=tgt_name, repeat=1)
+    nursery = BaseExperiment(
+        dataset, model=XGBRFRegressor, lbl_name=tgt_name, repeat=REPEAT
+    )
 
     nursery.register_preprocessing(
         hash_encoding("parents", "has_nurs", "form", n_features=10),
@@ -66,4 +68,4 @@ if __name__ == "__main__":
     for sampler in smpln:
         nursery(sampler=sampler)
     result = nursery()  # base de comparação
-    print(result)
+    result.to_csv(outfile, index=False)
