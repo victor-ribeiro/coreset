@@ -1,16 +1,15 @@
 ###############################################
 ### |S| <= 1 + log max F( e | [] ) x | S* | ###
 ###############################################
+from numba import jit
 import heapq
 import math
 import numpy as np
-from numba import jit
-from typing import Any
 from itertools import batched
+from functools import lru_cache, cache
 
 from coreset.metrics import METRICS
 from coreset.utils import timeit
-from coreset.dataset.dataset import Dataset
 
 REDUCE = {"mean": np.mean, "sum": np.sum}
 
@@ -84,8 +83,8 @@ def lazy_greed(
             score_s = utility_score(s, argmax, alpha=alpha, reduce=reduce_fn)
             inc = score_s - score
             if inc < 0:
-                continue
-                # break
+                # continue
+                break
             if not q:
                 break
             score_t, idx_t = q.head
@@ -96,10 +95,10 @@ def lazy_greed(
                 vals.append(score)
                 q.push(score_t, idx_t)
             q.push(inc, idx_s)
-        else:
-            argmax = np.maximum(argmax, s)
-            score = utility_score(s, argmax, alpha)
-            sset.append(idx_s[0])
-            vals.append(score)
+        # else:
+        #     argmax = np.maximum(argmax, s)
+        #     score = utility_score(s, argmax, alpha)
+        #     sset.append(idx_s[0])
+        #     vals.append(score)
 
-    return sset, vals
+    return sset
