@@ -164,5 +164,7 @@ cython_debug/
 data/
 *.csv
 
+.vscde/
+
 # experiments/
 *.csv

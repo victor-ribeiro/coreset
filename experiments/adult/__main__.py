@@ -1,54 +1,30 @@
-import os
-import math
 import pandas as pd
 import numpy as np
 from functools import partial
-from pathlib import Path
 from xgboost import XGBClassifier
-from dotenv import load_dotenv
+
 
 from sklearn.metrics import precision_score, f1_score, recall_score
 
-from coreset.experiments import Experiment
-from coreset.utils import hash_encoding, oht_coding, random_sampler
+from coreset.evaluator import BaseExperiment
 from coreset.lazzy_greed import lazy_greed
+from coreset.utils import hash_encoding, oht_coding, random_sampler
+from coreset.environ import load_config
 
-load_dotenv()
+outfile, DATA_HOME, names, tgt_name = load_config()
 
-DATA_HOME = os.environ.get("DATA_HOME")
-DATA_HOME = Path(DATA_HOME, "adult")
-
-names = [
-    "age",
-    "workclass",
-    "fnlwgt",
-    "education",
-    "education-num",
-    "marital-status",
-    "occupation",
-    "relationship",
-    "race",
-    "sex",
-    "capital-gain",
-    "capital-loss",
-    "hours-per-week",
-    "native-country",
-    "label",
-]
-
-train_pth = DATA_HOME / "adult.data"
-MAX_SIZE = 26048
-data = pd.read_csv(train_pth, engine="pyarrow")
-data.columns = names
+data = pd.read_csv(DATA_HOME, engine="pyarrow", names=names)
 *names, tgt_name = names
 data.replace(" ?", np.nan, inplace=True)
 data.dropna(axis="index")
 data[tgt_name] = data.label.map({" >50K": 1, " <=50K": 0})
 
+MAX_SIZE = len(data) * 0.8
 
 if __name__ == "__main__":
     # sampling strategies
     rgn_smpln = [
+        random_sampler(n_samples=int(MAX_SIZE * 0.005)),
         random_sampler(n_samples=int(MAX_SIZE * 0.01)),
         random_sampler(n_samples=int(MAX_SIZE * 0.02)),
         random_sampler(n_samples=int(MAX_SIZE * 0.05)),
@@ -57,16 +33,17 @@ if __name__ == "__main__":
         random_sampler(n_samples=int(MAX_SIZE * 0.25)),
     ]
     lazy_smpln = [
-        partial(lazy_greed, K=int(MAX_SIZE * 0.01), batch_size=32),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.02), batch_size=32),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.05), batch_size=32),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.10), batch_size=32),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.15), batch_size=32),
-        partial(lazy_greed, K=int(MAX_SIZE * 0.25), batch_size=32),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.005), batch_size=64),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.01), batch_size=64),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.02), batch_size=64),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.05), batch_size=64),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.10), batch_size=64),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.15), batch_size=64),
+        partial(lazy_greed, K=int(MAX_SIZE * 0.25), batch_size=64),
     ]
     smpln = rgn_smpln + lazy_smpln
 
-    adult = Experiment(data, model=XGBClassifier, lbl_name=tgt_name, repeat=1)
+    adult = BaseExperiment(data, model=XGBClassifier, lbl_name=tgt_name, repeat=1)
 
     adult.register_preprocessing(
         hash_encoding(
@@ -75,7 +52,11 @@ if __name__ == "__main__":
         oht_coding("sex", "education", "race", "relationship", "workclass"),
     )
 
-    adult.register_metrics(precision_score, recall_score, f1_score)
+    adult.register_metrics(
+        partial(precision_score, average="macro"),
+        partial(recall_score, average="macro"),
+        partial(f1_score, average="macro"),
+    )
 
     for sampler in smpln:
         adult(sampler=sampler)
