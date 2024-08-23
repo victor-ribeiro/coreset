@@ -1,6 +1,6 @@
 import pandas as pd
 from functools import partial
-from xgboost import XGBRFRegressor
+from xgboost import XGBClassifier
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     ]
     smpln = rgn_smpln + lazy_smpln
     nursery = BaseExperiment(
-        dataset, model=XGBRFRegressor, lbl_name=tgt_name, repeat=REPEAT
+        dataset, model=XGBClassifier, lbl_name=tgt_name, repeat=REPEAT
     )
 
     nursery.register_preprocessing(
