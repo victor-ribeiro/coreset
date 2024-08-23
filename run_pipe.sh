@@ -30,12 +30,14 @@ do
     fi
 done
 
-for folder in $(ls experiments);
-do
-    echo '[RUNNING]' experiments/$folder
-    poetry run python experiments/$folder
-    echo DONE
-done
+# for folder in $(ls experiments);
+# do
+#     echo '[RUNNING]' experiments/$folder
+#     poetry run python experiments/$folder
+#     echo DONE
+# done
+
+poetry run python experiments/nursery
 
 # scp -r ../CORESET vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/coreset
 
