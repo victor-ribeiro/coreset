@@ -8,7 +8,6 @@ if [ $? = 0 ]
 then
     echo '[TESTING] OK';
     echo 'commiting'
-    # pegar depois como parametro
     git add .
     git commit -m 'coreset prototype'
     git push
@@ -30,12 +29,14 @@ do
     fi
 done
 
-for folder in $(ls experiments);
-do
-    echo '[RUNNING]' experiments/$folder
-    poetry run python experiments/$folder
-    echo DONE
-done
+tar -xvf data.tar.gz data
+
+# for folder in $(ls experiments);
+# do
+#    echo '[RUNNING]' experiments/$folder
+#    poetry run python experiments/$folder
+#    echo DONE
+# done
 
 # poetry run python experiments/nursery
 
