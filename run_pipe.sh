@@ -29,7 +29,13 @@ do
     fi
 done
 
-tar -xvf data.tar.gz data
+if [ -f data.tar.gz  ];
+then
+    echo unpacking data
+    # tar -xvf data.tar.gz data
+else;
+    tar -cvf data.tar.gz data
+fi
 
 # for folder in $(ls experiments);
 # do
