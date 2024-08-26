@@ -46,7 +46,7 @@ fi
 
 # poetry run python experiments/nursery
 
-scp -r data.tar.gz vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/coreset/data
+scp -r data.tar.gz vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/coreset/data/data.tar.gz
 rm data.tar.gz
 
 # export POETRY_DOTENV_LOCATION=.env && poetry run python experiments/adult.py
