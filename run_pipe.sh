@@ -1,6 +1,10 @@
 #/bin/bash
 
-echo '[TESTING]';
+##########    CRAIG BASELINE    ##########
+# git clone https://github.com/baharanm/craig.git
+
+
+# echo '[TESTING]';
 
 # poetry run pytest --no-header -v
 

@@ -5,7 +5,7 @@ from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 from coreset.environ import load_config
-from coreset.utils import random_sampler, hash_encoding, transform_fn
+from coreset.utils import random_sampler, hash_encoding, transform_fn, craig_baseline
 from coreset.lazzy_greed import lazy_greed
 from coreset.evaluator import BaseExperiment, REPEAT
 
@@ -31,6 +31,13 @@ dataset[tgt_name] = LabelEncoder().fit_transform(dataset[tgt_name]).astype(int)
 
 if __name__ == "__main__":
     # sampling strategies
+    craig_smpln = [
+        craig_baseline(0.05),
+        craig_baseline(0.10),
+        craig_baseline(0.15),
+        craig_baseline(0.25),
+        craig_baseline(0.50),
+    ]
     rgn_smpln = [
         random_sampler(n_samples=int(max_size * 0.005)),
         random_sampler(n_samples=int(max_size * 0.01)),
@@ -49,7 +56,7 @@ if __name__ == "__main__":
         partial(lazy_greed, K=int(max_size * 0.15), batch_size=64),
         partial(lazy_greed, K=int(max_size * 0.25), batch_size=64),
     ]
-    smpln = rgn_smpln + lazy_smpln
+    smpln = rgn_smpln + lazy_smpln + craig_smpln
     nursery = BaseExperiment(
         dataset, model=XGBClassifier, lbl_name=tgt_name, repeat=REPEAT
     )

@@ -8,7 +8,13 @@ from sklearn.metrics import mean_squared_error
 from sklearn.impute import SimpleImputer
 
 from coreset.environ import load_config
-from coreset.utils import random_sampler, hash_encoding, transform_fn, oht_coding
+from coreset.utils import (
+    random_sampler,
+    hash_encoding,
+    transform_fn,
+    oht_coding,
+    craig_baseline,
+)
 from coreset.lazzy_greed import lazy_greed
 from coreset.evaluator import BaseExperiment, REPEAT
 
@@ -46,6 +52,13 @@ dataset = clean_cols(dataset, "in_deezer_playlists", "in_shazam_charts", "stream
 
 if __name__ == "__main__":
     # sampling strategies
+    craig_smpln = [
+        craig_baseline(0.05),
+        craig_baseline(0.10),
+        craig_baseline(0.15),
+        craig_baseline(0.25),
+        craig_baseline(0.50),
+    ]
     rgn_smpln = [
         random_sampler(n_samples=int(max_size * 0.05)),
         random_sampler(n_samples=int(max_size * 0.10)),
@@ -60,7 +73,16 @@ if __name__ == "__main__":
         partial(lazy_greed, K=int(max_size * 0.25), metric="codist"),
         partial(lazy_greed, K=int(max_size * 0.50), metric="codist"),
     ]
-    smpln = rgn_smpln + lazy_smpln
+    smpln = rgn_smpln + lazy_smpln + craig_smpln
+
+    smpln = [
+        craig_baseline(0.05),
+        craig_baseline(0.10),
+        craig_baseline(0.15),
+        craig_baseline(0.25),
+        craig_baseline(0.50),
+    ]
+
     spotify = BaseExperiment(
         dataset, model=XGBRFRegressor, lbl_name=tgt_name, repeat=REPEAT
     )
