@@ -1,12 +1,16 @@
 #/bin/bash
 
 ##########    CRAIG BASELINE    ##########
-# git clone https://github.com/baharanm/craig.git
 
 
 # echo '[TESTING]';
 
 # poetry run pytest --no-header -v
+
+if [ ! -d "coreset/craig" ];
+then
+    git clone https://github.com/baharanm/craig.git
+fi
 
 if [ $? = 0 ] 
 then
