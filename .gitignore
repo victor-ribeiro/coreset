@@ -170,3 +170,4 @@ data/
 *.csv
 
 craig/
+run_pipe.sh

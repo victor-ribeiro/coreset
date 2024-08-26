@@ -33,13 +33,13 @@ do
     fi
 done
 
-if [ -f data.tar.gz  ];
-then
-    echo unpacking data
-    # tar -xvf data.tar.gz data
-else
-    tar -cvf data.tar.gz data
-fi
+# if [ -f data.tar.gz  ];
+# then
+#     echo unpacking data
+#     # tar -xvf data.tar.gz data
+# else
+#     tar -cvf data.tar.gz data
+# fi
 
 # for folder in $(ls experiments);
 # do
@@ -50,8 +50,8 @@ fi
 
 # poetry run python experiments/nursery
 
-scp -r data.tar.gz vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/coreset/data/data.tar.gz
-rm data.tar.gz
+# scp -r data.tar.gz vicorr@fatnode.dexl.lncc.br:/home/vicorr/tese/coreset/data/data.tar.gz
+# rm data.tar.gz
 
 # export POETRY_DOTENV_LOCATION=.env && poetry run python experiments/adult.py
 
