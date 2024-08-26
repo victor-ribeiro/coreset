@@ -33,7 +33,7 @@ if [ -f data.tar.gz  ];
 then
     echo unpacking data
     # tar -xvf data.tar.gz data
-else;
+else
     tar -cvf data.tar.gz data
 fi
 
