@@ -17,10 +17,10 @@ from .craig.lazy_greedy import FacilityLocation, lazy_greedy_heap
 def timeit(f_):
     @wraps(f_)
     def inner(*args, **kwargs):
+        print(f"[RUNNING] {f_.__name__} :: {end - start:.4f}.S")
         start = datetime.now().timestamp()
         out = f_(*args, **kwargs)
         end = datetime.now().timestamp()
-        print(f"[RUNNING] {f_.__name__} :: {end - start:.4f}.S")
         return out
 
     return inner
