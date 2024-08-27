@@ -117,7 +117,3 @@ def craig_baseline(sample):
         return np.array(sset_idx).reshape(1, -1)[0]
 
     return _inner
-
-
-def kmeans_baseline():
-    pass
