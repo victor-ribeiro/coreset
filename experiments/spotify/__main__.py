@@ -1,17 +1,15 @@
 import pandas as pd
 from functools import partial
 from xgboost import XGBRFRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import maxabs_scale, normalize, minmax_scale
-from sklearn.manifold import TSNE
+from sklearn.preprocessing import maxabs_scale
 from sklearn.metrics import mean_squared_error
 from sklearn.impute import SimpleImputer
 
 from coreset.environ import load_config
+from coreset.kmeans import kmeans_sampler
 from coreset.utils import (
     random_sampler,
     hash_encoding,
-    transform_fn,
     oht_coding,
     craig_baseline,
 )
@@ -52,30 +50,22 @@ dataset = clean_cols(dataset, "in_deezer_playlists", "in_shazam_charts", "stream
 
 if __name__ == "__main__":
     # sampling strategies
-    craig_smpln = [
-        craig_baseline(0.05),
-        craig_baseline(0.10),
-        craig_baseline(0.15),
-        craig_baseline(0.25),
-        craig_baseline(0.50),
-    ]
-    rgn_smpln = [
-        random_sampler(n_samples=int(max_size * 0.05)),
-        random_sampler(n_samples=int(max_size * 0.10)),
-        random_sampler(n_samples=int(max_size * 0.15)),
-        random_sampler(n_samples=int(max_size * 0.25)),
-        random_sampler(n_samples=int(max_size * 0.50)),
-    ]
-    lazy_smpln = [
+    smpln = [
         partial(lazy_greed, K=int(max_size * 0.05), metric="codist"),
         partial(lazy_greed, K=int(max_size * 0.10), metric="codist"),
         partial(lazy_greed, K=int(max_size * 0.15), metric="codist"),
         partial(lazy_greed, K=int(max_size * 0.25), metric="codist"),
         partial(lazy_greed, K=int(max_size * 0.50), metric="codist"),
-    ]
-    smpln = rgn_smpln + lazy_smpln + craig_smpln
-
-    smpln = [
+        random_sampler(n_samples=int(max_size * 0.05)),
+        random_sampler(n_samples=int(max_size * 0.10)),
+        random_sampler(n_samples=int(max_size * 0.15)),
+        random_sampler(n_samples=int(max_size * 0.25)),
+        random_sampler(n_samples=int(max_size * 0.50)),
+        kmeans_sampler(K=int(max_size * 0.05)),
+        kmeans_sampler(K=int(max_size * 0.10)),
+        kmeans_sampler(K=int(max_size * 0.15)),
+        kmeans_sampler(K=int(max_size * 0.25)),
+        kmeans_sampler(K=int(max_size * 0.50)),
         craig_baseline(0.05),
         craig_baseline(0.10),
         craig_baseline(0.15),
