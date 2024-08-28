@@ -33,11 +33,11 @@ dataset[tgt_name] = LabelEncoder().fit_transform(dataset[tgt_name]).astype(int)
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(lazy_greed, K=int(max_size * 0.05), metric="codist"),
-        partial(lazy_greed, K=int(max_size * 0.10), metric="codist"),
-        partial(lazy_greed, K=int(max_size * 0.15), metric="codist"),
-        partial(lazy_greed, K=int(max_size * 0.25), metric="codist"),
-        partial(lazy_greed, K=int(max_size * 0.50), metric="codist"),
+        partial(lazy_greed, K=int(max_size * 0.05), batch_size=1024),
+        partial(lazy_greed, K=int(max_size * 0.10), batch_size=1024),
+        partial(lazy_greed, K=int(max_size * 0.15), batch_size=1024),
+        partial(lazy_greed, K=int(max_size * 0.25), batch_size=1024),
+        partial(lazy_greed, K=int(max_size * 0.50), batch_size=1024),
         random_sampler(n_samples=int(max_size * 0.05)),
         random_sampler(n_samples=int(max_size * 0.10)),
         random_sampler(n_samples=int(max_size * 0.15)),

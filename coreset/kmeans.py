@@ -1,7 +1,9 @@
+import numpy as np
 from sklearn.cluster import BisectingKMeans
 from sklearn.metrics import pairwise_distances
 from sklearn.datasets import make_blobs, make_classification
-import numpy as np
+from functools import wraps
+from coreset.utils import timeit
 
 
 @lambda _: _()
@@ -35,6 +37,8 @@ def _n_cluster(dataset, alpha=1, max_iter=100, tol=10e-2):
 
 
 def kmeans_sampler(K, alpha=1, tol=10e-3, max_iter=300):
+    @timeit
+    @wraps(kmeans_sampler)
     def inner(dataset):
         clusters = _n_cluster(dataset, alpha, max_iter, tol)
         dist = pairwise_distances(clusters, dataset).mean(axis=0)
