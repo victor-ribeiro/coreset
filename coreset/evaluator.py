@@ -4,7 +4,7 @@ import pandas as pd
 from coreset.dataset.transform import pipeline
 from coreset.utils import split_dataset
 
-REPEAT = 1
+REPEAT = 50
 
 
 class BaseExperiment:
