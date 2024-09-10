@@ -19,21 +19,17 @@ def _register(fn):
 
 
 def pdist(dataset, metric="euclidean", batch_size=1):
-    yield from (
-        pairwise_distances(batch, dataset, metric=metric)
-        for batch in batched(dataset, batch_size)
-    )
+    return pairwise_distances(dataset, metric=metric)
 
 
 def codist(dataset, batch_size=1):
-    yield from (
-        pairwise_distances(batch, dataset, metric="cosine")
-        for batch in batched(dataset, batch_size)
-    )
+    return pairwise_distances(dataset, dataset, metric="cosine")
 
 
 def similarity(dataset, metric="euclidean", batch_size=1):
-    yield from (d.max() - d for d in pdist(dataset, metric, batch_size))
+    # yield from (d.max() - d for d in pdist(dataset, metric, batch_size))
+    d = pdist(dataset, metric, batch_size)
+    return d.max() - d
 
 
 _register(pdist)

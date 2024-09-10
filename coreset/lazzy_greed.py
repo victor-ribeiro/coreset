@@ -64,27 +64,25 @@ def lazy_greed(
 ):
     # basic config
     base_inc = base_inc(alpha)
-    argmax = np.zeros(len(dataset))
     idx = np.arange(len(dataset))
     score = 0
     q = Queue()
     sset = []
     vals = []
-
-    for D, V in zip(
-        METRICS[metric](dataset, batch_size=batch_size),
+    for ds, V in zip(
+        batched(dataset, batch_size),
         batched(idx, batch_size),
     ):
+        D = METRICS[metric](ds, batch_size=batch_size)
         size = len(D)
-        [q.push(base_inc, idx) for idx in zip(V, range(size))]
-        while q and len(sset) <= K:
+        argmax = np.zeros(size)
+        [q.push(base_inc, i) for i in zip(V, range(size))]
+        while q and len(sset) < K:
             _, idx_s = q.head
-            s = D[idx_s[1]]
+            s = D[:, idx_s[1]]
             score_s = utility_score(s, argmax, alpha=alpha, reduce=reduce_fn)
             inc = score_s - score
-            if inc < 0:
-                continue
-            if not q:
+            if (inc < 0) or (not q):
                 break
             score_t, idx_t = q.head
             if inc > score_t:
@@ -92,6 +90,7 @@ def lazy_greed(
                 score = utility_score(s, argmax, alpha=alpha, reduce=reduce_fn)
                 sset.append(idx_s[0])
                 vals.append(score)
-                q.push(score_t, idx_t)
-            q.push(inc, idx_s)
+                q.push(score, idx_t)
+            else:
+                q.push(inc - score, idx_s)
     return sset

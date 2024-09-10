@@ -1,6 +1,7 @@
 import pandas as pd
 from functools import partial
 from xgboost import XGBClassifier
+
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score
 
@@ -10,6 +11,7 @@ from coreset.lazzy_greed import lazy_greed
 from coreset.kmeans import kmeans_sampler
 from coreset.evaluator import BaseExperiment, REPEAT
 
+import matplotlib.pyplot as plt
 
 outfile, DATA_HOME, names, tgt_name = load_config()
 dataset = pd.read_csv(DATA_HOME, engine="pyarrow", names=names)
@@ -33,30 +35,20 @@ dataset[tgt_name] = LabelEncoder().fit_transform(dataset[tgt_name]).astype(int)
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(lazy_greed, K=int(max_size * 0.05), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.10), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.15), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.25), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.50), batch_size=1024),
+        partial(lazy_greed, K=int(max_size * 0.05), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.10), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.15), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.25), batch_size=256),
         random_sampler(n_samples=int(max_size * 0.05)),
         random_sampler(n_samples=int(max_size * 0.10)),
         random_sampler(n_samples=int(max_size * 0.15)),
         random_sampler(n_samples=int(max_size * 0.25)),
-        random_sampler(n_samples=int(max_size * 0.50)),
-        kmeans_sampler(K=int(max_size * 0.05)),
-        kmeans_sampler(K=int(max_size * 0.10)),
-        kmeans_sampler(K=int(max_size * 0.15)),
-        kmeans_sampler(K=int(max_size * 0.25)),
-        kmeans_sampler(K=int(max_size * 0.50)),
         craig_baseline(0.05),
         craig_baseline(0.10),
         craig_baseline(0.15),
         craig_baseline(0.25),
-        craig_baseline(0.50),
     ]
-    nursery = BaseExperiment(
-        dataset, model=XGBClassifier, lbl_name=tgt_name, repeat=REPEAT
-    )
+    nursery = BaseExperiment(dataset, model=XGBClassifier, lbl_name=tgt_name, repeat=1)
 
     nursery.register_preprocessing(
         hash_encoding("parents", "has_nurs", "form", n_features=10),
@@ -71,5 +63,5 @@ if __name__ == "__main__":
 
     for sampler in smpln:
         nursery(sampler=sampler)
-    result = nursery()  # base de comparação
+    result = nursery.metrics  # base de comparação
     result.to_csv(outfile, index=False)

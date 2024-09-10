@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from functools import partial
-from xgboost import XGBRFClassifier
+from xgboost import XGBClassifier
 
 
 from sklearn.metrics import precision_score, f1_score, recall_score
@@ -25,35 +25,24 @@ max_size = len(data) * 0.8
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(lazy_greed, K=int(max_size * 0.05), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.10), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.15), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.25), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.50), batch_size=1024),
+        partial(lazy_greed, K=int(max_size * 0.05)),
         random_sampler(n_samples=int(max_size * 0.05)),
-        random_sampler(n_samples=int(max_size * 0.10)),
-        random_sampler(n_samples=int(max_size * 0.15)),
-        random_sampler(n_samples=int(max_size * 0.25)),
-        random_sampler(n_samples=int(max_size * 0.50)),
         kmeans_sampler(K=int(max_size * 0.05)),
-        kmeans_sampler(K=int(max_size * 0.10)),
-        kmeans_sampler(K=int(max_size * 0.15)),
-        kmeans_sampler(K=int(max_size * 0.25)),
-        kmeans_sampler(K=int(max_size * 0.50)),
         craig_baseline(0.05),
-        craig_baseline(0.10),
-        craig_baseline(0.15),
-        craig_baseline(0.25),
-        craig_baseline(0.50),
     ]
 
     adult = BaseExperiment(
-        data, model=XGBRFClassifier, lbl_name=tgt_name, repeat=REPEAT
+        data,
+        model=XGBClassifier,
+        lbl_name=tgt_name,
+        # repeat=REPEAT,
+        repeat=1,
+        task="binary_classification",
     )
 
     adult.register_preprocessing(
         hash_encoding(
-            "native-country", "occupation", "marital-status", "fnlwgt", n_features=15
+            "native-country", "occupation", "marital-status", "fnlwgt", n_features=3
         ),
         oht_coding("sex", "education", "race", "relationship", "workclass"),
     )
@@ -67,4 +56,12 @@ if __name__ == "__main__":
     for sampler in smpln:
         adult(sampler=sampler)
     result = adult()  # base de comparação
+
+    hist = adult.parse_train_curve()
+    hist = hist.melt(["sampler", "sample_size"])
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    sns.lineplot(data=hist, x="variable", y="value", hue="sampler")
+    plt.show()
     result.to_csv(outfile, index=False)
