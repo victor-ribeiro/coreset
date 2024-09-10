@@ -35,20 +35,34 @@ dataset[tgt_name] = LabelEncoder().fit_transform(dataset[tgt_name]).astype(int)
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
+        partial(lazy_greed, K=int(max_size * 0.01), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.02), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.03), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.04), batch_size=256),
         partial(lazy_greed, K=int(max_size * 0.05), batch_size=256),
         partial(lazy_greed, K=int(max_size * 0.10), batch_size=256),
         partial(lazy_greed, K=int(max_size * 0.15), batch_size=256),
         partial(lazy_greed, K=int(max_size * 0.25), batch_size=256),
+        random_sampler(n_samples=int(max_size * 0.01)),
+        random_sampler(n_samples=int(max_size * 0.02)),
+        random_sampler(n_samples=int(max_size * 0.03)),
+        random_sampler(n_samples=int(max_size * 0.04)),
         random_sampler(n_samples=int(max_size * 0.05)),
         random_sampler(n_samples=int(max_size * 0.10)),
         random_sampler(n_samples=int(max_size * 0.15)),
         random_sampler(n_samples=int(max_size * 0.25)),
+        craig_baseline(0.01),
+        craig_baseline(0.02),
+        craig_baseline(0.03),
+        craig_baseline(0.04),
         craig_baseline(0.05),
         craig_baseline(0.10),
         craig_baseline(0.15),
         craig_baseline(0.25),
     ]
-    nursery = BaseExperiment(dataset, model=XGBClassifier, lbl_name=tgt_name, repeat=1)
+    nursery = BaseExperiment(
+        dataset, model=XGBClassifier, lbl_name=tgt_name, repeat=REPEAT
+    )
 
     nursery.register_preprocessing(
         hash_encoding("parents", "has_nurs", "form", n_features=10),
@@ -61,6 +75,7 @@ if __name__ == "__main__":
         partial(f1_score, average="macro"),
     )
 
+    nursery()
     for sampler in smpln:
         nursery(sampler=sampler)
     result = nursery.metrics  # base de comparação
