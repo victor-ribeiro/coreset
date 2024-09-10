@@ -24,6 +24,7 @@ class ExperimentTemplate:
         "_metrics",
         "result",
         "repeat",
+        "epochs",
     )
 
     def __init__(self, data, model, lbl_name, repeat=1, epochs=30) -> None:
@@ -34,6 +35,7 @@ class ExperimentTemplate:
         self.preprocessing = []
         self._metrics = []
         self.result = []
+        self.epochs = epochs
 
     def __call__(self, sampler=None) -> Any:
         pass
@@ -96,7 +98,7 @@ class TrainCurve(ExperimentTemplate):
 
     def __init__(self, data, model, lbl_name, task, repeat=1, epochs=30) -> None:
         super().__init__(data, model, lbl_name, repeat, epochs)
-        self.hist = {}
+        self.hist = []
         self.eval_metric = TASKS[task]
 
     def __call__(self, sampler=None) -> Any:
@@ -141,15 +143,17 @@ class TrainCurve(ExperimentTemplate):
                     result["metric"] = metric.func.__name__
                 result["value"] = metric(y_test, pred)
                 self.result.append(result)
-
-            self.hist[f"{result[f'sampler']}_{len(X_train)}"] = model.evals_result()[
-                "validation_0"
-            ][model.eval_metric]
+            hist = {
+                f"{result[f'sampler']}_{len(X_train)}": model.evals_result()[
+                    "validation_0"
+                ][model.eval_metric]
+            }
+            self.hist.append(hist)
 
     @property
     def history(self):
         hist = pd.DataFrame.from_records(self.hist).T
-        hist.columns = range(1, 31)
+        hist.columns = range(1, self.epochs)
         hist["sampler"] = hist.index
         hist.index = range(len(hist))
 
