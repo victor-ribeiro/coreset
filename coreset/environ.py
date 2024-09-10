@@ -31,8 +31,8 @@ def load_config():
     xp_cfg, ds_cfg = parser["experiment.config"], parser["dataset.info"]
     out_pth = Path(RESULTS_HOME, name)
     outfile = Path(out_pth, xp_cfg["output"])
-    # if not out_pth.exists():
-    #     out_pth.mkdir(parents=True, exist_ok=True, mode=777)
+    if not out_pth.exists():
+        out_pth.mkdir(parents=True, exist_ok=True, mode=777)
 
     data_file = Path(DATA_HOME, name, ds_cfg["file_name"])
     columns = (
