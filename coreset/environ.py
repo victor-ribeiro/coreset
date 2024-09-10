@@ -25,7 +25,7 @@ def load_config():
     name = curdir.name
     cfg_file = Path(curdir, "config.ini")
     parser = ConfigParser()
-    with open(cfg_file) as cfg:
+    with open(cfg_file, mode="r") as cfg:
         parser.read_file(cfg)
     print(curdir)
     xp_cfg, ds_cfg = parser["experiment.config"], parser["dataset.info"]
