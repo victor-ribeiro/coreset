@@ -32,7 +32,7 @@ def load_config():
     out_pth = Path(RESULTS_HOME, name)
     outfile = Path(out_pth, xp_cfg["output"])
     if not out_pth.exists():
-        out_pth.mkdir(parents=True)
+        out_pth.mkdir(parents=True, exist_ok=True, mode=777)
 
     data_file = Path(DATA_HOME, name, ds_cfg["file_name"])
     columns = (
