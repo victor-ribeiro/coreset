@@ -51,58 +51,6 @@ def utility_score(e, sset, /, alpha=1, reduce="mean"):
     return norm * math.log(1 + REDUCE[reduce](argmax) * f_norm)
 
 
-# @timeit
-# def lazy_greed(
-#     dataset,
-#     base_inc=base_inc,
-#     alpha=1,
-#     metric="similarity",
-#     K=1,
-#     reduce_fn="sum",
-#     batch_size=32,
-# ):
-#     # basic config
-#     base_inc = base_inc(alpha)
-#     idx = np.arange(len(dataset))
-#     # argmax = np.zeros(batch_size)
-#     q = Queue()
-#     sset = []
-#     vals = []
-#     alphas = []
-#     for ds, V in zip(
-#         batched(dataset, batch_size),
-#         batched(idx, batch_size),
-#     ):
-#         D = METRICS[metric](ds, batch_size=batch_size)
-#         size = len(D)
-#         argmax = D.mean(axis=0)
-#         [q.push(base_inc, i) for i in zip(V, range(size))]
-#         while q and len(sset) < K:
-#             score, idx_s = q.head
-#             s = D[:, idx_s[1]]
-#             score_s = utility_score(s, argmax, alpha=alpha, reduce=reduce_fn)
-#             inc = score_s - score
-#             if (inc < 0) or (not q):
-#                 break
-#             score_t, idx_t = q.head
-#             t = D[:, idx_t[1]]
-#             if inc > score_t:
-#                 argmax = np.maximum(argmax, s)
-#                 score = utility_score(s, argmax, alpha=alpha, reduce=reduce_fn)
-#                 sset.append(idx_s[0])
-#                 vals.append(score)
-#                 q.push(score, idx_t)
-#                 if len(vals) <= 2:
-#                     alphas.append(alpha)
-#                     continue
-#                 alpha += base_inc * math.log(1 + np.dot(argmax, s))
-#                 alphas.append(alpha)
-#             else:
-#                 q.push(inc - score, idx_s)
-#                 alpha += base_inc * math.log(1 + np.dot(argmax, t))
-#                 alphas.append(alpha)
-
-
 @timeit
 def lazy_greed(
     dataset,
@@ -116,7 +64,6 @@ def lazy_greed(
     # basic config
     base_inc = base_inc(alpha)
     idx = np.arange(len(dataset))
-    # argmax = np.zeros(batch_size)
     q = Queue()
     sset = []
     vals = []
@@ -141,15 +88,10 @@ def lazy_greed(
                 argmax = np.maximum(argmax, s)
                 score = utility_score(
                     s, argmax, alpha=alpha, reduce=reduce_fn
-                ) * np.dot(argmax, s)
+                ) / np.linalg.norm(argmax - s)
                 sset.append(idx_s[0])
                 vals.append(score)
                 q.push(inc, idx_t)
-                if len(vals) <= 2:
-                    alphas.append(alpha)
-                    continue
-                alphas.append(alpha)
             else:
                 q.push(inc, idx_s)
-            # q.push(inc - score, idx_t)
-    return sset
+    return np.array(sset)
