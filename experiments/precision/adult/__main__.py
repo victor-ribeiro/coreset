@@ -25,14 +25,22 @@ max_size = len(data) * 0.8
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(lazy_greed, K=int(max_size * 0.01), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.02), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.03), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.04), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.05), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.10), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.15), batch_size=1024),
-        partial(lazy_greed, K=int(max_size * 0.25), batch_size=1024),
+        partial(lazy_greed, K=int(max_size * 0.01), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.02), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.03), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.04), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.05), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.10), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.15), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.25), batch_size=256),
+        kmeans_sampler(K=int(max_size * 0.01)),
+        kmeans_sampler(K=int(max_size * 0.02)),
+        kmeans_sampler(K=int(max_size * 0.03)),
+        kmeans_sampler(K=int(max_size * 0.04)),
+        kmeans_sampler(K=int(max_size * 0.05)),
+        kmeans_sampler(K=int(max_size * 0.10)),
+        kmeans_sampler(K=int(max_size * 0.15)),
+        kmeans_sampler(K=int(max_size * 0.25)),
         random_sampler(n_samples=int(max_size * 0.01)),
         random_sampler(n_samples=int(max_size * 0.02)),
         random_sampler(n_samples=int(max_size * 0.03)),
@@ -41,21 +49,21 @@ if __name__ == "__main__":
         random_sampler(n_samples=int(max_size * 0.10)),
         random_sampler(n_samples=int(max_size * 0.15)),
         random_sampler(n_samples=int(max_size * 0.25)),
-        craig_baseline(0.01),
-        craig_baseline(0.02),
-        craig_baseline(0.03),
-        craig_baseline(0.04),
-        craig_baseline(0.05),
-        craig_baseline(0.10),
-        craig_baseline(0.15),
-        craig_baseline(0.25),
+        # craig_baseline(0.01),
+        # craig_baseline(0.02),
+        # craig_baseline(0.03),
+        # craig_baseline(0.04),
+        # craig_baseline(0.05),
+        # craig_baseline(0.10),
+        # craig_baseline(0.15),
+        # craig_baseline(0.25),
     ]
 
     adult = BaseExperiment(data, model=XGBClassifier, lbl_name=tgt_name, repeat=REPEAT)
 
     adult.register_preprocessing(
         hash_encoding(
-            "native-country", "occupation", "marital-status", "fnlwgt", n_features=10
+            "native-country", "occupation", "marital-status", "fnlwgt", n_features=5
         ),
         oht_coding("sex", "education", "race", "relationship", "workclass"),
     )

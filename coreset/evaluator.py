@@ -6,12 +6,12 @@ from coreset.utils import split_dataset
 
 import matplotlib.pyplot as plt
 
-REPEAT = 50
+REPEAT = 10
 
 TASKS = {
     "binary_classification": "logloss",
-    # "mlabel_classification": "mlogloss",
-    "mlabel_classification": "merror",
+    "mlabel_classification": "mlogloss",
+    # "mlabel_classification": "merror",
     "regression": "rmmse",
 }
 
@@ -65,7 +65,7 @@ class BaseExperiment(ExperimentTemplate):
         )
         for _ in range(self.repeat):
             data = self._data
-            model = self.model()
+            model = self.model(enable_categorical=True)
             (X_train, y_train), (X_test, y_test) = preprocessing(data)
             n_samples = len(X_train)
             if sampler:
