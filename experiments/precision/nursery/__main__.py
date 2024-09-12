@@ -9,7 +9,7 @@ from coreset.environ import load_config
 from coreset.utils import random_sampler, hash_encoding, transform_fn, craig_baseline
 from coreset.lazzy_greed import lazy_greed
 from coreset.kmeans import kmeans_sampler
-from coreset.evaluator import BaseExperiment, REPEAT
+from coreset.evaluator import BaseExperiment, TrainCurve, REPEAT
 
 import matplotlib.pyplot as plt
 
@@ -27,6 +27,7 @@ def encoding(dataset, *columns):
 
 
 dataset["children"] = dataset["children"].map({"1": 1, "2": 2, "3": 3, "more": 4})
+print(dataset.shape)
 dataset[tgt_name] = dataset[tgt_name].map(
     lambda x: "recommend" if x == "very_recom" or x == "priority" else x
 )

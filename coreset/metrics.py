@@ -23,7 +23,8 @@ def pdist(dataset, metric="euclidean", batch_size=1):
 
 
 def codist(dataset, batch_size=1):
-    return pairwise_distances(dataset, dataset, metric="cosine")
+    d = pairwise_distances(dataset, dataset, metric="cosine")
+    return d.max() - d
 
 
 def similarity(dataset, metric="euclidean", batch_size=1):

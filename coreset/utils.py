@@ -92,10 +92,14 @@ def random_sampler(n_samples):
     @timeit
     @wraps(random_sampler)
     def inner(data):
-
         size = len(data)
-        sset = range(size)
-        sset = random.choices(sset, k=n_samples)
+        ds_idx = np.arange(size, dtype=int)
+        sset = np.zeros(n_samples, dtype=int)
+        for i in range(n_samples):
+            idx = np.random.choice(ds_idx)
+            while idx in sset and not (idx == 0):
+                idx = np.random.choice(ds_idx)
+            sset[i] = idx
         return sset
 
     return inner
@@ -105,11 +109,10 @@ def craig_baseline(sample):
     @timeit
     @wraps(craig_baseline)
     def _inner(data):
-        # features = data.values  # .astype(np.float16)
-        features = data  # .astype(np.float16)
+        features = data.astype(np.float16)
         V = np.arange(len(features)).reshape(-1, 1)
-        # D = features.max() - pairwise_distances(features)
         D = pairwise_distances(features)
+        D = D.max() - D
         B = int(sample * len(V))
 
         locator = FacilityLocation(D=D, V=V)

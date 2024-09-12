@@ -10,7 +10,8 @@ REPEAT = 50
 
 TASKS = {
     "binary_classification": "logloss",
-    "mlabel_classification": "mlogloss",
+    # "mlabel_classification": "mlogloss",
+    "mlabel_classification": "merror",
     "regression": "rmmse",
 }
 
@@ -81,7 +82,7 @@ class BaseExperiment(ExperimentTemplate):
                     result["sampler"] = (
                         sampler.func.__name__ if sampler else "full_dataset"
                     )
-                except:
+                except Exception as e:
                     result["sampler"] = sampler.__name__ if sampler else "full_dataset"
                 result["sample_size"] = len(X_train)
                 result["train_size"] = n_samples
@@ -108,11 +109,13 @@ class TrainCurve(ExperimentTemplate):
         for _ in range(self.repeat):
             data = self._data
             model = self.model(
-                sampling_methos="gradient_based",
-                n_estimators=30,
+                # booster="dart",
+                # prune="prune",
+                # rate_drop=0.05,
+                # normalize_type="forest",
+                n_estimators=self.epochs,
                 eval_metric=self.eval_metric,
             )
-            # model = self.model(n_estimators=30, eval_metric="auc")
             (X_train, y_train), (X_test, y_test) = preprocessing(data)
             n_samples = len(X_train)
             if sampler:
@@ -125,40 +128,41 @@ class TrainCurve(ExperimentTemplate):
                 y_train,
                 eval_set=[(X_train, y_train), (X_test, y_test)],
             )
-            pred = model.predict(X_test)
+            try:
+                mthd_name = sampler.func.__name__ if sampler else "full_dataset"
+            except:
+                mthd_name = sampler.__name__ if sampler else "full_dataset"
 
-            for metric in self._metrics:
-                result = {}
-                try:
-                    result["sampler"] = (
-                        sampler.func.__name__ if sampler else "full_dataset"
-                    )
-                except:
-                    result["sampler"] = sampler.__name__ if sampler else "full_dataset"
-                result["sample_size"] = len(X_train)
-                result["train_size"] = n_samples
-                try:
-                    result["metric"] = metric.__name__
-                except:
-                    result["metric"] = metric.func.__name__
-                result["value"] = metric(y_test, pred)
-                self.result.append(result)
-            hist = {
-                f"{result[f'sampler']}_{len(X_train)}": model.evals_result()[
-                    "validation_0"
-                ][model.eval_metric]
-            }
-            self.hist.append(hist)
+            sample_size = len(X_train)
+            train_size = n_samples
+
+            self.result.append(
+                [
+                    mthd_name,
+                    "train",
+                    sample_size,
+                    train_size,
+                    *model.evals_result()["validation_0"][model.eval_metric],
+                ]
+            )
+            self.result.append(
+                [
+                    mthd_name,
+                    "test",
+                    sample_size,
+                    train_size,
+                    *model.evals_result()["validation_1"][model.eval_metric],
+                ]
+            )
 
     @property
     def history(self):
-        hist = pd.DataFrame.from_records(self.hist).T
-        hist.columns = range(1, self.epochs)
-        hist["sampler"] = hist.index
-        hist.index = range(len(hist))
-
-        hist["sampler"], hist["sample_size"] = (
-            hist["sampler"].str.extract("([a-zA-Z_]+)?([0-9]+)").values.T
-        )
-        hist["sampler"] = hist["sampler"].str.replace("_$", "", regex=True)
+        hist = pd.DataFrame(self.result)
+        hist.columns = [
+            "sampler",
+            "eval",
+            "sample_size",
+            "train_size",
+            *range(1, self.epochs + 1),
+        ]
         return hist
