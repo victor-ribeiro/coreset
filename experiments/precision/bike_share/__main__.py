@@ -3,7 +3,7 @@ from functools import partial
 from xgboost import XGBRegressor
 
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
-from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import mean_squared_error
 
 from coreset.environ import load_config
 from coreset.utils import (
@@ -57,6 +57,7 @@ dataset.drop(columns=["yr", "mnth", "hr", "dteday"], inplace=True)
 dataset = encoder(dataset)
 print(dataset.shape)
 
+# ver funções de transformação
 # dataset[["atemp", "temp", "hum", "windspeed"]] = normalize(
 #     dataset[["atemp", "temp", "hum", "windspeed"]]
 # )
@@ -64,67 +65,48 @@ print(dataset.shape)
 # dataset[["casual", "registered"]] = minmax_scale(dataset[["casual", "registered"]])
 
 
-experiment, val = train_test_split(dataset, test_size=0.2)
-y_val = val.pop(tgt_name)
-
-# s_ = craig_baseline(int(len(X_train) * 0.05))(X_train)
-# craig_model = regressor()
-# craig_model.fit(
-#     X_train.iloc[s_],
-#     y_train.iloc[s_],
-#     eval_set=[(X_train.iloc[s_], y_train.iloc[s_]), (val, y_val)],
-#     verbose=False,
-# )
-
-for _ in range(50):
-
-    X_train, X_test = train_test_split(experiment, test_size=0.3)
-    X_train.index = range(len(X_train))
-    X_test.index = range(len(X_test))
-
-    y_train = X_train.pop(tgt_name)
-    y_test = X_test.pop(tgt_name)
-
-    model = regressor()
-    model.fit(
-        X_train, y_train, eval_set=[(X_train, y_train), (val, y_val)], verbose=False
-    )
-    result = model.evals_result()
-
-    sset = lazy_greed(dataset.values, K=int(len(X_train) * 0.1))
-    X_sset = X_train.iloc[sset]
-    y_sset = y_train.iloc[sset]
-
-    sub_model = regressor()
-    sub_model.fit(
-        X_sset, y_sset, eval_set=[(X_sset, y_sset), (val, y_val)], verbose=False
-    )
-    plt.plot(
-        sub_model.evals_result()["validation_1"]["rmse"],
-        alpha=0.8,
-        marker="_",
-        c="g",
-        linewidth=0,
+if __name__ == "__main__":
+    # sampling strategies
+    smpln = [
+        partial(lazy_greed, K=int(max_size * 0.01), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.02), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.03), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.04), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.05), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.10), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.15), batch_size=256),
+        partial(lazy_greed, K=int(max_size * 0.25), batch_size=256),
+        random_sampler(n_samples=int(max_size * 0.01)),
+        random_sampler(n_samples=int(max_size * 0.02)),
+        random_sampler(n_samples=int(max_size * 0.03)),
+        random_sampler(n_samples=int(max_size * 0.04)),
+        random_sampler(n_samples=int(max_size * 0.05)),
+        random_sampler(n_samples=int(max_size * 0.10)),
+        random_sampler(n_samples=int(max_size * 0.15)),
+        random_sampler(n_samples=int(max_size * 0.25)),
+        craig_baseline(0.01),
+        craig_baseline(0.02),
+        craig_baseline(0.03),
+        craig_baseline(0.04),
+        craig_baseline(0.05),
+        craig_baseline(0.10),
+        craig_baseline(0.15),
+        craig_baseline(0.25),
+    ]
+    bike_share = BaseExperiment(
+        dataset, model=regressor, lbl_name=tgt_name, repeat=REPEAT
     )
 
-    r_sset = random_sampler(int(len(X_train) * 0.1))(X_train)
-    X_smp = X_train.iloc[r_sset]
-    y_smp = y_train.iloc[r_sset]
-
-    rand_model = regressor()
-    rand_model.fit(X_smp, y_smp, eval_set=[(X_smp, y_smp), (val, y_val)], verbose=False)
-    plt.plot(
-        rand_model.evals_result()["validation_1"]["rmse"],
-        alpha=0.4,
-        markersize=3,
-        marker="_",
-        linewidth=0,
-        c="r",
+    # ajustar aqui
+    bike_share.register_preprocessing(
+        hash_encoding("parents", "has_nurs", "form", n_features=10),
+        transform_fn(encoding, tgt_name, *names[4:]),
     )
 
+    bike_share.register_metrics(mean_squared_error)
 
-plt.plot(result["validation_1"]["rmse"], label="baseline", alpha=0.8)
-# plt.plot(craig_model.evals_result()["validation_1"]["rmse"], label="craig", marker="_")
-
-plt.legend()
-plt.show()
+    bike_share()  # base de comparação
+    for sampler in smpln:
+        bike_share(sampler=sampler)
+    result = bike_share.metrics
+    result.to_csv(outfile, index=False)
