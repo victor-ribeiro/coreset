@@ -80,7 +80,7 @@ def split_dataset(label, test_size=0.2):
     @wraps(split_dataset)
     def inner(dataset):
         train, test = train_test_split(
-            dataset.copy(), test_size=test_size, shuffle=True
+            dataset.copy(), test_size=test_size, shuffle=True, random_state=42
         )
         train_l, test_l = train.pop(label).values, test.pop(label).values
         return (train.values, train_l), (test.values, test_l)
@@ -94,13 +94,12 @@ def random_sampler(n_samples):
     def inner(data):
         size = len(data)
         ds_idx = np.arange(size, dtype=int)
-        sset = np.zeros(n_samples, dtype=int)
-        for i in range(n_samples):
+        sset = []
+        while len(sset) < n_samples:
             idx = np.random.choice(ds_idx)
-            while idx in sset and not (idx == 0):
-                idx = np.random.choice(ds_idx)
-            sset[i] = idx
-        return sset
+            if not idx in sset:
+                sset.append(idx)
+        return np.array(sset)
 
     return inner
 

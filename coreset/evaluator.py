@@ -12,7 +12,7 @@ TASKS = {
     "binary_classification": "logloss",
     "mlabel_classification": "mlogloss",
     # "mlabel_classification": "merror",
-    "regression": "rmmse",
+    "regression": "rmse",
 }
 
 
@@ -108,14 +108,7 @@ class TrainCurve(ExperimentTemplate):
         )
         for _ in range(self.repeat):
             data = self._data
-            model = self.model(
-                # booster="dart",
-                # prune="prune",
-                # rate_drop=0.05,
-                # normalize_type="forest",
-                n_estimators=self.epochs,
-                eval_metric=self.eval_metric,
-            )
+            model = self.model(eval_metric=self.eval_metric)
             (X_train, y_train), (X_test, y_test) = preprocessing(data)
             n_samples = len(X_train)
             if sampler:
@@ -127,6 +120,7 @@ class TrainCurve(ExperimentTemplate):
                 X_train,
                 y_train,
                 eval_set=[(X_train, y_train), (X_test, y_test)],
+                verbose=False,
             )
             try:
                 mthd_name = sampler.func.__name__ if sampler else "full_dataset"
