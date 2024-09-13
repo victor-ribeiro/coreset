@@ -101,7 +101,12 @@ if __name__ == "__main__":
     ]
     bike_share = BaseExperiment(
         dataset,
-        model=partial(XGBRegressor, enable_categorical=True, n_estimators=30),
+        model=partial(
+            XGBRegressor,
+            enable_categorical=True,
+            grow_policy="lossguide",
+            n_estimators=30,
+        ),
         lbl_name=tgt_name,
         repeat=REPEAT,
     )

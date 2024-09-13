@@ -71,7 +71,12 @@ if __name__ == "__main__":
     ]
     nursery = BaseExperiment(
         dataset,
-        model=partial(XGBClassifier, enable_categorical=True, n_estimators=30),
+        model=partial(
+            XGBClassifier,
+            enable_categorical=True,
+            grow_policy="lossguide",
+            n_estimators=30,
+        ),
         lbl_name=tgt_name,
         repeat=REPEAT,
     )
