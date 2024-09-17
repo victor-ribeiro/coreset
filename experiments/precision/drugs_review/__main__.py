@@ -117,7 +117,8 @@ from nltk.stem.snowball import SnowballStemmer
 
 # from nltk.sem import
 
-from sklearn.feature_extraction.text import HashingVectorizer as vectorizer
+# from sklearn.feature_extraction.text import HashingVectorizer as vectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer as vectorizer
 from sklearn.metrics import classification_report
 from sklearn.preprocessing import normalize, minmax_scale, quantile_transform
 
@@ -151,14 +152,13 @@ data["date"] = OrdinalEncoder().fit_transform(data["date"].values.reshape(-1, 1)
 
 txt2vec = partial(
     vectorizer,
-    strip_accents="unicode",
-    # binary=True,
+    strip_accents="ascii",
+    binary=True,
     tokenizer=wordpunct_tokenize,
     lowercase=True,
 )
 
-review = data.pop("review").values
-review = map(lambda x: x.lower(), review)
+review = data.pop("review").str.lower().values
 review = map(wordpunct_tokenize, review)
 review = map(
     lambda tkns: filter(
@@ -169,21 +169,25 @@ review = map(
 review = map(lambda x: map(SnowballStemmer("porter").stem, x), review)
 review = map(list, review)
 review = map(lambda x: "".join(x).lower(), review)
-review = txt2vec(n_features=50).fit_transform(review).toarray()
+# review = txt2vec(n_features=30).fit_transform(review).toarray()
+review = vectorizer(strip_accents="ascii").fit_transform(review)
 
 condition = data["condition"].values
 condition = txt2vec(n_features=5).fit_transform(condition).toarray()
 
 dname = data["drugName"].values
-dname = txt2vec(n_features=5).fit_transform(dname).toarray()
+# dname = txt2vec(n_features=5).fit_transform(dname).toarray()
+dname = ()
 
 
-ds = np.vstack(
-    # (*review.T, *dname.T, *condition.T, data["usefulCount"].values, data["date"].values)
-    (*review.T, data["usefulCount"].values, data["date"].values)
-).T
+# ds = np.vstack(
+#     # (*review.T, *dname.T, *condition.T, data["usefulCount"].values, data["date"].values)
+#     (*review.T, data["usefulCount"].values, data["date"].values)
+# ).T
 
 # ds = quantile_transform(ds, output_distribution="normal")
+# ds = normalize(ds)
+ds = review
 
 
 # plt.scatter(*PCA(n_components=2).fit_transform(ds).T, c=tgt)
@@ -192,11 +196,11 @@ ds = np.vstack(
 X_train, X_test, y_train, y_test = train_test_split(ds, tgt, test_size=0.2)
 
 model = XGBClassifier(
-    max_depth=30,
-    subsample=0.5,
-    eta=0.02,
+    max_depth=100,
+    # subsample=0.8,
+    # eta=0.02,
+    # early_stopping_rounds=10,
     early_stopping_rounds=2,
-    objective="multi:softmax",
     n_estimators=2000,
     nthread=4,
 )
