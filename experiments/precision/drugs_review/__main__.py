@@ -97,6 +97,10 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 #     result = nursery.metrics  # base de comparação
 #     result.to_csv(outfile, index=False)
 
+import nltk
+
+nltk.download("stopwords")
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
