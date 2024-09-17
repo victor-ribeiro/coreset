@@ -108,7 +108,7 @@ def craig_baseline(sample):
     @timeit
     @wraps(craig_baseline)
     def _inner(data):
-        features = data.astype(np.float16)
+        features = data
         V = np.arange(len(features)).reshape(-1, 1)
         D = pairwise_distances(features)
         D = D.max() - D

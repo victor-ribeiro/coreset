@@ -64,6 +64,7 @@ def lazy_greed(
     # basic config
     base_inc = base_inc(alpha)
     idx = np.arange(len(dataset))
+    argmax = np.zeros(batch_size)
     q = Queue()
     sset = []
     vals = []
@@ -72,9 +73,11 @@ def lazy_greed(
         batched(dataset, batch_size),
         batched(idx, batch_size),
     ):
+        if len(ds) < batch_size:
+            break
         D = METRICS[metric](ds, batch_size=batch_size)
         size = len(D)
-        argmax = D.mean(axis=0)
+        argmax += D.mean(axis=0)
         [q.push(base_inc, i) for i in zip(V, range(size))]
         while q and len(sset) < K:
             score, idx_s = q.head

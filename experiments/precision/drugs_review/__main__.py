@@ -117,8 +117,7 @@ from nltk.stem.snowball import SnowballStemmer
 
 # from nltk.sem import
 
-# from sklearn.feature_extraction.text import HashingVectorizer as vectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer as vectorizer
+from sklearn.feature_extraction.text import HashingVectorizer as vectorizer
 from sklearn.metrics import classification_report
 from sklearn.preprocessing import normalize, minmax_scale, quantile_transform
 
@@ -153,7 +152,7 @@ data["date"] = OrdinalEncoder().fit_transform(data["date"].values.reshape(-1, 1)
 txt2vec = partial(
     vectorizer,
     strip_accents="ascii",
-    binary=True,
+    # binary=True,
     tokenizer=wordpunct_tokenize,
     lowercase=True,
 )
@@ -169,15 +168,17 @@ review = map(
 review = map(lambda x: map(SnowballStemmer("porter").stem, x), review)
 review = map(list, review)
 review = map(lambda x: "".join(x).lower(), review)
-# review = txt2vec(n_features=30).fit_transform(review).toarray()
-review = vectorizer(strip_accents="ascii").fit_transform(review)
+review = txt2vec(n_features=30).fit_transform(review).toarray()
 
-condition = data["condition"].values
-condition = txt2vec(n_features=5).fit_transform(condition).toarray()
+print(review)
+exit()
+# review = vectorizer(strip_accents="ascii").fit_transform(review)
 
-dname = data["drugName"].values
+# condition = data["condition"].values
+# condition = txt2vec(n_features=5).fit_transform(condition).toarray()
+
+# dname = data["drugName"].values
 # dname = txt2vec(n_features=5).fit_transform(dname).toarray()
-dname = ()
 
 
 # ds = np.vstack(
