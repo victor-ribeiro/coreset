@@ -89,9 +89,9 @@ def lazy_greed(
             score_t, idx_t = q.head
             if inc > score_t:
                 argmax = np.maximum(argmax, s)
-                score = utility_score(
-                    s, argmax, alpha=alpha, reduce=reduce_fn
-                ) / np.linalg.norm(argmax - s)
+                score = utility_score(s, argmax, alpha=alpha, reduce=reduce_fn) / (
+                    np.linalg.norm(argmax - s) + 1
+                )
                 sset.append(idx_s[0])
                 vals.append(score)
                 q.push(inc, idx_t)

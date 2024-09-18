@@ -59,13 +59,12 @@ class ExperimentTemplate:
 
 class BaseExperiment(ExperimentTemplate):
     def __call__(self, sampler=None) -> Any:
-        # colocar eval_metric como parametro
         preprocessing = pipeline(
             *self.preprocessing, split_dataset(label=self.lbl_name)
         )
         for _ in range(self.repeat):
             data = self._data
-            model = self.model(enable_categorical=True)
+            model = self.model()
             (X_train, y_train), (X_test, y_test) = preprocessing(data)
             n_samples = len(X_train)
             if sampler:

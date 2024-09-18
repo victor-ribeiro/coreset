@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from functools import partial
-from xgboost import XGBClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 
 from sklearn.metrics import precision_score, f1_score, recall_score
@@ -49,24 +49,19 @@ if __name__ == "__main__":
         random_sampler(n_samples=int(max_size * 0.10)),
         random_sampler(n_samples=int(max_size * 0.15)),
         random_sampler(n_samples=int(max_size * 0.25)),
-        craig_baseline(0.01),
-        craig_baseline(0.02),
-        craig_baseline(0.03),
-        craig_baseline(0.04),
-        craig_baseline(0.05),
-        craig_baseline(0.10),
-        craig_baseline(0.15),
-        craig_baseline(0.25),
+        # craig_baseline(0.01),
+        # craig_baseline(0.02),
+        # craig_baseline(0.03),
+        # craig_baseline(0.04),
+        # craig_baseline(0.05),
+        # craig_baseline(0.10),
+        # craig_baseline(0.15),
+        # craig_baseline(0.25),
     ]
 
     adult = BaseExperiment(
         data,
-        model=partial(
-            XGBClassifier,
-            enable_categorical=True,
-            grow_policy="lossguide",
-            n_estimators=30,
-        ),
+        model=RandomForestClassifier,
         lbl_name=tgt_name,
         repeat=REPEAT,
     )

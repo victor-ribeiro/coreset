@@ -2,7 +2,6 @@ import re
 import pandas as pd
 from datetime import datetime
 import numpy as np
-import random
 from functools import wraps
 from unidecode import unidecode
 
@@ -80,7 +79,7 @@ def split_dataset(label, test_size=0.2):
     @wraps(split_dataset)
     def inner(dataset):
         train, test = train_test_split(
-            dataset.copy(), test_size=test_size, shuffle=True, random_state=42
+            dataset.copy(), test_size=test_size, shuffle=True
         )
         train_l, test_l = train.pop(label).values, test.pop(label).values
         return (train.values, train_l), (test.values, test_l)
@@ -93,13 +92,10 @@ def random_sampler(n_samples):
     @wraps(random_sampler)
     def inner(data):
         size = len(data)
-        ds_idx = np.arange(size, dtype=int)
-        sset = []
-        while len(sset) < n_samples:
-            idx = np.random.choice(ds_idx)
-            if not idx in sset:
-                sset.append(idx)
-        return np.array(sset)
+
+        rng = np.random.default_rng([42, 84, 13])
+        sset = rng.integers(0, size, size=n_samples, dtype=int)
+        return sset
 
     return inner
 
