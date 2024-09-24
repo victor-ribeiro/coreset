@@ -116,7 +116,7 @@ import multiprocessing
 with open(DATA_HOME, "rb") as file:
     data = pickle.load(file)
 
-n_threads = multiprocessing.cpu_count()
+n_threads = multiprocessing.cpu_count() / 2
 min_df = 0.03
 max_df = 1 - min_df
 
@@ -125,7 +125,7 @@ X_train = CountVectorizer(
     # max_df=max_df,
     min_df=min_df,
     stop_words="english",
-    max_features=200,
+    max_features=500,
     # stop_words="english",
     # max_features=300,
 ).fit_transform(X_train)
