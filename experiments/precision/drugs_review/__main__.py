@@ -134,11 +134,11 @@ X_train, y_train = data["features"], data["target"]
 # X_train = CountVectorizer(
 #     max_df=max_df, min_df=min_df, stop_words="english", max_features=200
 # ).fit_transform(X_train)
-# X_train = map(word_tokenize, X_train)
 
+X_train = map(word_tokenize, X_train)
 X_train = (
-    # FeatureHasher(n_features=300, input_type="string").transform(X_train).toarray()
-    HashingVectorizer(n_features=300).fit_transform(X_train)
+    FeatureHasher(n_features=120, input_type="string").transform(X_train)
+    # HashingVectorizer(n_features=30, norm="l1").fit_transform(X_train)
 )
 
 X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
@@ -156,9 +156,9 @@ y_test = np.array(y_test)
 # plt.show()
 
 model = XGBClassifier(
-    # max_depth=10,
+    max_depth=10,
     early_stopping_rounds=2,
-    n_estimators=2000,
+    n_estimators=4000,
     device="gpu",
     nthread=n_threads,
 )
