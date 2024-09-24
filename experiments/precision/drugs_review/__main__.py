@@ -117,11 +117,11 @@ with open(DATA_HOME, "rb") as file:
     data = pickle.load(file)
 
 n_threads = int(multiprocessing.cpu_count() / 2)
-min_df = 0.03
+min_df = 0.01
 max_df = 1 - min_df
 
 X_train, y_train = data["features"], data["target"]
-X_train = CountVectorizer(
+X_train = TfidfVectorizer(
     max_df=max_df,
     min_df=min_df,
     stop_words="english",
