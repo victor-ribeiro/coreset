@@ -105,18 +105,11 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import (
-    TfidfVectorizer,
-    CountVectorizer,
-    FeatureHasher,
-    HashingVectorizer,
-)
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report
+from sklearn.preprocessing import LabelEncoder
 from xgboost import XGBClassifier
-from nltk.tokenize import word_tokenize
-import nltk
 
-nltk.download("punkt_tab")
 
 import multiprocessing
 
@@ -133,6 +126,10 @@ X_train = TfidfVectorizer(
     stop_words="english",
     max_features=300,
 ).fit_transform(X_train)
+
+y_train = np.array(y_train)
+y_train = LabelEncoder().fit_transform(y_train.reshape(-1, 1))
+
 # X_train = CountVectorizer(
 #     max_df=max_df, min_df=min_df, stop_words="english", max_features=200
 # ).fit_transform(X_train)
@@ -145,7 +142,6 @@ X_train = TfidfVectorizer(
 
 X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
 
-y_train = np.array(y_train)
 y_test = np.array(y_test)
 
 # import matplotlib.pyplot as plt
