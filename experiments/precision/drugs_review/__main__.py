@@ -114,6 +114,9 @@ from sklearn.feature_extraction.text import (
 from sklearn.metrics import classification_report
 from xgboost import XGBClassifier
 from nltk.tokenize import word_tokenize
+import nltk
+
+nltk.download("punkt_tab")
 
 import multiprocessing
 
