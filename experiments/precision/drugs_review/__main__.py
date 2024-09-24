@@ -159,7 +159,7 @@ model = XGBClassifier(
     # bosster="dart", # <- atual (petros)
     # eta=0.2,
     early_stopping_rounds=2,
-    n_estimators=500,
+    n_estimators=1000,
     device="gpu",
     nthread=n_threads,
 )
