@@ -97,121 +97,31 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 #     result = nursery.metrics  # base de comparação
 #     result.to_csv(outfile, index=False)
 
-# imports funcionam
-# import torch
-# from torch_utils.data import PandasDataset, CraigRandomDataset, CraigPandasDataset
-# from torch_utils.metrics import batched_euclidean
-# from torch_utils.tasks import TrainTask
-# from torch_utils.train import train, valid_train
-
-
-import nltk
-
-nltk.download("stopwords")
-
-import pandas as pd
-from sklearn.model_selection import train_test_split
-
-from nltk.corpus import stopwords
-from nltk.tokenize import (
-    RegexpTokenizer,
-    word_tokenize,
-    wordpunct_tokenize,
-    SyllableTokenizer,
-)
-
-from nltk.stem import PorterStemmer, RSLPStemmer
-from nltk.stem.snowball import SnowballStemmer
-
-# from nltk.sem import
-
-from sklearn.feature_extraction.text import HashingVectorizer as vectorizer
-from sklearn.metrics import classification_report
-from sklearn.preprocessing import normalize, minmax_scale, quantile_transform
-
-from xgboost import XGBClassifier, XGBRanker
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import OrdinalEncoder
-import matplotlib.pyplot as plt
+##### TODO
+## [ ] vetorizar
+## [ ] treinar modelo
+## [ ] template avaliação de precisão e curva de aprendizado
+## [ ] _make_dataset.py_ para a pasta data
+import pickle
 import numpy as np
-from functools import partial
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import classification_report
+from xgboost import XGBClassifier
 
-data = pd.read_csv(DATA_HOME, sep="\t", index_col=0)
-data.dropna(axis="index", inplace=True)
-data.date = pd.to_datetime(data.date)
-data["rating"] = data["rating"].map(lambda x: 0 if x <= 5 else 1)
-tgt = data.pop("rating").values.astype(int).reshape(-1, 1)
-
-tokenizer = RegexpTokenizer(r"\w+")
-
-stop_words = list(stopwords.words("english"))
-stop_words += ["i"]
+with open(DATA_HOME, "rb") as file:
+    data = pickle.load(file)
 
 
-for name in data["drugName"].unique():
-    stop_words += [name.lower()]
-for name in data["condition"].unique():
-    stop_words += [name.lower()]
+X_train, y_train = data["features"], data["target"]
+X_train = TfidfVectorizer().fit_transform(X_train)
 
-# 'drugName', 'condition', 'date', 'usefulCount'
-# review = (data.pop("review") + data.pop("condition")).values
-data["date"] = OrdinalEncoder().fit_transform(data["date"].values.reshape(-1, 1))
+X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
 
+y_train = np.array(y_train)
+y_test = np.array(y_test)
 
-txt2vec = partial(
-    vectorizer,
-    strip_accents="ascii",
-    binary=True,
-    tokenizer=wordpunct_tokenize,
-    lowercase=True,
-)
-
-
-review = data.pop("review").str.lower().values
-review = map(wordpunct_tokenize, review)
-review = map(
-    lambda tkns: filter(
-        lambda x: not x in stop_words and x.isalnum() and not x.isdigit(), tkns
-    ),
-    review,
-)
-review = map(lambda x: map(SnowballStemmer("porter").stem, x), review)
-review = map(list, review)
-review = map(lambda x: "".join(x).lower(), review)
-review = txt2vec(n_features=45).fit_transform(review).toarray()
-
-
-condition = data["condition"].values
-condition = txt2vec(n_features=5).fit_transform(condition).toarray()
-
-dname = data["drugName"].values
-dname = txt2vec(n_features=5).fit_transform(dname).toarray()
-
-
-ds = np.vstack(
-    # (*review.T, *dname.T, *condition.T, data["usefulCount"].values, data["date"].values)
-    (*review.T, data["usefulCount"].values, data["date"].values)
-).T
-
-ds = review
-ds = quantile_transform(ds, output_distribution="uniform")
-# ds = normalize(ds)
-
-
-# plt.scatter(*PCA(n_components=2).fit_transform(ds).T, c=tgt)
-# plt.show()
-# exit()
-X_train, X_test, y_train, y_test = train_test_split(ds, tgt, test_size=0.2)
-
-model = XGBClassifier(
-    max_depth=30,
-    # subsample=0.8,
-    # eta=0.02,
-    early_stopping_rounds=5,
-    n_estimators=2000,
-    nthread=4,
-)
-
+model = XGBClassifier(early_stopping_rounds=2, n_estimators=2000, nthread=4)
 model.fit(
     X_train,
     y_train,
@@ -220,4 +130,21 @@ model.fit(
 )
 
 pred = model.predict(X_test)
-print(classification_report(y_pred=pred, y_true=y_test))
+
+print(classification_report(y_true=y_test, y_pred=pred))
+
+
+# model = XGBClassifier(
+
+#     booster="dart",
+#     early_stopping_rounds=2,
+#     n_estimators=2000,
+#     nthread=4,
+#     grow_policy="lossguide",
+#     rate_drop=0.1,
+# )
+
+# # model.fit(X_train, y_train)
+
+# pred = model.predict(X_test)
+# print(classification_report(y_pred=pred, y_true=y_test))
