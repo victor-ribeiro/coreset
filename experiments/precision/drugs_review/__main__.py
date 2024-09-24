@@ -125,7 +125,7 @@ X_train = CountVectorizer(
     max_df=max_df,
     min_df=min_df,
     stop_words="english",
-    max_features=500,
+    # max_features=500,
 ).fit_transform(X_train)
 
 y_train = np.array(y_train)
