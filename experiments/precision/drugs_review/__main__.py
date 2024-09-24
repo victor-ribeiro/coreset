@@ -122,7 +122,7 @@ max_df = 1 - min_df
 
 X_train, y_train = data["features"], data["target"]
 X_train = CountVectorizer(
-    max_df=max_df,
+    # max_df=max_df,
     min_df=min_df,
     stop_words="english",
     max_features=200,
