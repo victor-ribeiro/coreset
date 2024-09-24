@@ -143,7 +143,9 @@ y_train = LabelEncoder().fit_transform(y_train.reshape(-1, 1))
 # HashingVectorizer(n_features=30, norm="l1").fit_transform(X_train)
 # )
 
-X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(
+    X_train, y_train, test_size=0.2, stratify=y_train
+)
 
 y_test = np.array(y_test)
 
