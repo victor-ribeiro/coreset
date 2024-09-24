@@ -116,7 +116,7 @@ import multiprocessing
 with open(DATA_HOME, "rb") as file:
     data = pickle.load(file)
 
-n_threads = multiprocessing.cpu_count() / 2
+n_threads = int(multiprocessing.cpu_count() / 2)
 min_df = 0.03
 max_df = 1 - min_df
 
