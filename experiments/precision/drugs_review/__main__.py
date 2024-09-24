@@ -121,7 +121,7 @@ X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 
-model = XGBClassifier(early_stopping_rounds=2, n_estimators=2000, nthread=4)
+model = XGBClassifier(early_stopping_rounds=2, n_estimators=2000, device="gpu")
 model.fit(
     X_train,
     y_train,
