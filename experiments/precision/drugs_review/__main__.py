@@ -105,23 +105,52 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import (
+    TfidfVectorizer,
+    CountVectorizer,
+    FeatureHasher,
+)
 from sklearn.metrics import classification_report
 from xgboost import XGBClassifier
+
+import multiprocessing
 
 with open(DATA_HOME, "rb") as file:
     data = pickle.load(file)
 
+n_threads = multiprocessing.cpu_count()
+min_df = 0.1
+max_df = 1 - min_df
 
 X_train, y_train = data["features"], data["target"]
-X_train = TfidfVectorizer().fit_transform(X_train)
+X_train = TfidfVectorizer(
+    max_df=max_df, min_df=min_df, stop_words="english", max_features=100
+).fit_transform(X_train)
+# X_train = CountVectorizer(binary=True).fit_transform(X_train)
 
 X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
 
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 
-model = XGBClassifier(early_stopping_rounds=2, n_estimators=2000, device="gpu")
+# import matplotlib.pyplot as plt
+# from sklearn.decomposition import PCA
+
+# x, y = PCA(n_components=2).fit_transform(X_train).T
+# plt.scatter(x, y, c=y_train)
+# plt.title(X_train.shape)
+# plt.show()
+
+model = XGBClassifier(
+    # max_depth=10,
+    early_stopping_rounds=2,
+    n_estimators=2000,
+    device="gpu",
+    nthread=n_threads,
+)
+
+print(f"[TRAINING] ntread: {n_threads} :: x_shape: {X_train.shape}")
+
 model.fit(
     X_train,
     y_train,
@@ -129,22 +158,8 @@ model.fit(
     eval_set=[(X_train, y_train), (X_test, y_test)],
 )
 
+print("[PREDICTING]")
+
 pred = model.predict(X_test)
 
 print(classification_report(y_true=y_test, y_pred=pred))
-
-
-# model = XGBClassifier(
-
-#     booster="dart",
-#     early_stopping_rounds=2,
-#     n_estimators=2000,
-#     nthread=4,
-#     grow_policy="lossguide",
-#     rate_drop=0.1,
-# )
-
-# # model.fit(X_train, y_train)
-
-# pred = model.predict(X_test)
-# print(classification_report(y_pred=pred, y_true=y_test))
