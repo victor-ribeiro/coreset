@@ -122,9 +122,12 @@ max_df = 1 - min_df
 
 X_train, y_train = data["features"], data["target"]
 X_train = CountVectorizer(
-    # max_df=max_df, min_df=min_df, stop_words="english", max_features=200
+    max_df=max_df,
+    min_df=min_df,
     stop_words="english",
-    max_features=300,
+    max_features=200,
+    # stop_words="english",
+    # max_features=300,
 ).fit_transform(X_train)
 
 y_train = np.array(y_train)
@@ -154,10 +157,6 @@ y_test = np.array(y_test)
 # plt.show()
 
 model = XGBClassifier(
-    # max_depth=10,
-    # max_depth=4,
-    # bosster="dart", # <- atual (petros)
-    # eta=0.2,
     early_stopping_rounds=2,
     n_estimators=1000,
     device="gpu",
