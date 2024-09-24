@@ -156,9 +156,10 @@ y_test = np.array(y_test)
 model = XGBClassifier(
     # max_depth=10,
     # max_depth=4,
+    bosster="dart",
     eta=0.2,
     early_stopping_rounds=2,
-    n_estimators=1000,
+    n_estimators=500,
     device="gpu",
     nthread=n_threads,
 )
