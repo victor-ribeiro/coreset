@@ -154,16 +154,13 @@ y_test = np.array(y_test)
 # plt.show()
 
 model = XGBClassifier(
-    objective="multi:softmax",
     # max_depth=10,
     # max_depth=4,
+    eta=0.2,
     early_stopping_rounds=2,
     n_estimators=1000,
     device="gpu",
     nthread=n_threads,
-    # eval_metric=["mlogloss", "merror"],
-    # eval_metric=["merror"],
-    eval_metric=["auc"],  # # -> atual
 )
 
 print(f"[TRAINING] ntread: {n_threads} :: x_shape: {X_train.shape}")
