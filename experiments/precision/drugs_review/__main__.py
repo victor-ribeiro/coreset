@@ -105,7 +105,7 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics import classification_report
 from sklearn.preprocessing import LabelEncoder
 from xgboost import XGBClassifier
@@ -121,7 +121,7 @@ min_df = 0.03
 max_df = 1 - min_df
 
 X_train, y_train = data["features"], data["target"]
-X_train = TfidfVectorizer(
+X_train = CountVectorizer(
     # max_df=max_df, min_df=min_df, stop_words="english", max_features=200
     stop_words="english",
     max_features=300,
@@ -156,8 +156,8 @@ y_test = np.array(y_test)
 model = XGBClassifier(
     # max_depth=10,
     # max_depth=4,
-    bosster="dart",
-    eta=0.2,
+    # bosster="dart", # <- atual (petros)
+    # eta=0.2,
     early_stopping_rounds=2,
     n_estimators=500,
     device="gpu",
