@@ -138,7 +138,7 @@ X_train, y_train = data["features"], data["target"]
 
 X_train = (
     # FeatureHasher(n_features=300, input_type="string").transform(X_train).toarray()
-    HashingVectorizer(n_features=300).transform(X_train)
+    HashingVectorizer(n_features=300).fit_transform(X_train)
 )
 
 X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
