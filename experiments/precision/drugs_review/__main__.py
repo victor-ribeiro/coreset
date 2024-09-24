@@ -109,9 +109,11 @@ from sklearn.feature_extraction.text import (
     TfidfVectorizer,
     CountVectorizer,
     FeatureHasher,
+    HashingVectorizer,
 )
 from sklearn.metrics import classification_report
 from xgboost import XGBClassifier
+from nltk.tokenize import word_tokenize
 
 import multiprocessing
 
@@ -119,14 +121,19 @@ with open(DATA_HOME, "rb") as file:
     data = pickle.load(file)
 
 n_threads = multiprocessing.cpu_count()
-min_df = 0.1
+min_df = 0.03
 max_df = 1 - min_df
 
 X_train, y_train = data["features"], data["target"]
-X_train = TfidfVectorizer(
-    max_df=max_df, min_df=min_df, stop_words="english", max_features=100
-).fit_transform(X_train)
-# X_train = CountVectorizer(binary=True).fit_transform(X_train)
+# X_train = TfidfVectorizer(
+#     max_df=max_df, min_df=min_df, stop_words="english", max_features=200
+# ).fit_transform(X_train)
+# X_train = CountVectorizer(
+#     max_df=max_df, min_df=min_df, stop_words="english", max_features=200
+# ).fit_transform(X_train)
+X_train = map(word_tokenize, X_train)
+
+X_train = FeatureHasher(n_features=300, input_type="string").transform(X_train)
 
 X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
 
@@ -135,6 +142,7 @@ y_test = np.array(y_test)
 
 # import matplotlib.pyplot as plt
 # from sklearn.decomposition import PCA
+# from sklearn.preprocessing import normalize, quantile_transform, minmax_scale
 
 # x, y = PCA(n_components=2).fit_transform(X_train).T
 # plt.scatter(x, y, c=y_train)
