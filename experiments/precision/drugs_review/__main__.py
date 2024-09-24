@@ -136,6 +136,7 @@ X_train, y_train = data["features"], data["target"]
 # ).fit_transform(X_train)
 # X_train = map(word_tokenize, X_train)
 
+X_train = np.array(X_train)
 X_train = (
     # FeatureHasher(n_features=300, input_type="string").transform(X_train).toarray()
     HashingVectorizer(n_features=300).fit_transform(X_train)
