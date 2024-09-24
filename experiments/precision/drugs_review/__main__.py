@@ -166,7 +166,8 @@ model = XGBClassifier(
     device="gpu",
     nthread=n_threads,
     # eval_metric=["mlogloss", "merror"],
-    eval_metric=["merror"],
+    # eval_metric=["merror"],
+    eval_metric=["auc"],  # # -> atual
 )
 
 print(f"[TRAINING] ntread: {n_threads} :: x_shape: {X_train.shape}")
