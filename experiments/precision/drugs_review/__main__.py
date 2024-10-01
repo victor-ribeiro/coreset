@@ -310,7 +310,7 @@ def clean_sent(sent, sub_pattern=r"[\W\s]+"):
     sent = sent.lower()
     sent = re.sub(sub_pattern, " ", sent)
     sent = re.split(r"\W", sent)
-    sent = filter(lambda x: len(x) > 2, sent)
+    sent = filter(lambda x: len(x) > 3, sent)
     sent = filter(lambda x: x.isalnum() and not x.isdigit(), sent)
     return " ".join(sent)
     return sent
@@ -345,10 +345,14 @@ X_train = CountVectorizer(
     # min_df=2, max_df=0.9, max_features=1000
     min_df=5,
     max_df=0.9,
-    max_features=1000,
+    max_features=300,
 ).fit_transform(X_train)
+from sklearn.decomposition import PCA
+from sklearn.manifold import LocallyLinearEmbedding, Isomap, SpectralEmbedding
 
-X_train = quantile_transform(X_train.toarray())
+X_train = normalize(X_train.toarray())
+# X_train = PCA(n_components=20).fit_transform(X_train)
+X_train = LocallyLinearEmbedding(n_components=20).fit_transform(X_train)
 
 
 # y_train = LabelEncoder().fit_transform(y_train.reshape(-1, 1))
@@ -374,22 +378,21 @@ for i, w in enumerate(
 # print(X_train[0])
 
 
-# import matplotlib.pyplot as plt
-# from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
-# x, y = PCA(n_components=2).fit_transform(X_train).T
+# x, y = Isomap(n_components=2).fit_transform(X_train).T
 # plt.scatter(x, y, c=y_train)
 # plt.title(X_train.shape)
 # plt.show()
 
 # exit()
-# (*) -> usados juntos
+
 model = XGBClassifier(
     max_depth=12,
     eta=0.1,
-    max_bin=32,  # (*)
+    # max_bin=3200,  # (*)
     tree_method="hist",  # (*)
-    # grow_policy="lossguide",
+    grow_policy="lossguide",
     early_stopping_rounds=5,
     n_estimators=5000,
     nthread=n_threads,
