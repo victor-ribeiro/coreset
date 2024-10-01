@@ -87,17 +87,13 @@ def split_dataset(label, test_size=0.2):
     return inner
 
 
-def random_sampler(n_samples):
-    @timeit
-    @wraps(random_sampler)
-    def inner(data):
-        size = len(data)
+@timeit
+def random_sampler(data, K):
+    size = len(data)
 
-        rng = np.random.default_rng([42, 84, 13])
-        sset = rng.integers(0, size, size=n_samples, dtype=int)
-        return sset
-
-    return inner
+    rng = np.random.default_rng([42, 84, 13])
+    sset = rng.integers(0, size, size=K, dtype=int)
+    return sset
 
 
 def craig_baseline(sample):

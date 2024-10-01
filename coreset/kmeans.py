@@ -36,19 +36,15 @@ def _n_cluster(dataset, alpha=1, max_iter=100, tol=10e-2):
     return ValueError("Does not converge")
 
 
-def kmeans_sampler(K, alpha=1, tol=10e-3, max_iter=300):
-    @timeit
-    @wraps(kmeans_sampler)
-    def inner(dataset):
-        clusters = _n_cluster(dataset, alpha, max_iter, tol)
-        dist = pairwise_distances(clusters, dataset).mean(axis=0)
-        dist -= np.max(dist)
-        dist = np.abs(dist)[::-1]
-        sset = np.argsort(dist, kind="heapsort")
+@timeit
+def kmeans_sampler(dataset, K, alpha=1, tol=10e-3, max_iter=300):
+    clusters = _n_cluster(dataset, alpha, max_iter, tol)
+    dist = pairwise_distances(clusters, dataset).mean(axis=0)
+    dist -= np.max(dist)
+    dist = np.abs(dist)[::-1]
+    sset = np.argsort(dist, kind="heapsort")
 
-        return sset[:K]
-
-    return inner
+    return sset[:K]
 
 
 if __name__ == "__main__":

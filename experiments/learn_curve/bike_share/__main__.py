@@ -68,7 +68,7 @@ if __name__ == "__main__":
     smpln = [
         partial(lazy_greed, K=int(max_size * 0.05), batch_size=256),
         kmeans_sampler(K=int(max_size * 0.05)),
-        random_sampler(n_samples=int(max_size * 0.05)),
+        random_sampler(K=int(max_size * 0.05)),
         # craig_baseline(0.05),
     ]
     bike_share = TrainCurve(
