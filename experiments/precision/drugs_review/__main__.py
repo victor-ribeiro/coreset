@@ -345,7 +345,7 @@ X_train = CountVectorizer(
     # min_df=2, max_df=0.9, max_features=1000
     min_df=5,
     max_df=0.9,
-    max_features=600,
+    max_features=1000,
 ).fit_transform(X_train)
 
 X_train = quantile_transform(X_train.toarray())
@@ -387,7 +387,7 @@ for i, w in enumerate(
 model = XGBClassifier(
     max_depth=12,
     eta=0.1,
-    max_bin=128,  # (*)
+    max_bin=32,  # (*)
     tree_method="hist",  # (*)
     # grow_policy="lossguide",
     early_stopping_rounds=5,
