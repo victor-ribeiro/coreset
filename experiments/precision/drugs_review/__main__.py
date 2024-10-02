@@ -440,8 +440,8 @@ model = XGBClassifier(
     n_estimators=1500,
     nthread=n_threads,
     # max_delta_step=10,
-    alpha=1,
-    reg_lambda=1,
+    alpha=10,
+    reg_lambda=10,
     device="gpu",
 )
 
