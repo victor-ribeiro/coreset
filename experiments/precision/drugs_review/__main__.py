@@ -351,7 +351,7 @@ X_train = CountVectorizer(min_df=5).fit_transform(X_train)
 # ).fit_transform(X_train)
 from sklearn.decomposition import PCA, TruncatedSVD, KernelPCA, FastICA
 
-X_train = TruncatedSVD(n_components=300, n_oversamples=100).fit_transform(X_train)
+X_train = TruncatedSVD(n_components=512, n_oversamples=100).fit_transform(X_train)
 # X_train = PCA(n_components=45).fit_transform(X_train)
 # X_train = TruncatedSVD(n_components=100).fit_transform(X_train)
 # X_train = LocallyLinearEmbedding(n_components=20).fit_transform(X_train)
@@ -432,14 +432,14 @@ import matplotlib.pyplot as plt
 
 model = XGBClassifier(
     # max_depth=0,
-    # eta=0.15,
+    eta=0.2,
     min_child_weight=1.5,
     early_stopping_rounds=5,
     objective="multi:softmax",
     num_class=10,
     n_estimators=1500,
     nthread=n_threads,
-    # max_delta_step=10,
+    max_delta_step=10,
     alpha=10,
     reg_lambda=10,
     device="gpu",
