@@ -351,7 +351,7 @@ X_train = CountVectorizer(min_df=5).fit_transform(X_train)
 # ).fit_transform(X_train)
 from sklearn.decomposition import PCA, TruncatedSVD, KernelPCA, FastICA
 
-# X_train = TruncatedSVD(n_components=45, n_oversamples=100).fit_transform(X_train)
+X_train = TruncatedSVD(n_components=45, n_oversamples=100).fit_transform(X_train)
 # X_train = PCA(n_components=45).fit_transform(X_train)
 # X_train = TruncatedSVD(n_components=100).fit_transform(X_train)
 # X_train = LocallyLinearEmbedding(n_components=20).fit_transform(X_train)
