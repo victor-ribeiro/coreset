@@ -313,7 +313,7 @@ def clean_sent(sent, sub_pattern=r"[\W\s]+"):
     sent = filter(lambda x: len(x) > 3, sent)
     sent = filter(lambda x: x.isalnum() and not x.isdigit(), sent)
     return " ".join(sent)
-    return sent
+    # return sent
 
 
 with open(DATA_HOME, "rb") as file:
@@ -341,19 +341,59 @@ from sklearn.utils import class_weight
 #     # alternate_sign=False,
 # ).fit_transform(X_train)
 
-X_train = CountVectorizer(
-    # min_df=2, max_df=0.9, max_features=1000
-    min_df=5,
-    max_df=0.9,
-    max_features=300,
-).fit_transform(X_train)
-from sklearn.decomposition import PCA
-from sklearn.manifold import LocallyLinearEmbedding, Isomap, SpectralEmbedding
+X_train = (
+    CountVectorizer(
+        # min_df=2, max_df=0.9, max_features=1000
+        min_df=12,
+        max_df=0.95,
+        max_features=1000,
+    )
+    .fit_transform(X_train)
+    .toarray()
+    .astype(float)
+)
+# X_train = TfidfVectorizer(
+#     min_df=0.05,
+#     max_df=0.95,
+#     max_features=1000,
+# ).fit_transform(X_train)
+from sklearn.decomposition import PCA, TruncatedSVD, KernelPCA, FastICA
 
-X_train = normalize(X_train.toarray())
-# X_train = PCA(n_components=20).fit_transform(X_train)
-X_train = LocallyLinearEmbedding(n_components=20).fit_transform(X_train)
+# X_train = normalize(X_train.toarray())
+# X_train = TruncatedSVD(n_components=45, n_oversamples=100).fit_transform(X_train)
+# X_train = PCA(n_components=45).fit_transform(X_train)
+X_train = TruncatedSVD(n_components=100).fit_transform(X_train)
+# X_train = LocallyLinearEmbedding(n_components=20).fit_transform(X_train)
 
+# import matplotlib.pyplot as plt
+
+# fig, ax = plt.subplots(2, 2)
+# print("FastICA")
+# x, y = FastICA(n_components=2, fun="logcosh").fit_transform(X_train).T
+# ax[0, 0].scatter(x, y, c=y_train)
+# ax[0, 0].set_title("FastICA")
+# print("FastICA - ok")
+
+# print("FastICA - exp")
+# x, y = FastICA(n_components=2, fun="exp").fit_transform(X_train).T
+# ax[0, 1].scatter(x, y, c=y_train)
+# ax[0, 1].set_title("FastICA - exp")
+# print("FastICA - ok")
+
+# print("SVD")
+# x, y = TruncatedSVD(n_components=2, algorithm="arpack").fit_transform(X_train).T
+# ax[1, 0].scatter(x, y, c=y_train)
+# ax[1, 0].set_title("SVD")
+# print("SVD - ok")
+
+# x, y = PCA(n_components=2).fit_transform(X_train).T
+# ax[1, 1].scatter(x, y, c=y_train)
+# ax[1, 1].set_title("PCA")
+# print("SVD - ok")
+
+# plt.show()
+
+# exit()
 
 # y_train = LabelEncoder().fit_transform(y_train.reshape(-1, 1))
 
@@ -380,24 +420,44 @@ for i, w in enumerate(
 
 import matplotlib.pyplot as plt
 
-# x, y = Isomap(n_components=2).fit_transform(X_train).T
+# x, y = (
+#     SpectralEmbedding(
+#         n_components=2,
+#         #  eigen_solver='arpack',
+#         #  eigen_solver= 'lobpcg',
+#         eigen_solver="amg",
+#     )
+#     .fit_transform(X_train)
+#     .T
+# )
+# x, y = PCA(n_components=2).fit_transform(X_train).T
 # plt.scatter(x, y, c=y_train)
 # plt.title(X_train.shape)
 # plt.show()
 
 # exit()
 
+
 model = XGBClassifier(
-    max_depth=12,
-    eta=0.1,
-    # max_bin=3200,  # (*)
-    tree_method="hist",  # (*)
-    grow_policy="lossguide",
+    # max_depth=9,
+    # max_leaves=1000,
+    # eta=0.2,
     early_stopping_rounds=5,
-    n_estimators=5000,
+    objective="multi:softmax",
+    num_class=10,
+    n_estimators=1000,
     nthread=n_threads,
-    max_delta_step=10,
+    max_delta_step=1,
+    alpha=1,
+    num_parallel_tree=10,
+    # gamma=50,
+    # reg_lambda=0.1000,
+    # multi_strategy="multi_output_tree",
+    # min_child_weight=1000,
+    # updater="prune", # ess aqui eu ainda não testei
+    # device='gpu'
 )
+
 
 print(f"[TRAINING] ntread: {n_threads} :: x_shape: {X_train.shape}")
 
