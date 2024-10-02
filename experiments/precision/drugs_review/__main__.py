@@ -432,16 +432,16 @@ import matplotlib.pyplot as plt
 
 model = XGBClassifier(
     # max_depth=0,
-    eta=0.15,
-    min_child_weight=0.05,
+    # eta=0.15,
+    min_child_weight=1.5,
     early_stopping_rounds=5,
     objective="multi:softmax",
     num_class=10,
     n_estimators=1500,
     nthread=n_threads,
     # max_delta_step=10,
-    alpha=10e-4,
-    reg_lambda=10e-4,
+    alpha=1,
+    reg_lambda=1,
     device="gpu",
 )
 
