@@ -341,17 +341,9 @@ from sklearn.utils import class_weight
 #     # alternate_sign=False,
 # ).fit_transform(X_train)
 
-X_train = (
-    CountVectorizer(
-        # min_df=2, max_df=0.9, max_features=1000
-        min_df=12,
-        max_df=0.95,
-        max_features=1000,
-    )
-    .fit_transform(X_train)
-    .toarray()
-    .astype(float)
-)
+# X_train = CountVectorizer(min_df=5, max_df=0.99, max_features=2000).fit_transform(
+X_train = CountVectorizer(min_df=5).fit_transform(X_train)
+
 # X_train = TfidfVectorizer(
 #     min_df=0.05,
 #     max_df=0.95,
@@ -359,11 +351,11 @@ X_train = (
 # ).fit_transform(X_train)
 from sklearn.decomposition import PCA, TruncatedSVD, KernelPCA, FastICA
 
-# X_train = normalize(X_train.toarray())
 # X_train = TruncatedSVD(n_components=45, n_oversamples=100).fit_transform(X_train)
 # X_train = PCA(n_components=45).fit_transform(X_train)
 # X_train = TruncatedSVD(n_components=100).fit_transform(X_train)
 # X_train = LocallyLinearEmbedding(n_components=20).fit_transform(X_train)
+# X_train = normalize(X_train)
 
 # import matplotlib.pyplot as plt
 
@@ -430,7 +422,7 @@ import matplotlib.pyplot as plt
 #     .fit_transform(X_train)
 #     .T
 # )
-# x, y = PCA(n_components=2).fit_transform(X_train).T
+# x, y = FastICA(n_components=2).fit_transform(X_train.toarray()).T
 # plt.scatter(x, y, c=y_train)
 # plt.title(X_train.shape)
 # plt.show()
@@ -439,22 +431,17 @@ import matplotlib.pyplot as plt
 
 
 model = XGBClassifier(
-    # max_depth=9,
-    # max_leaves=1000,
-    # eta=0.2,
+    max_depth=0,
+    eta=0.15,
+    min_child_weight=0.05,
     early_stopping_rounds=5,
     objective="multi:softmax",
     num_class=10,
-    n_estimators=1000,
+    n_estimators=1500,
     nthread=n_threads,
-    max_delta_step=1,
-    alpha=1,
-    num_parallel_tree=10,
-    # gamma=50,
-    # reg_lambda=0.1000,
-    # multi_strategy="multi_output_tree",
-    # min_child_weight=1000,
-    # updater="prune", # ess aqui eu ainda não testei
+    # max_delta_step=10,
+    alpha=10e-4,
+    reg_lambda=10e-4,
     device="gpu",
 )
 
