@@ -455,7 +455,7 @@ model = XGBClassifier(
     # multi_strategy="multi_output_tree",
     # min_child_weight=1000,
     # updater="prune", # ess aqui eu ainda não testei
-    # device='gpu'
+    device="gpu",
 )
 
 
