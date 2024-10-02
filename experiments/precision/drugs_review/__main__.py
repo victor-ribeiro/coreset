@@ -432,7 +432,7 @@ import matplotlib.pyplot as plt
 
 model = XGBClassifier(
     # max_depth=0,
-    eta=0.2,
+    eta=0.35,
     min_child_weight=1.5,
     early_stopping_rounds=5,
     objective="multi:softmax",
