@@ -14,8 +14,6 @@ from pathlib import Path
 nltk.download("stopwords")
 nltk.download("wordnet")
 
-from imblearn.under_sampling import RandomUnderSampler
-
 
 if __name__ == "__main__":
 
@@ -29,24 +27,13 @@ if __name__ == "__main__":
     data["rating"] -= 1
     tgt = data.pop("rating").values.astype(int)
     dnames = data["drugName"].unique().tolist()
+    condition = data["condition"].unique().tolist()
     data = data.review.values
 
     stop_words = stopwords.words("english")
-    stop_words += [
-        "i",
-        "ii",
-        "iii",
-        "iv",
-        "sooooo",
-        "soooo",
-        "sooo",
-        "soo",
-        "reallli",
-        "realllli",
-        "reallllli",
-        "realllllli",
-    ]
+
     stop_words += dnames
+    stop_words += condition
     ds = map(lambda x: x.lower(), data)
     ds = map(word_tokenize, ds)
     ds = map(

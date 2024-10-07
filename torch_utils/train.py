@@ -27,7 +27,7 @@ def _valid_model(train_fn: Generator, /):
                             data_loss += [loss.item()]
                         valid_loss += [agg_fn(data_loss)]
                     yield (e_loss, *valid_loss)
-                # print(f"[TRAIN] \t {model.__name__}::{e_loss}")
+                print(f"[TRAIN] \t {model.__name__} :: {e_loss:.4f}")
 
         return decorator
 
@@ -35,24 +35,22 @@ def _valid_model(train_fn: Generator, /):
 
 
 def train_loop(data_train, loss_fn, optmizer, model, epochs, agg_fn=sum):
-    print(type(model))
     for i in range(epochs):
         model.train(True)
         epoch_loss = 0
         ################################################################
         for ftrs, tgt in data_train:
-            optmizer.zero_grad()
 
+            optmizer.zero_grad()
             pred = model(ftrs)
-            loss = loss_fn(pred.round(), tgt)
-            epoch_loss += loss.item()  # / len(ftrs)
-            # optmizer.zero_grad()
+            loss = loss_fn(pred, tgt)
+            epoch_loss += loss.item() / len(ftrs)
             loss.backward()
             optmizer.step()
         ################################################################
 
         yield epoch_loss
-        print(f"[{i}] \t {model.__class__.__name__} :: {epoch_loss}")
+        print(f"[{i}] \t {model.__class__.__name__} :: {epoch_loss:.4f}")
 
 
 eval_train = _valid_model(train_loop)

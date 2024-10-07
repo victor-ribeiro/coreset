@@ -2387,6 +2387,25 @@ mpmath = ">=1.1.0,<1.4"
 dev = ["hypothesis (>=6.70.0)", "pytest (>=7.1.0)"]
 
 [[package]]
+name = "textblob"
+version = "0.18.0.post0"
+description = "Simple, Pythonic text processing. Sentiment analysis, part-of-speech tagging, noun phrase parsing, and more."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "textblob-0.18.0.post0-py3-none-any.whl", hash = "sha256:dd0c7ec4eb7b9346ec0a3f136a63eba13e0f59890d2a693d3d6aeb8371949dca"},
+    {file = "textblob-0.18.0.post0.tar.gz", hash = "sha256:8131c52c630bcdf61d04c359f939c98d5b836a01fba224d9e7ae22fc274e0ccb"},
+]
+
+[package.dependencies]
+nltk = ">=3.8"
+
+[package.extras]
+dev = ["pre-commit (>=3.5,<4.0)", "textblob[tests]", "tox"]
+docs = ["PyYAML (==6.0.1)", "sphinx (==7.2.6)", "sphinx-issues (==4.0.0)"]
+tests = ["numpy", "pytest"]
+
+[[package]]
 name = "threadpoolctl"
 version = "3.5.0"
 description = "threadpoolctl"
@@ -2691,4 +2710,4 @@ scikit-learn = ["scikit-learn"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "d981d4c0fd8446362a97c278dc2c75b55fe6851436ace394257deea5472baa5e"
+content-hash = "117ffbabc8291343a01977867049cdd7fcc740036ee8cf180b827184da834960"

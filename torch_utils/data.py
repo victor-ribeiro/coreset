@@ -28,19 +28,20 @@ from coreset.lazzy_greed import lazy_greed
 # __all__ = ["RandomTrainingSet", "CoresetRandomDataset", "PandasDataset"]
 
 
-def _prepair_tensor(array):
-    seq = np.array(array).astype(np.float64)
-    seq = torch.from_numpy(seq).float()
+def _prepair_tensor(array, dtype=torch.FloatTensor):
+    seq = np.array(array).astype(np.float32)
+    seq = torch.from_numpy(seq).type(dtype)
     return seq
 
 
 class BaseDataset:
 
-    __slots__ = ["_features", "_target", "_indices"]
+    __slots__ = ["_features", "_target", "_indices", "dtype"]
 
-    def __init__(self, features, target) -> None:
+    def __init__(self, features, target, dtype=torch.FloatTensor) -> None:
         self._features = features
         self._target = target
+        self.dtype = dtype
         self._indices = None
         self.set_indices()
 
@@ -48,8 +49,8 @@ class BaseDataset:
         return len(self._features)
 
     def __getitem__(self, index):
-        return _prepair_tensor(self._features[index]), _prepair_tensor(
-            self._target[index]
+        return _prepair_tensor(self._features[index], self.dtype), _prepair_tensor(
+            self._target[index], self.dtype
         )
 
     @property
@@ -69,15 +70,16 @@ class BaseDataset:
         self._indices = np.arange(n)
 
 
-def sampling_dataset(dataset_class, sampler=None):
+def sampling_dataset(dataset_class, sampler=None, dtype=torch.FloatTensor):
     class Coreset(dataset_class):
 
         __slots__ = ["coreset_size", "indices", "_features", "_target", "finished"]
 
-        def __init__(self, features, target, coreset_size=1) -> None:
+        def __init__(self, features, target, coreset_size=1, dtype=dtype) -> None:
             self._features = features
             self._target = target
             self.coreset_size = coreset_size
+            self.dtype = dtype
             self.finished = False
 
             self.set_indices()

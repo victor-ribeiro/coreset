@@ -16,7 +16,7 @@ def train(
     data_valid=None,
 ):
     model = learner._model
-    optim = optmizer(model.parameters(), lr=lr, momentum=0.09)
+    optim = optmizer(model.parameters(), lr=lr)
     # optim = Adam(learner._model.parameters(), lr=lr)
     if data_test and not data_train:
         train_fn = eval_train(data_test)
