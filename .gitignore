@@ -171,3 +171,5 @@ data/
 
 craig/
 *.sh
+
+poetry.lock
