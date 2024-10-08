@@ -44,7 +44,7 @@ def train_loop(data_train, loss_fn, optmizer, model, epochs, agg_fn=sum):
             optmizer.zero_grad()
             pred = model(ftrs)
             loss = loss_fn(pred, tgt)
-            epoch_loss += loss.item() / len(ftrs)
+            epoch_loss += loss.item()  # / len(ftrs)
             loss.backward()
             optmizer.step()
         ################################################################

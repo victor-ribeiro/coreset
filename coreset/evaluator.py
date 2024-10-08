@@ -6,7 +6,7 @@ from coreset.utils import split_dataset
 
 import matplotlib.pyplot as plt
 
-REPEAT = 50
+REPEAT = 200
 
 TASKS = {
     "binary_classification": "logloss",
@@ -59,13 +59,12 @@ class ExperimentTemplate:
 
 class BaseExperiment(ExperimentTemplate):
     def __call__(self, sampler=None) -> Any:
-        preprocessing = pipeline(
-            *self.preprocessing, split_dataset(label=self.lbl_name)
-        )
+        preprocessing = pipeline(*self.preprocessing)
+        split_fn = split_dataset(label=self.lbl_name)
+        data = preprocessing(self._data)
         for _ in range(self.repeat):
-            data = self._data
             model = self.model()
-            (X_train, y_train), (X_test, y_test) = preprocessing(data)
+            (X_train, y_train), (X_test, y_test) = split_fn(data)
             n_samples = len(X_train)
             if sampler:
                 sset = sampler(X_train)
@@ -102,13 +101,12 @@ class TrainCurve(ExperimentTemplate):
         self.eval_metric = TASKS[task]
 
     def __call__(self, sampler=None) -> Any:
-        preprocessing = pipeline(
-            *self.preprocessing, split_dataset(label=self.lbl_name)
-        )
+        preprocessing = pipeline(*self.preprocessing)
+        split_fn = split_dataset(label=self.lbl_name)
+        data = preprocessing(self._data)
         for _ in range(self.repeat):
-            data = self._data
             model = self.model(eval_metric=self.eval_metric)
-            (X_train, y_train), (X_test, y_test) = preprocessing(data)
+            (X_train, y_train), (X_test, y_test) = split_fn(data)
             n_samples = len(X_train)
             if sampler:
                 sset = sampler(X_train)

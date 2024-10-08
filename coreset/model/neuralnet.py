@@ -7,7 +7,7 @@ from torch import nn
 class MLP(nn.Module):
     n_neurons = 32
 
-    def __init__(self, input_size, vocab_size, n_layers=3):
+    def __init__(self, input_size, vocab_size=0, n_layers=3):
         super().__init__()
         self.shape = [self.n_neurons, self.n_neurons]
         self.activation = nn.ReLU()
@@ -18,8 +18,10 @@ class MLP(nn.Module):
             # nn.LayerNorm(256, 256),
         )
         self.hidden = nn.Sequential(
-            # nn.Linear(256, 256),
+            nn.Linear(256, 256),
             # self.activation,
+            # nn.Linear(256, 256),
+            self.activation,
             nn.Linear(256, 128),
             self.activation,
             nn.Linear(128, self.n_neurons),
@@ -30,8 +32,8 @@ class MLP(nn.Module):
         self.preput = nn.Sequential(
             # nn.Linear(self.n_neurons, 1),
             # self.activation,
-            nn.Linear(self.n_neurons, 10),
-            # nn.Linear(self.n_neurons, 2),
+            # nn.Linear(self.n_neurons, 10),
+            nn.Linear(self.n_neurons, 2),
             nn.Softmax(dim=1),
         )
 

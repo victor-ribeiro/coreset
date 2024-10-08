@@ -12,6 +12,7 @@ from coreset.utils import hash_encoding, oht_coding, random_sampler, craig_basel
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
 
+
 outfile, DATA_HOME, names, tgt_name = load_config()
 
 data = pd.read_csv(DATA_HOME, engine="pyarrow", names=names)
@@ -33,30 +34,30 @@ if __name__ == "__main__":
         partial(lazy_greed, K=int(max_size * 0.10), batch_size=256),
         partial(lazy_greed, K=int(max_size * 0.15), batch_size=256),
         partial(lazy_greed, K=int(max_size * 0.25), batch_size=256),
-        kmeans_sampler(K=int(max_size * 0.01)),
-        kmeans_sampler(K=int(max_size * 0.02)),
-        kmeans_sampler(K=int(max_size * 0.03)),
-        kmeans_sampler(K=int(max_size * 0.04)),
-        kmeans_sampler(K=int(max_size * 0.05)),
-        kmeans_sampler(K=int(max_size * 0.10)),
-        kmeans_sampler(K=int(max_size * 0.15)),
-        kmeans_sampler(K=int(max_size * 0.25)),
-        random_sampler(K=int(max_size * 0.01)),
-        random_sampler(K=int(max_size * 0.02)),
-        random_sampler(K=int(max_size * 0.03)),
-        random_sampler(K=int(max_size * 0.04)),
-        random_sampler(K=int(max_size * 0.05)),
-        random_sampler(K=int(max_size * 0.10)),
-        random_sampler(K=int(max_size * 0.15)),
-        random_sampler(K=int(max_size * 0.25)),
-        # craig_baseline(0.01),
-        # craig_baseline(0.02),
-        # craig_baseline(0.03),
-        # craig_baseline(0.04),
-        # craig_baseline(0.05),
-        # craig_baseline(0.10),
-        # craig_baseline(0.15),
-        # craig_baseline(0.25),
+        partial(kmeans_sampler, K=int(max_size * 0.01)),
+        partial(kmeans_sampler, K=int(max_size * 0.02)),
+        partial(kmeans_sampler, K=int(max_size * 0.03)),
+        partial(kmeans_sampler, K=int(max_size * 0.04)),
+        partial(kmeans_sampler, K=int(max_size * 0.05)),
+        partial(kmeans_sampler, K=int(max_size * 0.10)),
+        partial(kmeans_sampler, K=int(max_size * 0.15)),
+        partial(kmeans_sampler, K=int(max_size * 0.25)),
+        partial(random_sampler, K=int(max_size * 0.01)),
+        partial(random_sampler, K=int(max_size * 0.02)),
+        partial(random_sampler, K=int(max_size * 0.03)),
+        partial(random_sampler, K=int(max_size * 0.04)),
+        partial(random_sampler, K=int(max_size * 0.05)),
+        partial(random_sampler, K=int(max_size * 0.10)),
+        partial(random_sampler, K=int(max_size * 0.15)),
+        partial(random_sampler, K=int(max_size * 0.25)),
+        craig_baseline(0.01),
+        craig_baseline(0.02),
+        craig_baseline(0.03),
+        craig_baseline(0.04),
+        craig_baseline(0.05),
+        craig_baseline(0.10),
+        craig_baseline(0.15),
+        craig_baseline(0.25),
     ]
 
     adult = BaseExperiment(

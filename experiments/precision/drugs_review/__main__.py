@@ -97,89 +97,6 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 # #     result = nursery.metrics  # base de comparação
 # #     result.to_csv(outfile, index=False)
 
-# ##### TODO
-# ## [ ] vetorizar
-# ## [ ] treinar modelo
-# ## [ ] template avaliação de precisão e curva de aprendizado
-# ## [ ] _make_dataset.py_ para a pasta data
-# import pickle
-# import numpy as np
-# from sklearn.model_selection import train_test_split
-# from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-# from sklearn.metrics import classification_report
-# from sklearn.preprocessing import LabelEncoder
-# from xgboost import XGBClassifier
-
-
-# import multiprocessing
-
-# with open(DATA_HOME, "rb") as file:
-#     data = pickle.load(file)
-
-# n_threads = int(multiprocessing.cpu_count() / 2)
-# min_df = 0.01
-# max_df = 1 - min_df
-
-# X_train, y_train = data["features"], data["target"]
-# X_train = TfidfVectorizer(
-#     max_df=max_df,
-#     min_df=min_df,
-#     stop_words="english",
-#     # max_features=500,
-# ).fit_transform(X_train)
-
-# y_train = np.array(y_train)
-# y_train = LabelEncoder().fit_transform(y_train.reshape(-1, 1))
-
-# # X_train = CountVectorizer(
-# #     max_df=max_df, min_df=min_df, stop_words="english", max_features=200
-# # ).fit_transform(X_train)
-
-# # X_train = map(word_tokenize, X_train)
-# # X_train = (
-# # FeatureHasher(n_features=120, input_type="string").transform(X_train)
-# # HashingVectorizer(n_features=30, norm="l1").fit_transform(X_train)
-# # )
-
-# X_train, X_test, y_train, y_test = train_test_split(
-#     X_train, y_train, test_size=0.2, stratify=y_train
-# )
-
-# y_test = np.array(y_test)
-
-# # import matplotlib.pyplot as plt
-# # from sklearn.decomposition import PCA
-# # from sklearn.preprocessing import normalize, quantile_transform, minmax_scale
-
-# # x, y = PCA(n_components=2).fit_transform(X_train).T
-# # plt.scatter(x, y, c=y_train)
-# # plt.title(X_train.shape)
-# # plt.show()
-
-# model = XGBClassifier(
-#     early_stopping_rounds=2,
-#     n_estimators=1000,
-#     device="gpu",
-#     nthread=n_threads,
-# )
-
-# print(f"[TRAINING] ntread: {n_threads} :: x_shape: {X_train.shape}")
-
-# model.fit(
-#     X_train,
-#     y_train,
-#     verbose=True,
-#     eval_set=[(X_train, y_train), (X_test, y_test)],
-# )
-
-# print("[PREDICTING]")
-
-# pred = model.predict(X_test)
-
-# print(classification_report(y_true=y_test, y_pred=pred))
-
-############### TORCH TEST ###############
-
 import re
 
 
@@ -188,16 +105,8 @@ def clean_sent(sent, sub_pattern=r"[\W\s]+"):
     sent = re.sub(sub_pattern, " ", sent)
     sent = re.split(r"\W", sent)
     sent = " ".join(filter(lambda x: x.isalnum() and not x.isdigit(), sent))
+    return sent
     return sent.split()
-
-
-def prepair_ngrams(sent, context_size=2):
-    sent = clean_sent(sent)
-    sent_size = len(sent)
-    return [
-        (sent[i : i + context_size], sent[i + context_size])
-        for i in range(sent_size - context_size)
-    ]
 
 
 def build_vocab(dataset):
@@ -232,14 +141,16 @@ from coreset.model.basics import TorchLearner
 from coreset.lazzy_greed import lazy_greed
 from coreset.utils import random_sampler
 from coreset.kmeans import kmeans_sampler
+from sklearn.utils import class_weight
+
 
 batch_size = 256
-loss_fn = nn.CrossEntropyLoss
+# loss_fn = nn.CrossEntropyLoss
 lr = 10e-4
-epochs = 100
+epochs = 30
 
 
-lazy_greed = partial(lazy_greed, batch_size=1024)
+lazy_greed = partial(lazy_greed, batch_size=512)
 LazyDataset = sampling_dataset(BaseDataset, lazy_greed)
 RandomDataset = sampling_dataset(BaseDataset, random_sampler)
 KMeansDataset = sampling_dataset(BaseDataset, kmeans_sampler)
@@ -259,14 +170,26 @@ from sklearn.preprocessing import normalize
 from sklearn.decomposition import FastICA, TruncatedSVD
 
 features, target = dataset.values()
+target = np.array(target)
 
-# print(features)
-vocab = build_vocab(features)
+classes = np.unique(target)
+W = np.ones(len(target))
 
+
+for i, w in enumerate(
+    class_weight.compute_class_weight("balanced", classes=classes, y=target)
+):
+    idx = np.where(target == i)
+    W[idx] = W[idx] * w
+W = torch.tensor(W)
+
+loss_fn = partial(nn.BCELoss, weight=W)
+
+features = map(clean_sent, features)
 features = encoder.fit_transform(features).toarray()
-features = FastICA(n_components=128).fit_transform(features)
+features = FastICA(n_components=256).fit_transform(features)
 #
-# target = [*map(lambda x: 1 if x > 5 else 0, target)]
+target = [*map(lambda x: 1 if x > 5 else 0, target)]
 
 
 target = OneHotEncoder().fit_transform(np.reshape(target, (-1, 1))).toarray()
@@ -279,28 +202,12 @@ from sklearn.metrics import classification_report
 import matplotlib.pyplot as plt
 
 _, nsize = X_train.shape
-model = TorchLearner(
-    MLP, {"input_size": nsize, "n_layers": 5, "vocab_size": len(vocab)}
-)
-# model = MLP(input_size=nsize, n_layers=5, vocab_size=len(vocab))
-# model = MLP(input_size=nsize)
+model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
 
-# dataset = LazyDataset(
-#     features=X_train, target=y_train, coreset_size=size, dtype=torch.LongTensor
-# )
 dataset = BaseDataset(features=X_train, target=y_train)
 dataset = Loader(dataset=dataset)
 hist = train(model, dataset, loss_fn(), Adam, lr, epochs)
-# hist = list(
-#     train_loop(
-#         model=model,
-#         data_train=dataset,
-#         loss_fn=loss_fn(),
-#         optmizer=Adam(model.parameters(), lr=lr),
-#         epochs=epochs,
-#     )
-# )
-# pred = model(torch.tensor(X_test).float()).detach().numpy().astype(int)
+
 pred = model(X_test)
 print(
     classification_report(
@@ -310,9 +217,7 @@ print(
 
 plt.plot(hist, label="full dataset")
 
-lazy_model = TorchLearner(
-    MLP, {"input_size": nsize, "n_layers": 5, "vocab_size": len(vocab)}
-)
+lazy_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
 size = int(len(target) * 0.05)
 dataset = LazyDataset(features=X_train, target=y_train, coreset_size=size)
 dataset = Loader(dataset=dataset)
@@ -325,9 +230,7 @@ print(
 )
 plt.plot(hist, label="lazy_greed")
 
-random_model = TorchLearner(
-    MLP, {"input_size": nsize, "n_layers": 5, "vocab_size": len(vocab)}
-)
+random_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
 dataset = RandomDataset(features=X_train, target=y_train, coreset_size=size)
 dataset = Loader(dataset=dataset)
 hist = train(random_model, dataset, loss_fn(), Adam, lr, epochs)
@@ -339,9 +242,7 @@ print(
 )
 plt.plot(hist, label="random")
 
-k_model = TorchLearner(
-    MLP, {"input_size": nsize, "n_layers": 5, "vocab_size": len(vocab)}
-)
+k_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
 dataset = KMeansDataset(features=X_train, target=y_train, coreset_size=size)
 dataset = Loader(dataset=dataset)
 hist = train(k_model, dataset, loss_fn(), Adam, lr, epochs)
@@ -350,195 +251,3 @@ print(classification_report(y_pred=pred, y_true=y_test))
 plt.plot(hist, label="kmeans")
 plt.legend()
 plt.show()
-
-
-############### XGBOOST TEST ###############
-# import pickle
-# import numpy as np
-# from sklearn.model_selection import train_test_split
-# from sklearn.feature_extraction.text import (
-#     TfidfVectorizer,
-#     CountVectorizer,
-#     FeatureHasher,
-# )
-# from sklearn.metrics import classification_report
-# from sklearn.preprocessing import LabelEncoder
-# from xgboost import XGBClassifier
-
-
-# import multiprocessing
-# import re
-
-
-# def clean_sent(sent, sub_pattern=r"[\W\s]+"):
-#     sent = sent.lower()
-#     sent = re.sub(sub_pattern, " ", sent)
-#     sent = re.split(r"\W", sent)
-#     sent = filter(lambda x: len(x) > 3, sent)
-#     sent = filter(lambda x: x.isalnum() and not x.isdigit(), sent)
-#     return " ".join(sent)
-#     # return sent
-
-
-# with open(DATA_HOME, "rb") as file:
-#     data = pickle.load(file)
-
-# n_threads = int(multiprocessing.cpu_count() / 2)
-# min_df = 0.01
-# max_df = 1 - min_df
-
-# X_train, y_train = data["features"], data["target"]
-# # y_train = [*map(lambda x: 1 if x > 5 else 0, y_train)]
-# X_train = map(clean_sent, X_train)
-
-# # X_train = TfidfVectorizer(
-# #     max_df=max_df, min_df=min_df, stop_words="english"
-# # ).fit_transform(X_train)
-
-# from sklearn.preprocessing import normalize, quantile_transform, minmax_scale
-# from sklearn.utils import class_weight
-
-# # testar com dim = {9,10,11,12}
-# # X_train = FeatureHasher(
-# #     n_features=12,
-# #     input_type="string",
-# #     # alternate_sign=False,
-# # ).fit_transform(X_train)
-
-# # X_train = CountVectorizer(min_df=5, max_df=0.99, max_features=2000).fit_transform(
-# X_train = CountVectorizer(min_df=5).fit_transform(X_train)
-
-# # X_train = TfidfVectorizer(
-# #     min_df=0.05,
-# #     max_df=0.95,
-# #     max_features=1000,
-# # ).fit_transform(X_train)
-# from sklearn.decomposition import PCA, TruncatedSVD, KernelPCA, FastICA
-
-# X_train = TruncatedSVD(n_components=512, n_oversamples=100).fit_transform(X_train)
-# # X_train = PCA(n_components=45).fit_transform(X_train)
-# # X_train = TruncatedSVD(n_components=100).fit_transform(X_train)
-# # X_train = LocallyLinearEmbedding(n_components=20).fit_transform(X_train)
-# # X_train = normalize(X_train)
-
-# # import matplotlib.pyplot as plt
-
-# # fig, ax = plt.subplots(2, 2)
-# # print("FastICA")
-# # x, y = FastICA(n_components=2, fun="logcosh").fit_transform(X_train).T
-# # ax[0, 0].scatter(x, y, c=y_train)
-# # ax[0, 0].set_title("FastICA")
-# # print("FastICA - ok")
-
-# # print("FastICA - exp")
-# # x, y = FastICA(n_components=2, fun="exp").fit_transform(X_train).T
-# # ax[0, 1].scatter(x, y, c=y_train)
-# # ax[0, 1].set_title("FastICA - exp")
-# # print("FastICA - ok")
-
-# # print("SVD")
-# # x, y = TruncatedSVD(n_components=2, algorithm="arpack").fit_transform(X_train).T
-# # ax[1, 0].scatter(x, y, c=y_train)
-# # ax[1, 0].set_title("SVD")
-# # print("SVD - ok")
-
-# # x, y = PCA(n_components=2).fit_transform(X_train).T
-# # ax[1, 1].scatter(x, y, c=y_train)
-# # ax[1, 1].set_title("PCA")
-# # print("SVD - ok")
-
-# # plt.show()
-
-# # exit()
-
-# # y_train = LabelEncoder().fit_transform(y_train.reshape(-1, 1))
-
-# X_train, X_test, y_train, y_test = train_test_split(
-#     X_train, y_train, test_size=0.2, stratify=y_train
-# )
-
-# y_test = np.array(y_test)
-
-# y_train = np.array(y_train)
-# classes = np.unique(y_train)
-
-# W = np.ones(len(y_train))
-
-# for i, w in enumerate(
-#     class_weight.compute_class_weight("balanced", classes=classes, y=y_train)
-# ):
-#     idx = np.where(y_train == i)
-#     W[idx] = W[idx] * w
-
-
-# # print(X_train[0])
-
-
-# import matplotlib.pyplot as plt
-
-# # x, y = (
-# #     SpectralEmbedding(
-# #         n_components=2,
-# #         #  eigen_solver='arpack',
-# #         #  eigen_solver= 'lobpcg',
-# #         eigen_solver="amg",
-# #     )
-# #     .fit_transform(X_train)
-# #     .T
-# # )
-# # x, y = FastICA(n_components=2).fit_transform(X_train.toarray()).T
-# # plt.scatter(x, y, c=y_train)
-# # plt.title(X_train.shape)
-# # plt.show()
-
-# # exit()
-
-# from xgboost.callback import LearningRateScheduler, EarlyStopping
-
-# n_rounds = 2000
-# lr = np.linspace(0.1, 0.3, n_rounds).tolist()
-
-# lr_scheduler = LearningRateScheduler(tuple(lr[::-1]))
-# early_stp = EarlyStopping(
-#     rounds=n_rounds,
-#     maximize=False,
-#     metric_name="CustomErr",
-#     data_name="validation_0",
-# )
-
-# alpha = 0.25
-# reg_lambda = 1 - alpha
-
-# model = XGBClassifier(
-#     # eta=0.35,
-#     # eta=0.2,
-#     min_child_weight=2,
-#     early_stopping_rounds=10,
-#     num_class=10,
-#     n_estimators=n_rounds,
-#     nthread=n_threads,
-#     gamma=0.01,
-#     alpha=0.1,
-#     reg_lambda=0.1,
-#     device="gpu",
-#     objective="multi:softmax",
-#     callbacks=[lr_scheduler],
-# )
-
-# # print(model.__dict__)
-
-# print(f"[TRAINING] ntread: {n_threads} :: x_shape: {X_train.shape}")
-
-# model.fit(
-#     X_train,
-#     y_train,
-#     verbose=True,
-#     sample_weight=W,
-#     eval_set=[(X_train, y_train), (X_test, y_test)],
-# )
-
-# print("[PREDICTING]")
-
-# pred = model.predict(X_test)
-
-# print(classification_report(y_true=y_test, y_pred=pred))

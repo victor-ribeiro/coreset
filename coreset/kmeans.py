@@ -37,6 +37,7 @@ def _n_cluster(dataset, alpha=1, max_iter=100, tol=10e-2):
 
 
 @timeit
+# def kmeans_sampler(dataset, K, alpha=1, tol=10e-3, max_iter=300):
 def kmeans_sampler(dataset, K, alpha=1, tol=10e-3, max_iter=300):
     clusters = _n_cluster(dataset, alpha, max_iter, tol)
     dist = pairwise_distances(clusters, dataset).mean(axis=0)
@@ -47,24 +48,24 @@ def kmeans_sampler(dataset, K, alpha=1, tol=10e-3, max_iter=300):
     return sset[:K]
 
 
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    import numpy as np
-    from xgboost import XGBClassifier
-    from sklearn.metrics import classification_report
-    from sklearn.model_selection import train_test_split
+# if __name__ == "__main__":
+#     import matplotlib.pyplot as plt
+#     import numpy as np
+#     from xgboost import XGBClassifier
+#     from sklearn.metrics import classification_report
+#     from sklearn.model_selection import train_test_split
 
-    ds, lbl = dataset
+#     ds, lbl = dataset
 
-    X_train, X_test, y_train, y_test = train_test_split(ds, lbl, test_size=0.2)
+#     X_train, X_test, y_train, y_test = train_test_split(ds, lbl, test_size=0.2)
 
-    model = XGBClassifier()
-    model.fit(X_train, y_train)
+#     model = XGBClassifier()
+#     model.fit(X_train, y_train)
 
-    sset = kmeans_sampler(100, tol=10e-3)(X_train)
+#     sset = kmeans_sampler(100, tol=10e-3)(X_train)
 
-    k_model = XGBClassifier()
-    k_model.fit(X_train[sset], y_train[sset])
+#     k_model = XGBClassifier()
+#     k_model.fit(X_train[sset], y_train[sset])
 
-    print(classification_report(y_test, model.predict(X_test)))
-    print(classification_report(y_test, k_model.predict(X_test)))
+#     print(classification_report(y_test, model.predict(X_test)))
+#     print(classification_report(y_test, k_model.predict(X_test)))
