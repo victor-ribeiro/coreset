@@ -85,7 +85,6 @@ def lazy_greed(
         # D += 0.5 * (D**2).sum()
         # D += 0.5 * (np.linalg.norm(D, axis=1)).sum()
         size = len(D)
-        # argmax += D.mean(axis=0)  # pro pra tirar
         [q.push(base_inc, i) for i in zip(V, range(size))]
         while q and len(sset) < K:
             score, idx_s = q.head

@@ -1,5 +1,6 @@
 import torch
 from typing import Generator
+import time
 
 import torch.utils
 
@@ -35,22 +36,29 @@ def _valid_model(train_fn: Generator, /):
 
 
 def train_loop(data_train, loss_fn, optmizer, model, epochs, agg_fn=sum):
+    elapsed = 0
     for i in range(epochs):
         model.train(True)
         epoch_loss = 0
+        total = 0
         ################################################################
+        start_time = time.time()
+        # data_train = [_ for _ in data_train]
         for ftrs, tgt in data_train:
-
-            optmizer.zero_grad()
+            total += len(ftrs)
             pred = model(ftrs)
             loss = loss_fn(pred, tgt)
-            epoch_loss += loss.item()  # / len(ftrs)
+            epoch_loss += loss.item() / len(data_train)
+            optmizer.zero_grad()
             loss.backward()
             optmizer.step()
         ################################################################
-
         yield epoch_loss
-        print(f"[{i}] \t {model.__class__.__name__} :: {epoch_loss:.4f}")
+        end_time = time.time()
+        elapsed += end_time - start_time
+        print(
+            f"[{i}] \t {model.__class__.__name__} :: {epoch_loss:.4f} :: {elapsed:.4f} sec :: \t{total} "
+        )
 
 
 eval_train = _valid_model(train_loop)

@@ -106,7 +106,7 @@ def clean_sent(sent, sub_pattern=r"[\W\s]+"):
     sent = re.split(r"\W", sent)
     sent = " ".join(filter(lambda x: x.isalnum() and not x.isdigit(), sent))
     return sent
-    return sent.split()
+    # return sent.split()
 
 
 def build_vocab(dataset):
@@ -146,15 +146,18 @@ from sklearn.utils import class_weight
 
 batch_size = 256
 # loss_fn = nn.CrossEntropyLoss
-lr = 10e-4
-epochs = 30
+loss_fn = nn.BCEWithLogitsLoss
+# loss_fn = nn.BCELoss
+lr = 10e-5
+epochs = 50
 
 
-lazy_greed = partial(lazy_greed, batch_size=512)
+lazy_greed = partial(lazy_greed, batch_size=2048)
 LazyDataset = sampling_dataset(BaseDataset, lazy_greed)
 RandomDataset = sampling_dataset(BaseDataset, random_sampler)
 KMeansDataset = sampling_dataset(BaseDataset, kmeans_sampler)
 encoder = CountVectorizer(min_df=5, max_features=2000)
+# encoder = HashingVectorizer(n_features=128)
 
 
 with open(DATA_HOME, "rb") as file:
@@ -172,18 +175,6 @@ from sklearn.decomposition import FastICA, TruncatedSVD
 features, target = dataset.values()
 target = np.array(target)
 
-classes = np.unique(target)
-W = np.ones(len(target))
-
-
-for i, w in enumerate(
-    class_weight.compute_class_weight("balanced", classes=classes, y=target)
-):
-    idx = np.where(target == i)
-    W[idx] = W[idx] * w
-W = torch.tensor(W)
-
-loss_fn = partial(nn.BCELoss, weight=W)
 
 features = map(clean_sent, features)
 features = encoder.fit_transform(features).toarray()
@@ -194,12 +185,12 @@ target = [*map(lambda x: 1 if x > 5 else 0, target)]
 
 target = OneHotEncoder().fit_transform(np.reshape(target, (-1, 1))).toarray()
 
+from sklearn.metrics import classification_report
+import matplotlib.pyplot as plt
+
 X_train, X_test, y_train, y_test = train_test_split(
     features, target, test_size=0.2, shuffle=True
 )
-
-from sklearn.metrics import classification_report
-import matplotlib.pyplot as plt
 
 _, nsize = X_train.shape
 model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
@@ -215,39 +206,40 @@ print(
     )
 )
 
-plt.plot(hist, label="full dataset")
-
-lazy_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
 size = int(len(target) * 0.05)
-dataset = LazyDataset(features=X_train, target=y_train, coreset_size=size)
-dataset = Loader(dataset=dataset)
-hist = train(lazy_model, dataset, loss_fn(), Adam, lr, epochs)
-pred = lazy_model(X_test).astype(int)
-print(
-    classification_report(
-        y_pred=np.argmax(pred, axis=1), y_true=np.argmax(y_test, axis=1)
-    )
-)
-plt.plot(hist, label="lazy_greed")
+plt.plot(hist, label="full dataset", c="g", marker="x")
+for _ in range(5):
 
-random_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
-dataset = RandomDataset(features=X_train, target=y_train, coreset_size=size)
-dataset = Loader(dataset=dataset)
-hist = train(random_model, dataset, loss_fn(), Adam, lr, epochs)
-pred = random_model(X_test).astype(int)
-print(
-    classification_report(
-        y_pred=np.argmax(pred, axis=1), y_true=np.argmax(y_test, axis=1)
+    lazy_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    lazy_dataset = LazyDataset(features=X_train, target=y_train, coreset_size=size)
+    lazy_dataset = Loader(dataset=lazy_dataset)
+    hist = train(lazy_model, lazy_dataset, loss_fn(), Adam, lr, epochs)
+    pred = lazy_model(X_test).astype(int)
+    print(
+        classification_report(
+            y_pred=np.argmax(pred, axis=1), y_true=np.argmax(y_test, axis=1)
+        )
     )
-)
-plt.plot(hist, label="random")
+    plt.plot(hist, label="lazy_greed", c="b", alpha=0.25)
 
-k_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
-dataset = KMeansDataset(features=X_train, target=y_train, coreset_size=size)
-dataset = Loader(dataset=dataset)
-hist = train(k_model, dataset, loss_fn(), Adam, lr, epochs)
-pred = model(X_test).astype(int)
-print(classification_report(y_pred=pred, y_true=y_test))
-plt.plot(hist, label="kmeans")
+    random_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    random_dataset = RandomDataset(features=X_train, target=y_train, coreset_size=size)
+    random_dataset = Loader(dataset=random_dataset)
+    hist = train(random_model, random_dataset, loss_fn(), Adam, lr, epochs)
+    pred = random_model(X_test).astype(int)
+    print(
+        classification_report(
+            y_pred=np.argmax(pred, axis=1), y_true=np.argmax(y_test, axis=1)
+        )
+    )
+    plt.plot(hist, label="random", c="r", alpha=0.25)
+
+    # k_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    # k_dataset = KMeansDataset(features=X_train, target=y_train, coreset_size=size)
+    # dataset = Loader(dataset=k_dataset)
+    # hist = train(k_model, k_dataset, loss_fn(), Adam, lr, epochs)
+    # pred = k_model(X_test).astype(int)
+    # print(classification_report(y_pred=pred, y_true=y_test))
+    # plt.plot(hist, label="kmeans")
 plt.legend()
 plt.show()

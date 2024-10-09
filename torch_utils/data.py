@@ -73,30 +73,53 @@ class BaseDataset:
 def sampling_dataset(dataset_class, sampler=None, dtype=torch.FloatTensor):
     class Coreset(dataset_class):
 
-        __slots__ = ["coreset_size", "indices", "_features", "_target", "finished"]
+        __slots__ = [
+            "coreset_size",
+            "_indices",
+            "_features",
+            "_target",
+            "finished",
+            "_sampler",
+        ]
 
         def __init__(self, features, target, coreset_size=1, dtype=dtype) -> None:
-            self._features = features
-            self._target = target
+            indices = sampler(features, K=coreset_size)
+            self._features = features[indices]
+            self._target = target[indices]
             self.coreset_size = coreset_size
             self.dtype = dtype
+            self._sampler = sampler
             self.finished = False
+            # self.set_indices()
 
-            self.set_indices()
+        # def __new__(cls, features, target, coreset_size=1, dtype=dtype) -> None:
+        #     indices = sampler(features, K=coreset_size).astype(int)
+        #     new_ = BaseDataset(features, target, dtype)
+        #     new_._features = features[indices]
+        #     new_._target = target[indices]
+        #     new_.set_indices()
+        #     return new_
 
-        @property
-        def features(self):
-            return super()._features[self.indices]
+        # def __len__(self):
+        #     return len(self._features)
 
-        @property
-        def target(self):
-            return super().target[self.indices]
+        # def __getitem__(self, index):
+        #     return _prepair_tensor(self._features[index], self.dtype), _prepair_tensor(
+        #         self._target[index], self.dtype
+        #     )
 
-        def set_indices(self):
-            indices = sampler(self._features, K=self.coreset_size)
-            self.finished = True
-            return indices
+        # @property
+        # def features(self):
+        #     return self._features[self.indices]
 
-    Coreset.__qualname__ = f"{dataset_class.__qualname__}Coreset"
-    Coreset.__name__ = f"{dataset_class.__name__}Coreset"
+        # @property
+        # def target(self):
+        #     return self.target[self.indices]
+
+        # def set_indices(self):
+        #     self._indices = np.arange(len(self._features))
+        #     self.finished = True
+
+    Coreset.__qualname__ = f"Coreset{dataset_class.__qualname__}"
+    Coreset.__name__ = f"Coreset{dataset_class.__name__}"
     return Coreset

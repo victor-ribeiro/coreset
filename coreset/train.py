@@ -1,4 +1,5 @@
 from functools import singledispatch
+import numpy as np
 from torch.optim import Adam
 from torch_utils.train import train_loop, eval_train
 from .model.basics import SklearnLearner, TorchLearner
@@ -17,15 +18,12 @@ def train(
 ):
     model = learner._model
     optim = optmizer(model.parameters(), lr=lr)
-    # optim = Adam(learner._model.parameters(), lr=lr)
-    if data_test and not data_train:
-        train_fn = eval_train(data_test)
-    elif data_test and data_train:
-        train_fn = eval_train(data_test, data_valid)
-    else:
-        train_fn = train_loop
     # fazer o treinamento, retornar o modelo
-    hist = [_ for _ in train_fn(data_train, loss_fn, optim, model, epochs)]
+    hist = []
+    # elapsed = []
+    for loss in train_loop(data_train, loss_fn, optim, model, epochs):
+        hist.append(loss)
+        # elapsed.append(elaps)
     learner._model = model
     learner.fited = True
     return hist
