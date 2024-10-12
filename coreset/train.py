@@ -3,6 +3,7 @@ import numpy as np
 from torch.optim import Adam
 from torch_utils.train import train_loop, eval_train
 from .model.basics import SklearnLearner, TorchLearner
+from time import time
 
 
 @singledispatch
@@ -20,13 +21,14 @@ def train(
     optim = optmizer(model.parameters(), lr=lr)
     # fazer o treinamento, retornar o modelo
     hist = []
-    # elapsed = []
+    elapsed = []
+    t = time()
     for loss in train_loop(data_train, loss_fn, optim, model, epochs):
         hist.append(loss)
-        # elapsed.append(elaps)
+        elapsed.append(time() - t)
     learner._model = model
     learner.fited = True
-    return hist
+    return hist, elapsed
 
 
 @train.register(SklearnLearner)

@@ -12,29 +12,32 @@ class MLP(nn.Module):
         self.shape = [self.n_neurons, self.n_neurons]
         self.activation = nn.ReLU()
         self.input_layer = nn.Sequential(
-            nn.Linear(input_size, 256),
+            nn.Linear(input_size, 512),
             self.activation,
             # nn.EmbeddingBag(vocab_size, embedding_dim=256),
             # nn.LayerNorm(256, 256),
         )
         self.hidden = nn.Sequential(
-            nn.Linear(256, 256),
-            # self.activation,
-            # nn.Linear(256, 256),
+            nn.Linear(512, 512),
             self.activation,
-            nn.Linear(256, 128),
+            nn.Linear(512, 512),
             self.activation,
-            nn.Linear(128, self.n_neurons),
+            nn.Linear(512, 128),
+            self.activation,
+            nn.Linear(128, 128),
+            self.activation,
+            nn.Linear(128, 64),
+            self.activation,
+            nn.Linear(64, self.n_neurons),
             self.activation,
         )
         # self.hidden = nn.Bilinear(self.n_neurons, self.n_neurons, self.n_neurons)
 
         self.preput = nn.Sequential(
-            # nn.Linear(self.n_neurons, 1),
-            # self.activation,
-            # nn.Linear(self.n_neurons, 10),
-            nn.Linear(self.n_neurons, 2),
-            nn.Softmax(dim=1),
+            # nn.Linear(self.n_neurons, 2),
+            nn.Linear(self.n_neurons, 1),
+            # nn.Softmax(dim=1),
+            nn.Sigmoid(),
         )
 
         # self.output = nn.Sigmoid()

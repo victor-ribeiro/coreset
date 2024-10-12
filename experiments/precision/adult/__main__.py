@@ -18,7 +18,6 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 data = pd.read_csv(DATA_HOME, engine="pyarrow", names=names)
 *names, tgt_name = names
 data.replace(" ?", np.nan, inplace=True)
-# data.dropna(axis="index")
 data[tgt_name] = data.label.map({" >50K": 1, " <=50K": 0})
 
 max_size = len(data) * 0.8
@@ -50,14 +49,14 @@ if __name__ == "__main__":
         partial(random_sampler, K=int(max_size * 0.10)),
         partial(random_sampler, K=int(max_size * 0.15)),
         partial(random_sampler, K=int(max_size * 0.25)),
-        craig_baseline(0.01),
-        craig_baseline(0.02),
-        craig_baseline(0.03),
-        craig_baseline(0.04),
-        craig_baseline(0.05),
-        craig_baseline(0.10),
-        craig_baseline(0.15),
-        craig_baseline(0.25),
+        # craig_baseline(0.01),
+        # craig_baseline(0.02),
+        # craig_baseline(0.03),
+        # craig_baseline(0.04),
+        # craig_baseline(0.05),
+        # craig_baseline(0.10),
+        # craig_baseline(0.15),
+        # craig_baseline(0.25),
     ]
 
     adult = BaseExperiment(

@@ -1,245 +1,115 @@
-# # import pandas as pd
-# # from functools import partial
-# # from xgboost import XGBClassifier
-
-# # from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
-# # from sklearn.metrics import precision_score, recall_score, f1_score
-
-from coreset.environ import load_config
-
-# # from coreset.utils import random_sampler, hash_encoding, transform_fn, craig_baseline
-# # from coreset.lazzy_greed import lazy_greed
-# # from coreset.kmeans import kmeans_sampler
-# # from coreset.evaluator import BaseExperiment, TrainCurve, REPEAT
-
-# # import matplotlib.pyplot as plt
-
-outfile, DATA_HOME, names, tgt_name = load_config()
-# # dataset = pd.read_csv(DATA_HOME, engine="pyarrow", names=names)
-# # max_size = len(dataset) * 0.8
-# # *names, tgt_name = names
-
-
-# # def encoding(dataset, *columns):
-# #     data = dataset.copy()
-# #     for col in columns:
-# #         data[col] = OrdinalEncoder().fit_transform(dataset[col].values.reshape(-1, 1))
-# #     return data
-
-
-# # dataset["children"] = dataset["children"].map({"1": 1, "2": 2, "3": 3, "more": 4})
-# # print(dataset.shape)
-# # dataset[tgt_name] = dataset[tgt_name].map(
-# #     lambda x: "recommend" if x == "very_recom" or x == "priority" else x
-# # )
-# # dataset[tgt_name] = LabelEncoder().fit_transform(dataset[tgt_name]).astype(int)
-
-# # if __name__ == "__main__":
-# #     # sampling strategies
-# #     smpln = [
-# #         partial(lazy_greed, K=int(max_size * 0.01), batch_size=256),
-# #         partial(lazy_greed, K=int(max_size * 0.02), batch_size=256),
-# #         partial(lazy_greed, K=int(max_size * 0.03), batch_size=256),
-# #         partial(lazy_greed, K=int(max_size * 0.04), batch_size=256),
-# #         partial(lazy_greed, K=int(max_size * 0.05), batch_size=256),
-# #         partial(lazy_greed, K=int(max_size * 0.10), batch_size=256),
-# #         partial(lazy_greed, K=int(max_size * 0.15), batch_size=256),
-# #         partial(lazy_greed, K=int(max_size * 0.25), batch_size=256),
-# #         kmeans_sampler(K=int(max_size * 0.01)),
-# #         kmeans_sampler(K=int(max_size * 0.02)),
-# #         kmeans_sampler(K=int(max_size * 0.03)),
-# #         kmeans_sampler(K=int(max_size * 0.04)),
-# #         kmeans_sampler(K=int(max_size * 0.05)),
-# #         kmeans_sampler(K=int(max_size * 0.10)),
-# #         kmeans_sampler(K=int(max_size * 0.15)),
-# #         kmeans_sampler(K=int(max_size * 0.25)),
-# #         random_sampler(n_samples=int(max_size * 0.01)),
-# #         random_sampler(n_samples=int(max_size * 0.02)),
-# #         random_sampler(n_samples=int(max_size * 0.03)),
-# #         random_sampler(n_samples=int(max_size * 0.04)),
-# #         random_sampler(n_samples=int(max_size * 0.05)),
-# #         random_sampler(n_samples=int(max_size * 0.10)),
-# #         random_sampler(n_samples=int(max_size * 0.15)),
-# #         random_sampler(n_samples=int(max_size * 0.25)),
-# #         craig_baseline(0.01),
-# #         craig_baseline(0.02),
-# #         craig_baseline(0.03),
-# #         craig_baseline(0.04),
-# #         craig_baseline(0.05),
-# #         craig_baseline(0.10),
-# #         craig_baseline(0.15),
-# #         craig_baseline(0.25),
-# #     ]
-# #     nursery = BaseExperiment(
-# #         dataset,
-# #         model=partial(
-# #             XGBClassifier,
-# #             enable_categorical=True,
-# #             grow_policy="lossguide",
-# #             n_estimators=30,
-# #         ),
-# #         lbl_name=tgt_name,
-# #         repeat=REPEAT,
-# #     )
-
-# #     nursery.register_preprocessing(
-# #         hash_encoding("parents", "has_nurs", "form", n_features=5),
-# #         transform_fn(encoding, tgt_name, *names[4:]),
-# #     )
-
-# #     nursery.register_metrics(
-# #         partial(precision_score, average="macro"),
-# #     )
-
-# #     nursery()
-# #     for sampler in smpln:
-# #         nursery(sampler=sampler)
-# #     result = nursery.metrics  # base de comparação
-# #     result.to_csv(outfile, index=False)
-
 import re
+import multiprocessing
+import pickle
+import numpy as np
+import pandas as pd
+
+from functools import partial
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import FastICA
+from sklearn.utils import class_weight
+from sklearn.metrics import precision_score, f1_score, recall_score
+
+from xgboost import XGBClassifier
+
+from coreset.lazzy_greed import lazy_greed
+from coreset.utils import random_sampler
+from coreset.kmeans import kmeans_sampler
+from coreset.environ import load_config
+from coreset.evaluator import BaseExperiment, REPEAT
 
 
 def clean_sent(sent, sub_pattern=r"[\W\s]+"):
+    # sent = " ".join(sent).lower()
     sent = sent.lower()
     sent = re.sub(sub_pattern, " ", sent)
     sent = re.split(r"\W", sent)
     sent = " ".join(filter(lambda x: x.isalnum() and not x.isdigit(), sent))
     return sent
-    # return sent.split()
 
 
-def build_vocab(dataset):
-    vocab = " ".join(dataset)
-    vocab = clean_sent(vocab)
-    vocab = set(vocab)
-    return {w: i for w, i in enumerate(vocab)}
-
-
-import pickle
-
-from functools import partial
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-
-from torch import nn
-from torch.optim import Adam, SGD
-from torch.utils.data import DataLoader
-from sklearn.feature_extraction.text import (
-    TfidfVectorizer,
-    HashingVectorizer,
-    CountVectorizer,
-)
-
-import torch
-from torch_utils.data import BaseDataset, sampling_dataset
-from torch_utils.train import train_loop
-
-from coreset.train import train
-from coreset.model.neuralnet import MLP
-from coreset.model.basics import TorchLearner
-from coreset.lazzy_greed import lazy_greed
-from coreset.utils import random_sampler
-from coreset.kmeans import kmeans_sampler
-from sklearn.utils import class_weight
-
-
-batch_size = 256
-# loss_fn = nn.CrossEntropyLoss
-loss_fn = nn.BCEWithLogitsLoss
-# loss_fn = nn.BCELoss
-lr = 10e-5
-epochs = 50
-
-
-lazy_greed = partial(lazy_greed, batch_size=2048)
-LazyDataset = sampling_dataset(BaseDataset, lazy_greed)
-RandomDataset = sampling_dataset(BaseDataset, random_sampler)
-KMeansDataset = sampling_dataset(BaseDataset, kmeans_sampler)
-encoder = CountVectorizer(min_df=5, max_features=2000)
-# encoder = HashingVectorizer(n_features=128)
-
+outfile, DATA_HOME, names, tgt_name = load_config()
 
 with open(DATA_HOME, "rb") as file:
 
-    dataset = pickle.load(file)
+    data = pickle.load(file)
 
-Loader = partial(DataLoader, shuffle=True, batch_size=batch_size, drop_last=False)
-import numpy as np
-from torch import functional as F
-from torch import nn
-import torch
-from sklearn.preprocessing import normalize
-from sklearn.decomposition import FastICA, TruncatedSVD
+data, tgt = data["features"], data["target"]
 
-features, target = dataset.values()
-target = np.array(target)
+data = map(clean_sent, data)
+data = CountVectorizer(max_features=1500).fit_transform(data).toarray()
+data = FastICA(n_components=100).fit_transform(data)
+data = pd.DataFrame(data=data)
+data[tgt_name] = [*map(int, tgt)]
+data[tgt_name] = data[tgt_name].map(lambda x: 1 if x > 5 else 0)
 
+max_size = len(data) * 0.8
 
-features = map(clean_sent, features)
-features = encoder.fit_transform(features).toarray()
-features = FastICA(n_components=256).fit_transform(features)
-#
-target = [*map(lambda x: 1 if x > 5 else 0, target)]
+if __name__ == "__main__":
+    # sampling strategies
+    smpln = [
+        partial(lazy_greed, K=int(max_size * 0.01)),
+        partial(lazy_greed, K=int(max_size * 0.02)),
+        partial(lazy_greed, K=int(max_size * 0.03)),
+        partial(lazy_greed, K=int(max_size * 0.04)),
+        partial(lazy_greed, K=int(max_size * 0.05)),
+        partial(lazy_greed, K=int(max_size * 0.10)),
+        partial(lazy_greed, K=int(max_size * 0.15)),
+        partial(lazy_greed, K=int(max_size * 0.25)),
+        partial(kmeans_sampler, K=int(max_size * 0.01)),
+        partial(kmeans_sampler, K=int(max_size * 0.02)),
+        partial(kmeans_sampler, K=int(max_size * 0.03)),
+        partial(kmeans_sampler, K=int(max_size * 0.04)),
+        partial(kmeans_sampler, K=int(max_size * 0.05)),
+        partial(kmeans_sampler, K=int(max_size * 0.10)),
+        partial(kmeans_sampler, K=int(max_size * 0.15)),
+        partial(kmeans_sampler, K=int(max_size * 0.25)),
+        partial(random_sampler, K=int(max_size * 0.01)),
+        partial(random_sampler, K=int(max_size * 0.02)),
+        partial(random_sampler, K=int(max_size * 0.03)),
+        partial(random_sampler, K=int(max_size * 0.04)),
+        partial(random_sampler, K=int(max_size * 0.05)),
+        partial(random_sampler, K=int(max_size * 0.10)),
+        partial(random_sampler, K=int(max_size * 0.15)),
+        partial(random_sampler, K=int(max_size * 0.25)),
+        # craig_baseline(0.01),
+        # craig_baseline(0.02),
+        # craig_baseline(0.03),
+        # craig_baseline(0.04),
+        # craig_baseline(0.05),
+        # craig_baseline(0.10),
+        # craig_baseline(0.15),
+        # craig_baseline(0.25),
+    ]
 
+    n_threads = int(multiprocessing.cpu_count() / 2)
 
-target = OneHotEncoder().fit_transform(np.reshape(target, (-1, 1))).toarray()
-
-from sklearn.metrics import classification_report
-import matplotlib.pyplot as plt
-
-X_train, X_test, y_train, y_test = train_test_split(
-    features, target, test_size=0.2, shuffle=True
-)
-
-_, nsize = X_train.shape
-model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
-
-dataset = BaseDataset(features=X_train, target=y_train)
-dataset = Loader(dataset=dataset)
-hist = train(model, dataset, loss_fn(), Adam, lr, epochs)
-
-pred = model(X_test)
-print(
-    classification_report(
-        y_pred=np.argmax(pred, axis=1), y_true=np.argmax(y_test, axis=1)
+    review = BaseExperiment(
+        data,
+        model=partial(
+            XGBClassifier,
+            eta=0.15,
+            tree_method="hist",
+            grow_policy="lossguide",
+            n_estimators=200,
+            nthread=n_threads,
+            subsample=0.6,
+            scale_pos_weight=1,
+        ),
+        lbl_name=tgt_name,
+        repeat=REPEAT,
     )
-)
 
-size = int(len(target) * 0.05)
-plt.plot(hist, label="full dataset", c="g", marker="x")
-for _ in range(5):
-
-    lazy_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
-    lazy_dataset = LazyDataset(features=X_train, target=y_train, coreset_size=size)
-    lazy_dataset = Loader(dataset=lazy_dataset)
-    hist = train(lazy_model, lazy_dataset, loss_fn(), Adam, lr, epochs)
-    pred = lazy_model(X_test).astype(int)
-    print(
-        classification_report(
-            y_pred=np.argmax(pred, axis=1), y_true=np.argmax(y_test, axis=1)
-        )
+    review.register_metrics(
+        partial(precision_score, average="macro"),
+        partial(recall_score, average="macro"),
+        partial(f1_score, average="macro"),
     )
-    plt.plot(hist, label="lazy_greed", c="b", alpha=0.25)
 
-    random_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
-    random_dataset = RandomDataset(features=X_train, target=y_train, coreset_size=size)
-    random_dataset = Loader(dataset=random_dataset)
-    hist = train(random_model, random_dataset, loss_fn(), Adam, lr, epochs)
-    pred = random_model(X_test).astype(int)
-    print(
-        classification_report(
-            y_pred=np.argmax(pred, axis=1), y_true=np.argmax(y_test, axis=1)
-        )
-    )
-    plt.plot(hist, label="random", c="r", alpha=0.25)
+    for sampler in smpln:
+        review(sampler=sampler)
+    review()  # base de comparação
+    result = review.metrics  # base de comparação
 
-    # k_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
-    # k_dataset = KMeansDataset(features=X_train, target=y_train, coreset_size=size)
-    # dataset = Loader(dataset=k_dataset)
-    # hist = train(k_model, k_dataset, loss_fn(), Adam, lr, epochs)
-    # pred = k_model(X_test).astype(int)
-    # print(classification_report(y_pred=pred, y_true=y_test))
-    # plt.plot(hist, label="kmeans")
-plt.legend()
-plt.show()
+    result.to_csv(outfile, index=False)

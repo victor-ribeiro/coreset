@@ -34,6 +34,33 @@ def _prepair_tensor(array, dtype=torch.FloatTensor):
     return seq
 
 
+def sampling_dataset(dataset_class, sampler=None, dtype=torch.FloatTensor):
+    class Coreset(dataset_class):
+
+        __slots__ = [
+            "coreset_size",
+            "_indices",
+            "_features",
+            "_target",
+            "finished",
+            "_sampler",
+        ]
+
+        def __init__(self, features, target, coreset_size=1, dtype=dtype) -> None:
+            target = np.array(target)
+            indices = sampler(features, K=coreset_size)
+            self._features = features[indices]
+            self._target = target[indices]
+            self.coreset_size = coreset_size
+            self.dtype = dtype
+            self._sampler = sampler
+            self.finished = False
+
+    Coreset.__qualname__ = f"Coreset{dataset_class.__qualname__}"
+    Coreset.__name__ = f"Coreset{dataset_class.__name__}"
+    return Coreset
+
+
 class BaseDataset:
 
     __slots__ = ["_features", "_target", "_indices", "dtype"]
@@ -68,58 +95,3 @@ class BaseDataset:
     def set_indices(self):
         n, _ = self.shape
         self._indices = np.arange(n)
-
-
-def sampling_dataset(dataset_class, sampler=None, dtype=torch.FloatTensor):
-    class Coreset(dataset_class):
-
-        __slots__ = [
-            "coreset_size",
-            "_indices",
-            "_features",
-            "_target",
-            "finished",
-            "_sampler",
-        ]
-
-        def __init__(self, features, target, coreset_size=1, dtype=dtype) -> None:
-            indices = sampler(features, K=coreset_size)
-            self._features = features[indices]
-            self._target = target[indices]
-            self.coreset_size = coreset_size
-            self.dtype = dtype
-            self._sampler = sampler
-            self.finished = False
-            # self.set_indices()
-
-        # def __new__(cls, features, target, coreset_size=1, dtype=dtype) -> None:
-        #     indices = sampler(features, K=coreset_size).astype(int)
-        #     new_ = BaseDataset(features, target, dtype)
-        #     new_._features = features[indices]
-        #     new_._target = target[indices]
-        #     new_.set_indices()
-        #     return new_
-
-        # def __len__(self):
-        #     return len(self._features)
-
-        # def __getitem__(self, index):
-        #     return _prepair_tensor(self._features[index], self.dtype), _prepair_tensor(
-        #         self._target[index], self.dtype
-        #     )
-
-        # @property
-        # def features(self):
-        #     return self._features[self.indices]
-
-        # @property
-        # def target(self):
-        #     return self.target[self.indices]
-
-        # def set_indices(self):
-        #     self._indices = np.arange(len(self._features))
-        #     self.finished = True
-
-    Coreset.__qualname__ = f"Coreset{dataset_class.__qualname__}"
-    Coreset.__name__ = f"Coreset{dataset_class.__name__}"
-    return Coreset

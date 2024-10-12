@@ -43,16 +43,17 @@ def train_loop(data_train, loss_fn, optmizer, model, epochs, agg_fn=sum):
         total = 0
         ################################################################
         start_time = time.time()
-        # data_train = [_ for _ in data_train]
+        data_train = [_ for _ in data_train]
         for ftrs, tgt in data_train:
             total += len(ftrs)
             pred = model(ftrs)
-            loss = loss_fn(pred, tgt)
-            epoch_loss += loss.item() / len(data_train)
+            loss = loss_fn(pred.squeeze(), tgt)
+            epoch_loss += loss.item()
             optmizer.zero_grad()
             loss.backward()
             optmizer.step()
         ################################################################
+        epoch_loss = epoch_loss / len(data_train) * epochs
         yield epoch_loss
         end_time = time.time()
         elapsed += end_time - start_time

@@ -82,4 +82,4 @@ class TorchLearner(BaseLearner):
             return FitError
         ft = torch.Tensor(X)
         pred = self._model(ft)
-        return pred.detach().numpy()
+        return pred.detach().numpy().round()

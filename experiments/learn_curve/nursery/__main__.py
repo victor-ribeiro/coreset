@@ -40,7 +40,7 @@ if __name__ == "__main__":
         partial(lazy_greed, K=int(max_size * 0.05), batch_size=256),
         partial(kmeans_sampler, K=int(max_size * 0.05)),
         partial(random_sampler, K=int(max_size * 0.05)),
-        craig_baseline(0.05),
+        # craig_baseline(0.05),
     ]
     nursery = TrainCurve(
         dataset,

@@ -6,7 +6,7 @@ from coreset.utils import split_dataset
 
 import matplotlib.pyplot as plt
 
-REPEAT = 200
+REPEAT = 30
 
 TASKS = {
     "binary_classification": "logloss",
