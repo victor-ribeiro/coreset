@@ -49,14 +49,14 @@ if __name__ == "__main__":
         partial(random_sampler, K=int(max_size * 0.10)),
         partial(random_sampler, K=int(max_size * 0.15)),
         partial(random_sampler, K=int(max_size * 0.25)),
-        # craig_baseline(0.01),
-        # craig_baseline(0.02),
-        # craig_baseline(0.03),
-        # craig_baseline(0.04),
-        # craig_baseline(0.05),
-        # craig_baseline(0.10),
-        # craig_baseline(0.15),
-        # craig_baseline(0.25),
+        craig_baseline(0.01),
+        craig_baseline(0.02),
+        craig_baseline(0.03),
+        craig_baseline(0.04),
+        craig_baseline(0.05),
+        craig_baseline(0.10),
+        craig_baseline(0.15),
+        craig_baseline(0.25),
     ]
 
     adult = BaseExperiment(
