@@ -91,8 +91,8 @@ def split_dataset(label, test_size=0.2):
 def random_sampler(data, K):
     size = len(data)
 
-    rng = np.random.default_rng([42, 84, 13])
-    # rng = np.random.default_rng()
+    # rng = np.random.default_rng([42, 84, 13])
+    rng = np.random.default_rng()
     sset = rng.integers(0, size, size=K, dtype=int)
     return sset
 

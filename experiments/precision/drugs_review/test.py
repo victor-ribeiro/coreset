@@ -1,78 +1,117 @@
-import pandas as pd
-from functools import reduce
-from torch import nn
-from torch.utils.data import Dataset
-from torch.nn import functional as F
+from torchtext import data
+
+print(f"{data=}")
+exit()
+###################################
 import re
+import torch
+import numpy as np
+import pickle
+import matplotlib.pyplot as plt
+import pandas as pd
 
-data = pd.read_csv(
-    "/Users/victor/Documents/projects/coreset/data/drugs_review/drugsComTrain_raw.tsv",
-    sep="\t",
-    index_col=0,
+from torch import nn
+from torch.optim import Adam
+from torch.utils.data import DataLoader
+
+from sklearn.decomposition import PCA
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.feature_extraction.text import (
+    CountVectorizer,
+    TfidfVectorizer,
+    HashingVectorizer,
 )
+from functools import partial
 
+from coreset.train import train
+from coreset.lazzy_greed import lazy_greed
+from coreset.utils import random_sampler
+from coreset.model.basics import TorchLearner
+from coreset.model.neuralnet import MLP
 
-class TxtDataset(Dataset):
-    pass
-
-
-class Word2Vec(nn.Module):
-    def __init__(self, vocab_size, dim, context_size):
-        self.emb = nn.Embedding(vocab_size, dim)
-        self.hidden1 = nn.Linear(context_size * dim, 128)
-        self.hidden2 = nn.Linear(128, vocab_size)
-
-    def forward(self, inputs):
-        emb = self.emb(inputs)
-        x = self.hidden1(emb)
-        x = self.hidden2(x)
-        logprob = F.log_softmax(x, dim=1)
-        return logprob
+from torch_utils.data import sampling_dataset, BaseDataset
 
 
 def clean_sent(sent, sub_pattern=r"[\W\s]+"):
+    # sent = " ".join(sent).lower()
     sent = sent.lower()
     sent = re.sub(sub_pattern, " ", sent)
     sent = re.split(r"\W", sent)
     sent = " ".join(filter(lambda x: x.isalnum() and not x.isdigit(), sent))
-    return sent.split()
+    return sent
 
 
-def prepair_ngrams(sent, context_size=2):
-    sent = clean_sent(sent)
-    sent_size = len(sent)
-    return [
-        (sent[i : i + context_size], sent[i + context_size])
-        for i in range(sent_size - context_size)
-    ]
+batch_size = 256
 
+####################################
+## preprocessing
+####################################
 
-def build_vocab(dataset):
-    vocab = " ".join(dataset)
-    vocab = clean_sent(vocab)
-    vocab = set(vocab)
-    return {w: i for w, i in enumerate(vocab)}
+# outfile, DATA_HOME, names, tgt_name = load_config()
+DATA_HOME = "/Users/victor/Documents/projects/coreset/data/drugs_review/transformed_drugs_review.pickle"
 
+with open(DATA_HOME, "rb") as file:
 
-if __name__ == "__main__":
-    import torch
+    features = pickle.load(file)
 
-    review = data["review"].values
+features, target = features["features"], features["target"]
+target = map(lambda x: 1 if x > 5 else 0, target)
+target = np.array([*target])
 
-    vocab = build_vocab(review)
-    ngrams = prepair_ngrams(review)
+features = map(clean_sent, features)
 
-    # coder = Word2Vec(len(review),2, 2)
-    # X = torch.tensor([review])
-    # out = coder()
+features = (
+    # CountVectorizer(min_df=3, max_features=1800).fit_transform(features).toarray()
+    TfidfVectorizer(min_df=0.01, max_df=0.99, max_features=2000)
+    .fit_transform(features)
+    .toarray()
+)
+features = PCA(n_components=400).fit_transform(features)
 
-# review = build_vocab(data.review.values)
-# print(len(review))
+LazyDataset = sampling_dataset(BaseDataset, partial(lazy_greed, metric="codist"))
+RandomDataset = sampling_dataset(BaseDataset, random_sampler)
 
-# vocab = set(vocab)
+Loader = partial(DataLoader, shuffle=True, batch_size=batch_size, drop_last=False)
 
+X_train, X_test, y_train, y_test = train_test_split(
+    features, target, test_size=0.2, shuffle=True
+)
+####################################
+## modeling
+####################################
 
-# review = map(lambda x: ngrams(x), review)
-# for r in review:
-#     print(r)
-#     exit()
+# loss_fn = nn.BCELoss
+loss_fn = nn.CrossEntropyLoss
+lr = 10e-5
+epochs = 500
+
+_, nsize = X_train.shape
+size = int(len(target) * 0.05)
+
+base_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+dataset = Loader(BaseDataset(X_train, y_train), batch_size=batch_size)
+hist = train(base_model, dataset, loss_fn(), Adam, lr, epochs)
+pred = base_model(X_test).astype(int)
+print(classification_report(y_pred=pred, y_true=y_test))
+
+plt.plot(hist, label="base Model")
+
+lazy_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+dataset = LazyDataset(features=X_train, target=y_train, coreset_size=size)
+dataset = Loader(dataset=dataset, batch_size=batch_size)
+hist = train(lazy_model, dataset, loss_fn(), Adam, lr, epochs)
+pred = lazy_model(X_test).astype(int)
+print(classification_report(y_pred=pred, y_true=y_test))
+
+plt.plot(hist, label="lazy_greed")
+random_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+dataset = RandomDataset(features=X_train, target=y_train, coreset_size=size)
+dataset = Loader(dataset=dataset, batch_size=batch_size)
+hist = train(random_model, dataset, loss_fn(), Adam, lr, epochs)
+pred = random_model(X_test).astype(int)
+print(classification_report(y_pred=pred, y_true=y_test))
+plt.plot(hist, label="random")
+plt.legend()
+plt.show()

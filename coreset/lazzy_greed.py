@@ -49,7 +49,7 @@ def utility_score(e, sset, /, acc=0, alpha=1, reduce="mean"):
     argmax = np.maximum(e, sset)
     f_norm = alpha / (sset.sum() + 1 + acc)
     util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
-    return util
+    return util + math.log(1 + (sset**2).sum())
 
 
 @timeit

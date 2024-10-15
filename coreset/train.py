@@ -28,7 +28,8 @@ def train(
         elapsed.append(time() - t)
     learner._model = model
     learner.fited = True
-    return hist, elapsed
+    # return hist, elapsed
+    return hist
 
 
 @train.register(SklearnLearner)
