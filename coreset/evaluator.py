@@ -1,12 +1,17 @@
 from typing import Any
 import pandas as pd
 
+from torch.utils.data import DataLoader
+
+from coreset.model.basics import TorchLearner
 from coreset.dataset.transform import pipeline
 from coreset.utils import split_dataset
+from coreset.train import train
+from torch_utils.data import sampling_dataset, BaseDataset
 
 import matplotlib.pyplot as plt
 
-REPEAT = 30
+REPEAT = 70
 
 TASKS = {
     "binary_classification": "logloss",
@@ -92,20 +97,13 @@ class BaseExperiment(ExperimentTemplate):
                 self.result.append(result)
 
 
-class TrainCurve(ExperimentTemplate):
-    __slots__ = ("hist", "eval_metric")
-
-    def __init__(self, data, model, lbl_name, task, repeat=1, epochs=30) -> None:
-        super().__init__(data, model, lbl_name, repeat, epochs)
-        self.hist = []
-        self.eval_metric = TASKS[task]
-
-    def __call__(self, sampler=None) -> Any:
+class AlpaExperiment(ExperimentTemplate):
+    def __call__(self, alpha=None, sampler=None) -> Any:
         preprocessing = pipeline(*self.preprocessing)
         split_fn = split_dataset(label=self.lbl_name)
         data = preprocessing(self._data)
         for _ in range(self.repeat):
-            model = self.model(eval_metric=self.eval_metric)
+            model = self.model()
             (X_train, y_train), (X_test, y_test) = split_fn(data)
             n_samples = len(X_train)
             if sampler:
@@ -113,38 +111,109 @@ class TrainCurve(ExperimentTemplate):
                 X_train = X_train[sset]
                 y_train = y_train[sset]
 
-            model.fit(
-                X_train,
-                y_train,
-                eval_set=[(X_train, y_train), (X_test, y_test)],
-                verbose=False,
-            )
-            try:
-                mthd_name = sampler.func.__name__ if sampler else "full_dataset"
-            except:
-                mthd_name = sampler.__name__ if sampler else "full_dataset"
+            model.fit(X_train, y_train)
+            pred = model.predict(X_test)
 
-            sample_size = len(X_train)
-            train_size = n_samples
+            for metric in self._metrics:
+                result = {}
+                try:
+                    result["sampler"] = (
+                        sampler.func.__name__ if sampler else "full_dataset"
+                    )
+                except Exception as e:
+                    result["sampler"] = sampler.__name__ if sampler else "full_dataset"
+                result["sample_size"] = len(X_train)
+                result["train_size"] = n_samples
+                result["alpha"] = alpha
+                try:
+                    result["metric"] = metric.__name__
+                except:
+                    result["metric"] = metric.func.__name__
+                result["value"] = metric(y_test, pred)
+                self.result.append(result)
 
-            self.result.append(
-                [
-                    mthd_name,
-                    "train",
-                    sample_size,
-                    train_size,
-                    *model.evals_result()["validation_0"][model.eval_metric],
-                ]
+
+class TrainCurve(ExperimentTemplate):
+
+    # TODO: implementar o método de treinamento
+    # TODO: compatibilizar com TorchLearner
+    __slots__ = ("hist", "train_fn", "elapsed", "params", "lr")
+
+    def __init__(
+        self, data, model, lbl_name, train_fn, repeat=1, epochs=30, lr=10e-4, params={}
+    ) -> None:
+        super().__init__(data, model, lbl_name, repeat, epochs)
+        self.hist = []
+        self.elapsed = []
+        self.train_fn = train_fn
+        self.params = params
+        self.lr = lr
+
+    def __call__(
+        self, model, loss_fn, optmizer, batch_size=32, sampler=None, **model_args
+    ) -> Any:
+        preprocessing = pipeline(*self.preprocessing)
+        split_fn = split_dataset(label=self.lbl_name)
+        data = preprocessing(self._data)
+        for _ in range(self.repeat):
+            (X_train, y_train), (X_test, y_test) = split_fn(data)
+
+            if sampler:
+                dataset = sampling_dataset(BaseDataset, sampler)
+            else:
+                dataset = BaseDataset
+
+            data_loader = DataLoader(
+                dataset(features=X_train, target=y_train),
+                shuffle=True,
+                batch_size=batch_size,
+                drop_last=False,
             )
-            self.result.append(
-                [
-                    mthd_name,
-                    "test",
-                    sample_size,
-                    train_size,
-                    *model.evals_result()["validation_1"][model.eval_metric],
-                ]
+            hist, elapsed = train(
+                model, data_loader, optmizer, loss_fn(), self.lr, self.epochs
             )
+            result = {
+                "hist": hist,
+                "elapsed": elapsed,
+            }
+            # n_samples = len(X_train)
+            # if sampler:
+            #     sset = sampler(X_train)
+            #     X_train = X_train[sset]
+            #     y_train = y_train[sset]
+
+            # model.fit(
+            #     X_train,
+            #     y_train,
+            #     eval_set=[(X_train, y_train), (X_test, y_test)],
+            #     verbose=False,
+            # )
+            # try:
+            #     mthd_name = sampler.func.__name__ if sampler else "full_dataset"
+            # except:
+            #     mthd_name = sampler.__name__ if sampler else "full_dataset"
+
+            # sample_size = len(X_train)
+            # train_size = n_samples
+
+            # self.result.append(
+            #     [
+            #         mthd_name,
+            #         "train",
+            #         sample_size,
+            #         train_size,
+            #         *model.evals_result()["validation_0"][model.eval_metric],
+            #     ]
+            # )
+            # self.result.append(
+            #     [
+            #         mthd_name,
+            #         "test",
+            #         sample_size,
+            #         train_size,
+            #         *model.evals_result()["validation_1"][model.eval_metric],
+            #     ]
+            # )
 
     @property
     def history(self):

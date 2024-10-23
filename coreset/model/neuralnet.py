@@ -12,15 +12,23 @@ class MLP(nn.Module):
         self.shape = [self.n_neurons, self.n_neurons]
         self.activation = nn.ReLU()
         self.input_layer = nn.Sequential(
-            nn.Linear(input_size, 120),
+            nn.Linear(input_size, 64),
             self.activation,
         )
         self.hidden = nn.Sequential(
-            nn.Linear(120, 200),
+            nn.Linear(64, 64),
             self.activation,
-            nn.Linear(200, 128),
+            nn.Linear(64, 64),
             self.activation,
-            nn.Linear(128, self.n_neurons),
+            nn.Linear(64, 64),
+            self.activation,
+            nn.Linear(64, 64),
+            self.activation,
+            nn.Linear(64, 64),
+            self.activation,
+            nn.Linear(64, 32),
+            self.activation,
+            nn.Linear(32, self.n_neurons),
             self.activation,
         )
 

@@ -44,12 +44,12 @@ def base_inc(alpha=1):
     return math.log(1 + alpha)
 
 
-def utility_score(e, sset, /, acc=0, alpha=1, reduce="mean"):
+def utility_score(e, sset, /, acc=0, alpha=1, beta=1):
     norm = 1 / base_inc(alpha)
     argmax = np.maximum(e, sset)
     f_norm = alpha / (sset.sum() + 1 + acc)
     util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
-    return util + math.log(1 + (sset**2).sum())
+    return util + math.log(1 + ((sset**2).sum()) * beta)
 
 
 @timeit
@@ -59,8 +59,8 @@ def lazy_greed(
     alpha=1,
     metric="similarity",
     K=1,
-    reduce_fn="sum",
     batch_size=32,
+    beta=1,
 ):
     # basic config
     base_inc = base_inc(alpha)
@@ -82,17 +82,13 @@ def lazy_greed(
         while q and len(sset) < K:
             score, idx_s = q.head
             s = D[:, idx_s[1]]
-            score_s = utility_score(
-                s, localmax, acc=argmax, alpha=alpha, reduce=reduce_fn
-            )
+            score_s = utility_score(s, localmax, acc=argmax, alpha=alpha, beta=beta)
             inc = score_s - score
             if (inc < 0) or (not q):
                 break
             score_t, idx_t = q.head
             if inc > score_t:
-                score = utility_score(
-                    s, localmax, acc=argmax, alpha=alpha, reduce=reduce_fn
-                )
+                score = utility_score(s, localmax, acc=argmax, alpha=alpha, beta=beta)
                 localmax = np.maximum(localmax, s)
                 sset.append(idx_s[0])
                 vals.append(score)
@@ -100,6 +96,7 @@ def lazy_greed(
                 q.push(inc, idx_s)
             q.push(score_t, idx_t)
     sset = np.array(sset)
+    np.random.shuffle(sset)
     return sset
 
 
@@ -110,25 +107,32 @@ def lazy_greed_class(
     alpha=1,
     metric="similarity",
     K=1,
-    reduce_fn="sum",
     batch_size=32,
+    beta=1,
 ):
-    classes = np.unique(targets)
+    import math
+
+    classes, w = np.unique(targets, return_counts=True)
     n_class = len(classes)
     idx = np.arange(len(features))
-    idx = [np.where(targets == c) for c in classes]
-    sset = [
-        lazy_greed(
-            features[i],
+    sset = []
+    for c, w_ in zip(classes, w):
+        idx_ = idx[targets.astype(int) == c]
+        f_ = features[idx_]
+        s_ = lazy_greed(
+            f_,
             base_inc,
-            alpha,
+            alpha / (w_ / len(features)),
             metric,
-            int(K / n_class),
-            reduce_fn,
+            # math.ceil(K * (w_ / len(features))),
+            math.ceil(K / n_class),
+            # K,
             batch_size,
+            beta=beta / (w_ / len(features)),
         )
-        for i in idx
-    ]
+        sset.append(idx_[s_])
+
+    sset = [idx[i] for i in sset]
     sset = np.hstack(sset)
     np.random.shuffle(sset)
     return sset

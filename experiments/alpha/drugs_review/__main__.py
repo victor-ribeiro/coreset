@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 
 from functools import partial
-from sklearn.model_selection import train_test_split
+from itertools import product
+
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import PCA
-from sklearn.utils import class_weight
 from sklearn.metrics import precision_score, f1_score, recall_score
 
 from xgboost import XGBClassifier
@@ -17,7 +17,7 @@ from coreset.lazzy_greed import lazy_greed
 from coreset.utils import random_sampler
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
-from coreset.evaluator import BaseExperiment, REPEAT
+from coreset.evaluator import AlpaExperiment
 
 
 def clean_sent(sent, sub_pattern=r"[\W\s]+"):
@@ -46,47 +46,19 @@ data[tgt_name] = data[tgt_name].map(lambda x: 1 if x > 5 else 0)
 data.columns = data.columns.astype(str)
 
 max_size = len(data) * 0.8
-
+alpha = np.linspace(1, 50, 10)
+REPEAT = 30
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
         partial(lazy_greed, K=int(max_size * 0.01)),
-        partial(lazy_greed, K=int(max_size * 0.02)),
-        partial(lazy_greed, K=int(max_size * 0.03)),
-        partial(lazy_greed, K=int(max_size * 0.04)),
-        partial(lazy_greed, K=int(max_size * 0.05)),
         partial(lazy_greed, K=int(max_size * 0.10)),
         partial(lazy_greed, K=int(max_size * 0.15)),
-        partial(lazy_greed, K=int(max_size * 0.25)),
-        partial(kmeans_sampler, K=int(max_size * 0.01)),
-        partial(kmeans_sampler, K=int(max_size * 0.02)),
-        partial(kmeans_sampler, K=int(max_size * 0.03)),
-        partial(kmeans_sampler, K=int(max_size * 0.04)),
-        partial(kmeans_sampler, K=int(max_size * 0.05)),
-        partial(kmeans_sampler, K=int(max_size * 0.10)),
-        partial(kmeans_sampler, K=int(max_size * 0.15)),
-        partial(kmeans_sampler, K=int(max_size * 0.25)),
-        partial(random_sampler, K=int(max_size * 0.01)),
-        partial(random_sampler, K=int(max_size * 0.02)),
-        partial(random_sampler, K=int(max_size * 0.03)),
-        partial(random_sampler, K=int(max_size * 0.04)),
-        partial(random_sampler, K=int(max_size * 0.05)),
-        partial(random_sampler, K=int(max_size * 0.10)),
-        partial(random_sampler, K=int(max_size * 0.15)),
-        partial(random_sampler, K=int(max_size * 0.25)),
-        # craig_baseline(0.01),
-        # craig_baseline(0.02),
-        # craig_baseline(0.03),
-        # craig_baseline(0.04),
-        # craig_baseline(0.05),
-        # craig_baseline(0.10),
-        # craig_baseline(0.15),
-        # craig_baseline(0.25),
     ]
 
     n_threads = int(multiprocessing.cpu_count() / 2)
 
-    review = BaseExperiment(
+    review = AlpaExperiment(
         data,
         model=partial(
             XGBClassifier,
@@ -108,9 +80,9 @@ if __name__ == "__main__":
         partial(f1_score, average="macro"),
     )
 
-    for sampler in smpln:
-        review(sampler=sampler)
     review()  # base de comparação
+    for a, sampler in product(alpha, smpln):
+        review(sampler=sampler, alpha=a)
     result = review.metrics  # base de comparação
 
     result.to_csv(outfile, index=False)

@@ -1,27 +1,43 @@
 import pandas as pd
-import numpy as np
 from functools import partial
-from xgboost import XGBClassifier
+from xgboost import XGBRegressor
+
 from sklearn.tree import DecisionTreeClassifier
 
 
-from sklearn.metrics import precision_score, f1_score, recall_score
+from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
+from sklearn.metrics import mean_squared_error
 
-from coreset.evaluator import BaseExperiment, REPEAT
-from coreset.lazzy_greed import lazy_greed
-from coreset.utils import hash_encoding, oht_coding, random_sampler, craig_baseline
-from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
+from coreset.utils import (
+    random_sampler,
+    transform_fn,
+    oht_coding,
+)
+from coreset.lazzy_greed import lazy_greed
+from coreset.kmeans import kmeans_sampler
+from coreset.evaluator import BaseExperiment, REPEAT
+import seaborn as sns
+import matplotlib.pyplot as plt
 
+
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import normalize, minmax_scale, OrdinalEncoder, maxabs_scale
+from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
+from functools import partial
 
 outfile, DATA_HOME, names, tgt_name = load_config()
 
-data = pd.read_csv(DATA_HOME, engine="pyarrow", names=names)
-*names, tgt_name = names
-data.replace(" ?", np.nan, inplace=True)
-data[tgt_name] = data.label.map({" >50K": 1, " <=50K": 0})
+dataset = pd.read_csv(DATA_HOME, engine="pyarrow", index_col=0, skiprows=1)
+max_size = len(dataset) * 0.8
+names = dataset.columns
 
-max_size = len(data) * 0.8
+avg_names = ["Run1 (ms)", "Run2 (ms)", "Run3 (ms)", "Run4 (ms)"]
+
+dataset[tgt_name] = dataset[avg_names].mean(axis=1)
+dataset = dataset.drop(columns=avg_names)
+# dataset = minmax_scale(dataset)
 
 if __name__ == "__main__":
     # sampling strategies
@@ -59,30 +75,20 @@ if __name__ == "__main__":
         # craig_baseline(0.15),
         # craig_baseline(0.25),
     ]
-
-    adult = BaseExperiment(
-        data,
-        model=DecisionTreeClassifier,
+    sgemm = BaseExperiment(
+        dataset,
+        model=XGBRegressor,
         lbl_name=tgt_name,
         repeat=REPEAT,
     )
 
-    adult.register_preprocessing(
-        hash_encoding(
-            "native-country", "occupation", "marital-status", "fnlwgt", n_features=5
-        ),
-        oht_coding("sex", "education", "race", "relationship", "workclass"),
-    )
+    sgemm.register_preprocessing(transform_fn(minmax_scale, tgt_name))
 
-    adult.register_metrics(
-        partial(precision_score, average="macro"),
-        partial(recall_score, average="macro"),
-        partial(f1_score, average="macro"),
-    )
+    sgemm.register_metrics(mean_squared_error)
 
-    adult()  # base de comparação
+    sgemm()  # base de comparação
     for sampler in smpln:
-        adult(sampler=sampler)
-    result = adult.metrics  # base de comparação
+        sgemm(sampler=sampler)
+    result = sgemm.metrics
 
     result.to_csv(outfile, index=False)

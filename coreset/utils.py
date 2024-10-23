@@ -92,9 +92,11 @@ def random_sampler(data, K):
     size = len(data)
 
     # rng = np.random.default_rng([42, 84, 13])
-    rng = np.random.default_rng()
-    sset = rng.integers(0, size, size=K, dtype=int)
-    return sset
+    # rng = np.random.default_rng()
+    # sset = rng.integers(0, size, size=K, dtype=int)
+    # return sset
+    sset = np.random.choice(size, size=K, replace=False)
+    return sset.tolist()
 
 
 def craig_baseline(sample):

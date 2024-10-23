@@ -6,7 +6,7 @@ from .model.basics import SklearnLearner, TorchLearner
 from time import time
 
 
-@singledispatch
+# @singledispatch
 def train(
     learner: TorchLearner,
     data_train,
@@ -25,15 +25,15 @@ def train(
     t = time()
     for loss in train_loop(data_train, loss_fn, optim, model, epochs):
         hist.append(loss)
-        elapsed.append(time() - t)
+        elapsed.append(round(time() - t, 2))
     learner._model = model
     learner.fited = True
-    # return hist, elapsed
-    return hist
+    return np.array(hist), np.array(elapsed)
+    # return hist
 
 
-@train.register(SklearnLearner)
-def _(learner: SklearnLearner, data_train):
-    X, y = data_train
-    learner.fit(X, y)
-    return learner
+# @train.register(SklearnLearner)
+# def _(learner: SklearnLearner, data_train):
+#     X, y = data_train
+#     learner.fit(X, y)
+#     return learner

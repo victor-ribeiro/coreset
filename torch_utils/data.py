@@ -17,13 +17,17 @@
 
 import torch
 import numpy as np
-from torch.utils.data import Dataset
-
-from .metrics import batched_euclidean
+from functools import partial
 
 from coreset.kmeans import kmeans_sampler
 from coreset.utils import random_sampler
 from coreset.lazzy_greed import lazy_greed
+
+SAMPLING = {
+    "kmeans_sampler": kmeans_sampler,
+    "random_sampler": random_sampler,
+    "lazy_greed": lazy_greed,
+}
 
 # __all__ = ["RandomTrainingSet", "CoresetRandomDataset", "PandasDataset"]
 
