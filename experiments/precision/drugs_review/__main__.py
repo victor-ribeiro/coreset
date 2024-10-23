@@ -14,7 +14,7 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 from xgboost import XGBClassifier
 
 from coreset.lazzy_greed import lazy_greed
-from coreset.utils import random_sampler
+from coreset.utils import random_sampler, craig_baseline
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
 from coreset.evaluator import BaseExperiment, REPEAT
@@ -74,14 +74,14 @@ if __name__ == "__main__":
         partial(random_sampler, K=int(max_size * 0.10)),
         partial(random_sampler, K=int(max_size * 0.15)),
         partial(random_sampler, K=int(max_size * 0.25)),
-        # craig_baseline(0.01),
-        # craig_baseline(0.02),
-        # craig_baseline(0.03),
-        # craig_baseline(0.04),
-        # craig_baseline(0.05),
-        # craig_baseline(0.10),
-        # craig_baseline(0.15),
-        # craig_baseline(0.25),
+        craig_baseline(0.01),
+        craig_baseline(0.02),
+        craig_baseline(0.03),
+        craig_baseline(0.04),
+        craig_baseline(0.05),
+        craig_baseline(0.10),
+        craig_baseline(0.15),
+        craig_baseline(0.25),
     ]
 
     n_threads = int(multiprocessing.cpu_count() / 2)

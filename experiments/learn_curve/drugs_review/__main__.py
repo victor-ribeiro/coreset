@@ -21,7 +21,7 @@ from coreset.lazzy_greed import lazy_greed
 from coreset.model.basics import TorchLearner
 from coreset.model.neuralnet import MLP
 from coreset.environ import load_config
-from coreset.utils import random_sampler
+from coreset.utils import random_sampler, craig_baseline
 from torch_utils.data import sampling_dataset, BaseDataset
 from coreset.evaluator import REPEAT
 
@@ -63,6 +63,7 @@ features = PCA(n_components=300).fit_transform(features)
 
 LazyDataset = sampling_dataset(BaseDataset, lazy_greed)
 RandomDataset = sampling_dataset(BaseDataset, random_sampler)
+CraigDataset = sampling_dataset(BaseDataset, craig_baseline)
 
 Loader = partial(DataLoader, shuffle=True, batch_size=batch_size, drop_last=False)
 
@@ -83,6 +84,16 @@ for i in range(REPEAT):
 
     _, nsize = X_train.shape
     size = int(len(target) * 0.1)
+
+    craig_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    dataset = CraigDataset(features=X_train, target=y_train, coreset_size=size)
+    dataset = Loader(dataset=dataset, batch_size=batch_size)
+    hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
+    tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
+    tmp["method"] = "lazy_greed"
+    result = pd.concat([result, tmp], ignore_index=True)
+    del craig_model
+    del dataset
 
     base_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
     dataset = Loader(BaseDataset(X_train, y_train), batch_size=batch_size)
@@ -128,8 +139,8 @@ result.to_csv(outfile, index=False)
 print(result.shape)
 import seaborn as sns
 
-sns.lineplot(data=result, x="elapsed", y="hist", hue="method")
+# sns.lineplot(data=result, x="elapsed", y="hist", hue="method")
 # sns.lineplot(data=result, x='elapsed', y="hist", hue="method")
 # sns.lineplot(data=result, x="elapsed", y="hist", hue=result.columns[-1])
-plt.legend()
-plt.show()
+# plt.legend()
+# plt.show()

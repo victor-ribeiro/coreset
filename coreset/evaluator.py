@@ -11,7 +11,7 @@ from torch_utils.data import sampling_dataset, BaseDataset
 
 import matplotlib.pyplot as plt
 
-REPEAT = 70
+REPEAT = 30
 
 TASKS = {
     "binary_classification": "logloss",
@@ -107,7 +107,7 @@ class AlpaExperiment(ExperimentTemplate):
             (X_train, y_train), (X_test, y_test) = split_fn(data)
             n_samples = len(X_train)
             if sampler:
-                sset = sampler(X_train)
+                sset = sampler(X_train, alpha=alpha)
                 X_train = X_train[sset]
                 y_train = y_train[sset]
 
