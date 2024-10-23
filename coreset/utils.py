@@ -99,18 +99,14 @@ def random_sampler(data, K):
     return sset.tolist()
 
 
-def craig_baseline(sample):
-    @timeit
-    @wraps(craig_baseline)
-    def _inner(data):
-        features = data
-        V = np.arange(len(features)).reshape(-1, 1)
-        D = pairwise_distances(features)
-        D = D.max() - D
-        B = int(sample * len(V))
+@timeit
+def craig_baseline(data, K):
+    features = data
+    V = np.arange(len(features)).reshape(-1, 1)
+    D = pairwise_distances(features)
+    D = D.max() - D
+    B = int(K * len(V))
 
-        locator = FacilityLocation(D=D, V=V)
-        sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=B)
-        return np.array(sset_idx).reshape(1, -1)[0]
-
-    return _inner
+    locator = FacilityLocation(D=D, V=V)
+    sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=B)
+    return np.array(sset_idx).reshape(1, -1)[0]
