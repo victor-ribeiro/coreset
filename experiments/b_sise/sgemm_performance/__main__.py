@@ -9,7 +9,7 @@ from functools import partial
 from itertools import product
 
 from coreset.environ import load_config
-from coreset.utils import transform_fn
+from coreset.utils import transform_fn, random_sampler
 from coreset.lazzy_greed import lazy_greed
 from coreset.evaluator import BSizeExperiment
 
@@ -50,6 +50,7 @@ if __name__ == "__main__":
             sampler=partial(lazy_greed, K=int(max_size * 0.10)),
             batch_size=size,
         )
+        sgemm(sampler=partial(random_sampler, K=int(max_size * 0.10)))
     result = sgemm.metrics
 
     result.to_csv(outfile, index=False)

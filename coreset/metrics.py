@@ -11,6 +11,19 @@ __all__ = ["METRICS"]
 METRICS = {}
 
 
+def mat_to_bytes(nrows, ncols, dtype=32, out="GB"):
+    """Calculate the size of a numpy array in bytes.
+    :param nrows: the number of rows of the matrix.
+    :param ncols: the number of columns of the matrix.
+    :param dtype: the size of each element in the matrix. Defaults to 32bits.
+    :param out: the output unit. Defaults to gigabytes (GB)
+    :returns: the size of the matrix in the given unit
+    :rtype: a float
+    """
+    sizes = {v: i for i, v in enumerate("BYTES KB MB GB TB".split())}
+    return nrows * ncols * dtype / 8 / 1024.0 ** sizes[out]
+
+
 def euclidean(data):
     x_ = np.sum(data**2, axis=1)
     y_ = np.sum(data**2, axis=1)[:, np.newaxis]
@@ -46,11 +59,14 @@ _register(codist)
 
 
 if __name__ == "__main__":
+    from sys import getsizeof
 
     for i in np.linspace(1_000, 300_000, 5, dtype=int):
         data = np.random.normal(size=(i, 100))
-        print(f"[DIST] size :: {i}", end=" \t -")
+        print(
+            f"[DIST] matriz ({i}x{i}) :: {getsizeof(data)/8/1024:.2f}", end=" \t - \t"
+        )
         d = euclidean(data)
-        print("ok")
+        print(f"{getsizeof(d) / 8 / 1024}:.2f")
         del data
         del d
