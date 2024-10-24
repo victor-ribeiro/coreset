@@ -69,10 +69,10 @@ Loader = partial(DataLoader, shuffle=True, batch_size=batch_size, drop_last=Fals
 
 result = pd.DataFrame()
 
+X_train, X_test, y_train, y_test = train_test_split(
+    features, target, test_size=0.2, shuffle=True
+)
 for i in range(REPEAT):
-    X_train, X_test, y_train, y_test = train_test_split(
-        features, target, test_size=0.2, shuffle=True
-    )
     ####################################
     ## modeling
     ####################################
@@ -85,15 +85,15 @@ for i in range(REPEAT):
     _, nsize = X_train.shape
     size = int(len(target) * 0.1)
 
-    craig_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
-    dataset = CraigDataset(features=X_train, target=y_train, coreset_size=size)
-    dataset = Loader(dataset=dataset, batch_size=batch_size)
-    hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
-    tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
-    tmp["method"] = "lazy_greed"
-    result = pd.concat([result, tmp], ignore_index=True)
-    del craig_model
-    del dataset
+    # craig_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    # dataset = CraigDataset(features=X_train, target=y_train, coreset_size=size)
+    # dataset = Loader(dataset=dataset, batch_size=batch_size)
+    # hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
+    # tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
+    # tmp["method"] = "lazy_greed"
+    # result = pd.concat([result, tmp], ignore_index=True)
+    # del craig_model
+    # del dataset
 
     base_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
     dataset = Loader(BaseDataset(X_train, y_train), batch_size=batch_size)

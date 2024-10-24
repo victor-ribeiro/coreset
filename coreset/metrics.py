@@ -47,7 +47,7 @@ _register(codist)
 
 if __name__ == "__main__":
 
-    for i in np.linspace(1_000, 100_000, 5, dtype=int):
+    for i in np.linspace(1_000, 300_000, 5, dtype=int):
         data = np.random.normal(size=(i, 100))
         print(f"[DIST] size :: {i}", end=" \t -")
         d = euclidean(data)
