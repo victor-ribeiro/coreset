@@ -11,6 +11,13 @@ __all__ = ["METRICS"]
 METRICS = {}
 
 
+def euclidean(data):
+    x_ = np.sum(data**2, axis=1)
+    y_ = np.sum(data**2, axis=1)[:, np.newaxis]
+    dot = data @ data.T
+    return np.sqrt(x_ + y_ - 2 * dot)
+
+
 def _register(fn):
     name = fn.__name__
     METRICS[name] = fn
@@ -39,25 +46,11 @@ _register(codist)
 
 
 if __name__ == "__main__":
-    from nearpy import Engine
-    from nearpy.hashes import RandomBinaryProjections
 
-    # Dimension of our vector space
-    dimension = 500
-
-    # Create a random binary hash with 10 bits
-    rbp = RandomBinaryProjections("rbp", 10)
-
-    # Create engine with pipeline configuration
-    engine = Engine(dimension, lshashes=[rbp])
-
-    # Index 1000000 random vectors (set their data to a unique string)
-    for index in range(100000):
-        v = np.random.randn(dimension)
-        engine.store_vector(v, "data_%d" % index)
-
-    # Create random query vector
-    query = np.random.randn(dimension)
-
-    # Get nearest neighbours
-    N = engine.neighbours(query)
+    for i in np.linspace(1_000, 100_000, 5, dtype=int):
+        data = np.random.normal(size=(i, 100))
+        print(f"[DIST] size :: {i}", end=" \t -")
+        d = euclidean(data)
+        print("ok")
+        del data
+        del d

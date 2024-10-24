@@ -67,9 +67,9 @@ class BaseExperiment(ExperimentTemplate):
         preprocessing = pipeline(*self.preprocessing)
         split_fn = split_dataset(label=self.lbl_name)
         data = preprocessing(self._data)
+        (X_train, y_train), (X_test, y_test) = split_fn(data)
         for _ in range(self.repeat):
             model = self.model()
-            (X_train, y_train), (X_test, y_test) = split_fn(data)
             n_samples = len(X_train)
             if sampler:
                 sset = sampler(X_train)
@@ -97,17 +97,18 @@ class BaseExperiment(ExperimentTemplate):
                 self.result.append(result)
 
 
-class AlpaExperiment(ExperimentTemplate):
-    def __call__(self, alpha=None, sampler=None) -> Any:
+class BSizeExperiment(ExperimentTemplate):
+
+    def __call__(self, batch_size=None, sampler=None) -> Any:
         preprocessing = pipeline(*self.preprocessing)
         split_fn = split_dataset(label=self.lbl_name)
         data = preprocessing(self._data)
+        (X_train, y_train), (X_test, y_test) = split_fn(data)
         for _ in range(self.repeat):
             model = self.model()
-            (X_train, y_train), (X_test, y_test) = split_fn(data)
             n_samples = len(X_train)
             if sampler:
-                sset = sampler(X_train, alpha=alpha)
+                sset = sampler(X_train, batch_size=batch_size)
                 X_train = X_train[sset]
                 y_train = y_train[sset]
 
@@ -124,7 +125,7 @@ class AlpaExperiment(ExperimentTemplate):
                     result["sampler"] = sampler.__name__ if sampler else "full_dataset"
                 result["sample_size"] = len(X_train)
                 result["train_size"] = n_samples
-                result["alpha"] = alpha
+                result["batch_size"] = batch_size
                 try:
                     result["metric"] = metric.__name__
                 except:
@@ -155,8 +156,8 @@ class TrainCurve(ExperimentTemplate):
         preprocessing = pipeline(*self.preprocessing)
         split_fn = split_dataset(label=self.lbl_name)
         data = preprocessing(self._data)
+        (X_train, y_train), (X_test, y_test) = split_fn(data)
         for _ in range(self.repeat):
-            (X_train, y_train), (X_test, y_test) = split_fn(data)
 
             if sampler:
                 dataset = sampling_dataset(BaseDataset, sampler)

@@ -17,7 +17,7 @@ from coreset.lazzy_greed import lazy_greed
 from coreset.utils import random_sampler
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
-from coreset.evaluator import AlpaExperiment
+from coreset.evaluator import BSizeExperiment
 
 
 def clean_sent(sent, sub_pattern=r"[\W\s]+"):
@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     n_threads = int(multiprocessing.cpu_count() / 2)
 
-    review = AlpaExperiment(
+    review = BSizeExperiment(
         data,
         model=partial(
             XGBClassifier,

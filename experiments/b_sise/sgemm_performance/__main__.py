@@ -26,17 +26,13 @@ dataset[tgt_name] = dataset[avg_names].mean(axis=1)
 dataset = dataset.drop(columns=avg_names)
 # dataset = minmax_scale(dataset)
 
-alpha = np.linspace(1, 50, 10)
+b_size = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
 
 REPEAT = 30
 
+
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [
-        partial(lazy_greed, K=int(max_size * 0.01)),
-        partial(lazy_greed, K=int(max_size * 0.10)),
-        partial(lazy_greed, K=int(max_size * 0.15)),
-    ]
     sgemm = BSizeExperiment(
         dataset,
         model=XGBRegressor,
@@ -49,8 +45,11 @@ if __name__ == "__main__":
     sgemm.register_metrics(mean_squared_error)
 
     sgemm()  # base de comparação
-    for a, sampler in product(alpha, smpln):
-        sgemm(alpha=a, sampler=sampler)
+    for size in b_size:
+        sgemm(
+            sampler=partial(lazy_greed, K=int(max_size * 0.10)),
+            batch_size=size,
+        )
     result = sgemm.metrics
 
     result.to_csv(outfile, index=False)
