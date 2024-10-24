@@ -60,13 +60,14 @@ _register(codist)
 
 if __name__ == "__main__":
     from sys import getsizeof
+    from scipy.spatial.distance import cdist
 
     for i in np.linspace(1_000, 300_000, 5, dtype=int):
         data = np.random.normal(size=(i, 100))
         print(
             f"[DIST] matriz ({i}x{i}) :: {getsizeof(data)/8/1024:.2f}", end=" \t - \t"
         )
-        d = euclidean(data)
+        d = cdist(data, data, metric="euclidean")
         print(f"{getsizeof(d) / 8 / 1024}:.2f")
         del data
         del d

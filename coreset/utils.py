@@ -8,7 +8,7 @@ from unidecode import unidecode
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import pairwise_distances
 from sklearn.feature_extraction.text import HashingVectorizer
-
+from scipy.spatial.distance import pdist, squareform
 
 from .craig.lazy_greedy import FacilityLocation, lazy_greedy_heap
 
@@ -102,11 +102,15 @@ def random_sampler(data, K):
 @timeit
 def craig_baseline(data, K):
     features = data
+    # V = np.arange(len(features)).reshape(-1, 1)
+    # D = pairwise_distances(features)
+    # D = D.max() - D
+    # B = int(K * len(V))
     V = np.arange(len(features)).reshape(-1, 1)
-    D = pairwise_distances(features)
+    D = pdist(features, metric="euclidean")
     D = D.max() - D
     B = int(K * len(V))
 
-    locator = FacilityLocation(D=D, V=V)
+    locator = FacilityLocation(D=squareform(D), V=V)
     sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=B)
     return np.array(sset_idx).reshape(1, -1)[0]
