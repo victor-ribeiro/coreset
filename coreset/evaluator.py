@@ -108,6 +108,10 @@ class BSizeExperiment(ExperimentTemplate):
             model = self.model()
             n_samples = len(X_train)
             if sampler:
+                if batch_size:
+                    sset = sampler(X_train, batch_size=batch_size)
+                else:
+                    sset = sampler(X_train)
                 sset = sampler(X_train, batch_size=batch_size)
                 X_train = X_train[sset]
                 y_train = y_train[sset]
