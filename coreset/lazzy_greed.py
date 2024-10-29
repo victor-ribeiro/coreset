@@ -44,7 +44,7 @@ def base_inc(alpha=1):
     return math.log(1 + alpha)
 
 
-def utility_score(e, sset, /, acc=0, alpha=1, beta=1):
+def utility_score(e, sset, /, acc=0, alpha=1, beta=0):
     norm = 1 / base_inc(alpha)
     argmax = np.maximum(e, sset)
     f_norm = alpha / (sset.sum() + 1 + acc)
@@ -60,7 +60,7 @@ def lazy_greed(
     metric="similarity",
     K=1,
     batch_size=32,
-    beta=1,
+    beta=0,
 ):
     # basic config
     base_inc = base_inc(alpha)
@@ -116,20 +116,14 @@ def lazy_greed_class(
     n_class = len(classes)
     idx = np.arange(len(features))
     sset = []
+    k = int(K // n_class)
     for c, w_ in zip(classes, w):
         idx_ = idx[targets.astype(int) == c]
+        if k > len(idx_):
+            sset.append(idx_)
+            continue
         f_ = features[idx_]
-        s_ = lazy_greed(
-            f_,
-            base_inc,
-            alpha / (w_ / len(features)),
-            metric,
-            # math.ceil(K * (w_ / len(features))),
-            math.ceil(K / n_class),
-            # K,
-            batch_size,
-            beta=beta / (w_ / len(features)),
-        )
+        s_ = lazy_greed(f_, base_inc, alpha, metric, k, batch_size, beta=beta)
         sset.append(idx_[s_])
 
     sset = [idx[i] for i in sset]

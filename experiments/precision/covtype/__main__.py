@@ -8,7 +8,7 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 from sklearn.preprocessing import normalize
 
 from coreset.evaluator import BaseExperiment, REPEAT
-from coreset.lazzy_greed import lazy_greed
+from coreset.lazzy_greed import lazy_greed, lazy_greed_class
 from coreset.utils import (
     hash_encoding,
     oht_coding,
@@ -32,6 +32,14 @@ max_size = len(data) * 0.8
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
+        partial(lazy_greed_class, K=int(max_size * 0.01)),
+        partial(lazy_greed_class, K=int(max_size * 0.02)),
+        partial(lazy_greed_class, K=int(max_size * 0.03)),
+        partial(lazy_greed_class, K=int(max_size * 0.04)),
+        partial(lazy_greed_class, K=int(max_size * 0.05)),
+        partial(lazy_greed_class, K=int(max_size * 0.10)),
+        partial(lazy_greed_class, K=int(max_size * 0.15)),
+        partial(lazy_greed_class, K=int(max_size * 0.25)),
         partial(lazy_greed, K=int(max_size * 0.01)),
         partial(lazy_greed, K=int(max_size * 0.02)),
         partial(lazy_greed, K=int(max_size * 0.03)),
@@ -68,7 +76,7 @@ if __name__ == "__main__":
 
     covtype = BaseExperiment(
         data,
-        model=DecisionTreeClassifier,
+        model=XGBClassifier,
         lbl_name=tgt_name,
         repeat=REPEAT,
     )
@@ -81,9 +89,10 @@ if __name__ == "__main__":
         partial(f1_score, average="macro"),
     )
 
-    covtype()  # base de comparação
     for sampler in smpln:
+        # covtype(sampler=sampler, task="classification")
         covtype(sampler=sampler)
+    covtype()  # base de comparação
     result = covtype.metrics  # base de comparação
 
     result.to_csv(outfile, index=False)

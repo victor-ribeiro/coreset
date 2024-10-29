@@ -72,7 +72,7 @@ if __name__ == "__main__":
     ]
     nursery = BaseExperiment(
         dataset,
-        model=DecisionTreeClassifier,
+        model=XGBClassifier,
         lbl_name=tgt_name,
         repeat=REPEAT,
     )

@@ -1,16 +1,20 @@
 import re
 import pandas as pd
-from datetime import datetime
 import numpy as np
+import math
+from datetime import datetime
+from itertools import batched
 from functools import wraps
 from unidecode import unidecode
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import pairwise_distances
+from sklearn.metrics import pairwise_distances, pairwise_distances_chunked
 from sklearn.feature_extraction.text import HashingVectorizer
-from scipy.spatial.distance import pdist, squareform
+from sklearn.decomposition import PCA
+from scipy.spatial.distance import pdist, squareform, cdist
 
 from .craig.lazy_greedy import FacilityLocation, lazy_greedy_heap
+from coreset.metrics import low_similarity
 
 
 def timeit(f_):
@@ -90,27 +94,28 @@ def split_dataset(label, test_size=0.2):
 @timeit
 def random_sampler(data, K):
     size = len(data)
-
-    # rng = np.random.default_rng([42, 84, 13])
-    # rng = np.random.default_rng()
-    # sset = rng.integers(0, size, size=K, dtype=int)
-    # return sset
-    sset = np.random.choice(size, size=K, replace=False)
-    return sset.tolist()
+    rng = np.random.default_rng(42)
+    rng = np.random.default_rng()
+    sset = rng.integers(0, size, size=K, dtype=int)
+    return sset
 
 
 @timeit
 def craig_baseline(data, K):
     features = data
-    # V = np.arange(len(features)).reshape(-1, 1)
-    # D = pairwise_distances(features)
-    # D = D.max() - D
-    # B = int(K * len(V))
+    D = pairwise_distances_chunked(features, metric="euclidean", n_jobs=-1)
     V = np.arange(len(features)).reshape(-1, 1)
-    D = pdist(features, metric="euclidean")
-    D = D.max() - D
-    B = int(K * len(V))
-
-    locator = FacilityLocation(D=squareform(D), V=V)
-    sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=B)
-    return np.array(sset_idx).reshape(1, -1)[0]
+    idx_lbound = 0
+    sset_idx = []
+    for d in D:
+        window_size = len(d)
+        idx_ubound = idx_lbound + window_size
+        d = d.max() - d
+        v = V[idx_lbound:idx_ubound]
+        B = math.ceil(K * len(v))
+        idx_lbound += len(d)
+        locator = FacilityLocation(D=d, V=v)
+        _idx, *_ = lazy_greedy_heap(F=locator, V=v, B=B)
+        sset_idx.extend(_idx)
+    sset_idx = np.array(sset_idx).reshape(1, -1)[0]
+    return sset_idx

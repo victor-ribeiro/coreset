@@ -1,27 +1,12 @@
 import numpy as np
 from sklearn.metrics import pairwise_distances
-from functools import lru_cache, cache
-from itertools import batched
-from numba import jit, njit
+from sklearn.decomposition import PCA
 
 from coreset.dataset.dataset import Dataset
 
 __all__ = ["METRICS"]
 
 METRICS = {}
-
-
-def mat_to_bytes(nrows, ncols, dtype=32, out="GB"):
-    """Calculate the size of a numpy array in bytes.
-    :param nrows: the number of rows of the matrix.
-    :param ncols: the number of columns of the matrix.
-    :param dtype: the size of each element in the matrix. Defaults to 32bits.
-    :param out: the output unit. Defaults to gigabytes (GB)
-    :returns: the size of the matrix in the given unit
-    :rtype: a float
-    """
-    sizes = {v: i for i, v in enumerate("BYTES KB MB GB TB".split())}
-    return nrows * ncols * dtype / 8 / 1024.0 ** sizes[out]
 
 
 def euclidean(data):
@@ -38,24 +23,30 @@ def _register(fn):
     return fn
 
 
+@_register
 def pdist(dataset, metric="euclidean", batch_size=1):
     return pairwise_distances(dataset, metric=metric)
 
 
+@_register
 def codist(dataset, batch_size=1):
     d = pairwise_distances(dataset, dataset, metric="cosine")
     return d.max() - d
 
 
+@_register
 def similarity(dataset, metric="euclidean", batch_size=1):
     # yield from (d.max() - d for d in pdist(dataset, metric, batch_size))
     d = pdist(dataset, metric, batch_size)
     return d.max() - d
 
 
-_register(pdist)
-_register(similarity)
-_register(codist)
+@_register
+def low_similarity(dataset, metric="euclidean", batch_size=1):
+    pca = PCA(n_components=2)
+    data = pca.fit_transform(dataset)
+    d = pdist(data, metric, batch_size).astype(np.float16)
+    return d.max() - d
 
 
 if __name__ == "__main__":

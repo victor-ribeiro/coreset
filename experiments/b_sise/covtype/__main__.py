@@ -32,6 +32,14 @@ max_size = len(data) * 0.8
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
+        partial(craig_baseline, 0.01),
+        partial(craig_baseline, 0.02),
+        partial(craig_baseline, 0.03),
+        partial(craig_baseline, 0.04),
+        partial(craig_baseline, 0.05),
+        partial(craig_baseline, 0.10),
+        partial(craig_baseline, 0.15),
+        partial(craig_baseline, 0.25),
         partial(lazy_greed, K=int(max_size * 0.01)),
         partial(lazy_greed, K=int(max_size * 0.02)),
         partial(lazy_greed, K=int(max_size * 0.03)),
@@ -56,14 +64,6 @@ if __name__ == "__main__":
         partial(random_sampler, K=int(max_size * 0.10)),
         partial(random_sampler, K=int(max_size * 0.15)),
         partial(random_sampler, K=int(max_size * 0.25)),
-        # craig_baseline(0.01),
-        # craig_baseline(0.02),
-        # craig_baseline(0.03),
-        # craig_baseline(0.04),
-        # craig_baseline(0.05),
-        # craig_baseline(0.10),
-        # craig_baseline(0.15),
-        # craig_baseline(0.25),
     ]
 
     covtype = BaseExperiment(
@@ -81,9 +81,9 @@ if __name__ == "__main__":
         partial(f1_score, average="macro"),
     )
 
-    covtype()  # base de comparação
     for sampler in smpln:
         covtype(sampler=sampler)
+    covtype()  # base de comparação
     result = covtype.metrics  # base de comparação
 
     result.to_csv(outfile, index=False)

@@ -102,7 +102,7 @@ if __name__ == "__main__":
     ]
     bike_share = BaseExperiment(
         dataset,
-        model=DecisionTreeClassifier,
+        model=XGBRegressor,
         lbl_name=tgt_name,
         repeat=REPEAT,
     )

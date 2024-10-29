@@ -90,7 +90,7 @@ for i in range(REPEAT):
     dataset = Loader(dataset=dataset, batch_size=batch_size)
     hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
     tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
-    tmp["method"] = "lazy_greed"
+    tmp["method"] = "craig_baseline"
     result = pd.concat([result, tmp], ignore_index=True)
     del craig_model
     del dataset

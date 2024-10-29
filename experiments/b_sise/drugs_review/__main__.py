@@ -33,20 +33,21 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 
 with open(DATA_HOME, "rb") as file:
 
-    data = pickle.load(file)
+    dataset = pickle.load(file)
 
-data, tgt = data["features"], data["target"]
-data = map(clean_sent, data)
+dataset, tgt = dataset["features"], dataset["target"]
+dataset = map(clean_sent, dataset)
 
-data = CountVectorizer(max_features=1500).fit_transform(data).toarray()
-data = PCA(n_components=100).fit_transform(data)
-data = pd.DataFrame(data=data)
-data[tgt_name] = [*map(int, tgt)]
-data[tgt_name] = data[tgt_name].map(lambda x: 1 if x > 5 else 0)
-data.columns = data.columns.astype(str)
+dataset = CountVectorizer(max_features=1500).fit_transform(dataset).toarray()
+dataset = PCA(n_components=100).fit_transform(dataset)
+dataset = pd.DataFrame(data=dataset)
+dataset[tgt_name] = [*map(int, tgt)]
+dataset[tgt_name] = dataset[tgt_name].map(lambda x: 1 if x > 5 else 0)
+dataset.columns = dataset.columns.astype(str)
 
-max_size = len(data) * 0.8
-alpha = np.linspace(1, 50, 10)
+max_size = len(dataset) * 0.8
+b_size = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
+
 REPEAT = 30
 if __name__ == "__main__":
     # sampling strategies
@@ -59,17 +60,8 @@ if __name__ == "__main__":
     n_threads = int(multiprocessing.cpu_count() / 2)
 
     review = BSizeExperiment(
-        data,
-        model=partial(
-            XGBClassifier,
-            eta=0.15,
-            tree_method="hist",
-            grow_policy="lossguide",
-            n_estimators=200,
-            nthread=n_threads,
-            subsample=0.6,
-            scale_pos_weight=1,
-        ),
+        dataset,
+        model=XGBClassifier,
         lbl_name=tgt_name,
         repeat=REPEAT,
     )
@@ -81,8 +73,13 @@ if __name__ == "__main__":
     )
 
     review()  # base de comparação
-    for a, sampler in product(alpha, smpln):
-        review(sampler=sampler, alpha=a)
-    result = review.metrics  # base de comparação
+    for size in b_size:
+        review(
+            sampler=partial(lazy_greed, K=int(max_size * 0.10)),
+            batch_size=size,
+        )
+        review(sampler=partial(random_sampler, K=int(max_size * 0.10)))
+
+    result = review.metrics
 
     result.to_csv(outfile, index=False)

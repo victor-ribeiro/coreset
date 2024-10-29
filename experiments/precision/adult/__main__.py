@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     adult = BaseExperiment(
         data,
-        model=DecisionTreeClassifier,
+        model=XGBClassifier,
         lbl_name=tgt_name,
         repeat=REPEAT,
     )
