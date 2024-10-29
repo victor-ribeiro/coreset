@@ -32,14 +32,14 @@ max_size = len(data) * 0.8
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(lazy_greed_class, K=int(max_size * 0.01)),
-        partial(lazy_greed_class, K=int(max_size * 0.02)),
-        partial(lazy_greed_class, K=int(max_size * 0.03)),
-        partial(lazy_greed_class, K=int(max_size * 0.04)),
-        partial(lazy_greed_class, K=int(max_size * 0.05)),
-        partial(lazy_greed_class, K=int(max_size * 0.10)),
-        partial(lazy_greed_class, K=int(max_size * 0.15)),
-        partial(lazy_greed_class, K=int(max_size * 0.25)),
+        partial(lazy_greed, K=int(max_size * 0.01)),
+        partial(lazy_greed, K=int(max_size * 0.02)),
+        partial(lazy_greed, K=int(max_size * 0.03)),
+        partial(lazy_greed, K=int(max_size * 0.04)),
+        partial(lazy_greed, K=int(max_size * 0.05)),
+        partial(lazy_greed, K=int(max_size * 0.10)),
+        partial(lazy_greed, K=int(max_size * 0.15)),
+        partial(lazy_greed, K=int(max_size * 0.25)),
         partial(lazy_greed, K=int(max_size * 0.01)),
         partial(lazy_greed, K=int(max_size * 0.02)),
         partial(lazy_greed, K=int(max_size * 0.03)),
