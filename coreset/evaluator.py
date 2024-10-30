@@ -112,7 +112,6 @@ class BSizeExperiment(ExperimentTemplate):
                     sset = sampler(X_train, batch_size=batch_size)
                 else:
                     sset = sampler(X_train)
-                sset = sampler(X_train, batch_size=batch_size)
                 X_train = X_train[sset]
                 y_train = y_train[sset]
 
