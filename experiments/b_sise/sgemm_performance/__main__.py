@@ -50,7 +50,7 @@ if __name__ == "__main__":
             sampler=partial(lazy_greed, K=int(max_size * 0.10)),
             batch_size=size,
         )
-        sgemm(sampler=partial(random_sampler, K=int(max_size * 0.10)))
+    sgemm(sampler=partial(random_sampler, K=int(max_size * 0.10)))
     result = sgemm.metrics
 
     result.to_csv(outfile, index=False)

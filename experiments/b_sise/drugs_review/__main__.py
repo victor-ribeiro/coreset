@@ -73,12 +73,12 @@ if __name__ == "__main__":
     )
 
     review()  # base de comparação
+    review(sampler=partial(random_sampler, K=int(max_size * 0.10)))
     for size in b_size:
         review(
             sampler=partial(lazy_greed, K=int(max_size * 0.10)),
             batch_size=size,
         )
-        review(sampler=partial(random_sampler, K=int(max_size * 0.10)))
 
     result = review.metrics
 
