@@ -49,7 +49,8 @@ def utility_score(e, sset, /, acc=0, alpha=1, beta=0):
     argmax = np.maximum(e, sset)
     f_norm = alpha / (sset.sum() + 1 + acc)
     util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
-    return util + math.log(1 + ((sset**2).sum()) * beta)
+    # util = norm * math.log(1 + (argmax.sum()) * f_norm)
+    return util + (math.log(1 + ((sset**2).sum() + acc**2)) * beta)
 
 
 @timeit
@@ -60,7 +61,7 @@ def lazy_greed(
     metric="similarity",
     K=1,
     batch_size=32,
-    beta=0,
+    beta=1,
 ):
     # basic config
     base_inc = base_inc(alpha)
@@ -96,6 +97,7 @@ def lazy_greed(
                 q.push(inc, idx_s)
             q.push(score_t, idx_t)
     sset = np.array(sset)
+    print(len(sset), K, len(np.unique(sset)))
     np.random.shuffle(sset)
     return sset
 

@@ -73,10 +73,13 @@ class BaseExperiment(ExperimentTemplate):
             model = self.model()
             if sampler:
                 sset = sampler(X_train)
-                X_train = X_train[sset]
-                y_train = y_train[sset]
+                _X_train = X_train[sset]
+                _y_train = y_train[sset]
+            else:
+                _X_train = X_train
+                _y_train = y_train
 
-            model.fit(X_train, y_train)
+            model.fit(_X_train, _y_train)
             pred = model.predict(X_test)
 
             for metric in self._metrics:
@@ -87,7 +90,7 @@ class BaseExperiment(ExperimentTemplate):
                     )
                 except Exception as e:
                     result["sampler"] = sampler.__name__ if sampler else "full_dataset"
-                result["sample_size"] = len(X_train)
+                result["sample_size"] = len(_X_train)
                 result["train_size"] = n_samples
                 try:
                     result["metric"] = metric.__name__
@@ -112,10 +115,13 @@ class BSizeExperiment(ExperimentTemplate):
                     sset = sampler(X_train, batch_size=batch_size)
                 else:
                     sset = sampler(X_train)
-                X_train = X_train[sset]
-                y_train = y_train[sset]
+                _X_train = X_train[sset]
+                _y_train = y_train[sset]
+            else:
+                _X_train = X_train
+                _y_train = y_train
 
-            model.fit(X_train, y_train)
+            model.fit(_X_train, _y_train)
             pred = model.predict(X_test)
 
             for metric in self._metrics:
@@ -126,7 +132,7 @@ class BSizeExperiment(ExperimentTemplate):
                     )
                 except Exception as e:
                     result["sampler"] = sampler.__name__ if sampler else "full_dataset"
-                result["sample_size"] = len(X_train)
+                result["sample_size"] = len(_X_train)
                 result["train_size"] = n_samples
                 result["batch_size"] = batch_size
                 try:
