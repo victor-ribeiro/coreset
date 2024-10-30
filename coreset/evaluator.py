@@ -11,7 +11,7 @@ from torch_utils.data import sampling_dataset, BaseDataset
 
 import matplotlib.pyplot as plt
 
-REPEAT = 30
+REPEAT = 2
 
 TASKS = {
     "binary_classification": "logloss",
@@ -68,9 +68,9 @@ class BaseExperiment(ExperimentTemplate):
         split_fn = split_dataset(label=self.lbl_name)
         data = preprocessing(self._data)
         (X_train, y_train), (X_test, y_test) = split_fn(data)
+        n_samples = len(X_train)
         for _ in range(self.repeat):
             model = self.model()
-            n_samples = len(X_train)
             if sampler:
                 sset = sampler(X_train)
                 X_train = X_train[sset]
@@ -104,9 +104,9 @@ class BSizeExperiment(ExperimentTemplate):
         split_fn = split_dataset(label=self.lbl_name)
         data = preprocessing(self._data)
         (X_train, y_train), (X_test, y_test) = split_fn(data)
+        n_samples = len(X_train)
         for _ in range(self.repeat):
             model = self.model()
-            n_samples = len(X_train)
             if sampler:
                 if batch_size:
                     sset = sampler(X_train, batch_size=batch_size)
