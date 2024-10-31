@@ -9,7 +9,7 @@ from torch import nn
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, TruncatedSVD
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -59,9 +59,9 @@ features = (
     CountVectorizer(min_df=3, max_features=1800).fit_transform(features).toarray()
 )
 
-features = PCA(n_components=300).fit_transform(features)
+features = TruncatedSVD(n_components=300).fit_transform(features)
 
-LazyDataset = sampling_dataset(BaseDataset, lazy_greed)
+LazyDataset = sampling_dataset(BaseDataset, partial(lazy_greed, beta=0))
 RandomDataset = sampling_dataset(BaseDataset, random_sampler)
 CraigDataset = sampling_dataset(BaseDataset, craig_baseline)
 
@@ -77,23 +77,24 @@ for i in range(REPEAT):
     ## modeling
     ####################################
 
-    loss_fn = nn.BCEWithLogitsLoss
+    # loss_fn = nn.BCEWithLogitsLoss
+    loss_fn = nn.CrossEntropyLoss
 
     lr = 10e-5
-    epochs = 100
+    epochs = 30
 
     _, nsize = X_train.shape
-    size = int(len(target) * 0.1)
+    size = int(len(target) * 0.05)
 
-    craig_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
-    dataset = CraigDataset(features=X_train, target=y_train, coreset_size=size)
-    dataset = Loader(dataset=dataset, batch_size=batch_size)
-    hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
-    tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
-    tmp["method"] = "craig_baseline"
-    result = pd.concat([result, tmp], ignore_index=True)
-    del craig_model
-    del dataset
+    # craig_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    # dataset = CraigDataset(features=X_train, target=y_train, coreset_size=size)
+    # dataset = Loader(dataset=dataset, batch_size=batch_size)
+    # hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
+    # tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
+    # tmp["method"] = "craig_baseline"
+    # result = pd.concat([result, tmp], ignore_index=True)
+    # del craig_model
+    # del dataset
 
     base_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
     dataset = Loader(BaseDataset(X_train, y_train), batch_size=batch_size)

@@ -26,7 +26,7 @@ class MLP(nn.Module):
             self.activation,
             nn.Linear(64, 64),
             self.activation,
-            nn.Linear(64, 32),
+            nn.Linear(32, 32),
             self.activation,
             nn.Linear(32, self.n_neurons),
             self.activation,

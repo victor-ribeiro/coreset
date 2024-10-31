@@ -11,7 +11,7 @@ from torch_utils.data import sampling_dataset, BaseDataset
 
 import matplotlib.pyplot as plt
 
-REPEAT = 20
+REPEAT = 15
 
 TASKS = {
     "binary_classification": "logloss",
