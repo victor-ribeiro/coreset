@@ -94,7 +94,7 @@ def split_dataset(label, test_size=0.2):
 @timeit
 def random_sampler(data, K):
     size = len(data)
-    rng = np.random.default_rng(42)
+    rng = np.random.default_rng()
     rng = np.random.default_rng()
     sset = rng.integers(0, size, size=K, dtype=int)
     return sset
@@ -102,12 +102,14 @@ def random_sampler(data, K):
 
 @timeit
 def craig_baseline(data, K):
-    features = data.astype(np.float16)
+    features = data.astype(np.float32)
     D = pairwise_distances(features, metric="euclidean", n_jobs=3)
+    D = D.max() - D
     V = np.arange(len(features), dtype=int).reshape(-1, 1)
     idx_lbound = 0
     sset_idx = []
     locator = FacilityLocation(D=D, V=V)
     sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=K)
     sset_idx = np.array(sset_idx).reshape(1, -1)[0]
+    print(f"Selected {len(sset_idx)}")
     return sset_idx

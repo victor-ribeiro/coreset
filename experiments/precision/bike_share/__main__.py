@@ -83,14 +83,14 @@ if __name__ == "__main__":
         partial(random_sampler, K=int(max_size * 0.10)),
         partial(random_sampler, K=int(max_size * 0.15)),
         partial(random_sampler, K=int(max_size * 0.25)),
-        partial(craig_baseline, K=0.01),
-        partial(craig_baseline, K=0.02),
-        partial(craig_baseline, K=0.03),
-        partial(craig_baseline, K=0.04),
-        partial(craig_baseline, K=0.05),
-        partial(craig_baseline, K=0.10),
-        partial(craig_baseline, K=0.15),
-        partial(craig_baseline, K=0.25),
+        partial(craig_baseline, K=int(max_size * 0.01)),
+        partial(craig_baseline, K=int(max_size * 0.02)),
+        partial(craig_baseline, K=int(max_size * 0.03)),
+        partial(craig_baseline, K=int(max_size * 0.04)),
+        partial(craig_baseline, K=int(max_size * 0.05)),
+        partial(craig_baseline, K=int(max_size * 0.10)),
+        partial(craig_baseline, K=int(max_size * 0.15)),
+        partial(craig_baseline, K=int(max_size * 0.25)),
     ]
     bike_share = BaseExperiment(
         dataset,
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     bike_share.register_preprocessing(
         oht_coding("workingday", "holiday", "weathersit"),
         transform_fn(normal_cols, tgt_name, "atemp", "temp", "hum", "windspeed"),
-        transform_fn(scale_cols, tgt_name, "casual", "registered"),
+        # transform_fn(scale_cols, tgt_name, "casual", "registered"),
     )
 
     bike_share.register_metrics(mean_squared_error)
