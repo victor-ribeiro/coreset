@@ -57,7 +57,7 @@ alpha = 0.999
 beta = 1 - alpha
 
 idx = lazy_greed(
-    X_train, K=int(len(X_train) * 0.3), batch_size=256 * 4, beta=beta, alpha=alpha
+    X_train, K=int(len(X_train) * 0.3), batch_size=256, beta=beta, alpha=alpha
 )
 X_lazy = X_train[idx]
 y_lazy = y_train[idx]
@@ -77,8 +77,10 @@ ax[1].plot(hist_["loss"], label="FastCORE")
 ##########################################################################################
 ##########################################################################################
 from coreset.utils import craig_baseline
+from sklearn.decomposition import PCA
 
-idx = craig_baseline(X_train, K=int(len(X_train) * 0.3))
+ft = PCA(n_components=10).fit_transform(X_train)
+idx = craig_baseline(ft, K=int(len(X_train) * 0.3))
 X_random = X_train[idx]
 y_random = y_train[idx]
 model = Sequential()
