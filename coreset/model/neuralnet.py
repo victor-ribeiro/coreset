@@ -10,30 +10,15 @@ class MLP(nn.Module):
     def __init__(self, input_size, vocab_size=0, n_layers=3):
         super().__init__()
         self.shape = [self.n_neurons, self.n_neurons]
-        self.activation = nn.ReLU()
+        self.activation = nn.Sigmoid()
         self.input_layer = nn.Sequential(
-            nn.Linear(input_size, 64),
+            nn.Linear(input_size, 100),
             self.activation,
         )
-        self.hidden = nn.Sequential(
-            nn.Linear(64, 64),
-            self.activation,
-            nn.Linear(64, 64),
-            self.activation,
-            nn.Linear(64, 64),
-            self.activation,
-            nn.Linear(64, 64),
-            self.activation,
-            nn.Linear(64, 64),
-            self.activation,
-            nn.Linear(32, 32),
-            self.activation,
-            nn.Linear(32, self.n_neurons),
-            self.activation,
-        )
+        self.hidden = nn.Sequential(nn.Linear(100, 10), self.activation)
 
         self.preput = nn.Sequential(
-            nn.Linear(self.n_neurons, 1),
+            nn.Linear(10, 1),
             nn.Sigmoid(),
         )
 

@@ -138,7 +138,7 @@ def collate_batch(batch):
 
 
 # 2. Criando o DataLoader para treinamento
-batch_size = 64
+batch_size = 1024
 # train_iter = BaseDataset(list(train_iter), list(target))
 train_dataloader = DataLoader(
     list(zip(y_train, X_train)),

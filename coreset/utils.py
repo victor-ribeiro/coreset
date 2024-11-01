@@ -102,20 +102,12 @@ def random_sampler(data, K):
 
 @timeit
 def craig_baseline(data, K):
-    features = data
-    D = pairwise_distances_chunked(features, metric="euclidean", n_jobs=-1)
-    V = np.arange(len(features)).reshape(-1, 1)
+    features = data.astype(np.float32)
+    D = pairwise_distances(features, metric="euclidean", n_jobs=3)
+    V = np.arange(len(features), dtype=int).reshape(-1, 1)
     idx_lbound = 0
     sset_idx = []
-    for d in D:
-        window_size = len(d)
-        idx_ubound = idx_lbound + window_size
-        d = d.max() - d
-        v = V[idx_lbound:idx_ubound]
-        B = math.ceil(K * len(v))
-        idx_lbound += len(d)
-        locator = FacilityLocation(D=d, V=v)
-        _idx, *_ = lazy_greedy_heap(F=locator, V=v, B=B)
-        sset_idx.extend(_idx)
+    locator = FacilityLocation(D=d, V=v)
+    sset_idx, *_ = lazy_greedy_heap(F=locator, V=v, B=B)
     sset_idx = np.array(sset_idx).reshape(1, -1)[0]
     return sset_idx

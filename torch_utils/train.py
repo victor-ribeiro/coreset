@@ -53,7 +53,7 @@ def train_loop(data_train, loss_fn, optmizer, model, epochs, agg_fn=sum):
             loss.backward()
             optmizer.step()
         ################################################################
-        epoch_loss = epoch_loss / len(data_train) * epochs
+        epoch_loss /= len(data_train)
         # epoch_loss = epoch_loss / len(data_train)
         yield epoch_loss
         end_time = time.time()

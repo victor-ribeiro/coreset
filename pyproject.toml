@@ -24,7 +24,7 @@ torch = "2.3.0"
 torchtext = "0.18"
 spacy = "^3.8.2"
 imbalanced-learn = "^0.12.4"
-nearpy = "^1.0.0"
+tensorflow = "^2.18.0"
 
 
 
