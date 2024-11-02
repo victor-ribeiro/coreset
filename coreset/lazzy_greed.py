@@ -70,6 +70,7 @@ def lazy_greed(
     sset = []
     vals = []
     argmax = 0
+    dataset = dataset.astype(np.float32)
     for ds, V in zip(
         batched(dataset, batch_size),
         batched(idx, batch_size),

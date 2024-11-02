@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     adult.register_preprocessing(
         hash_encoding(
-            "native-country", "occupation", "marital-status", "fnlwgt", n_features=5
+            "native-country", "occupation", "marital-status", "fnlwgt", n_features=12
         ),
         oht_coding("sex", "education", "race", "relationship", "workclass"),
     )
