@@ -89,6 +89,7 @@ if __name__ == "__main__":
             nthread=n_threads,
             subsample=0.6,
             scale_pos_weight=1,
+            device="gpu",
         ),
         lbl_name=tgt_name,
         repeat=REPEAT,
