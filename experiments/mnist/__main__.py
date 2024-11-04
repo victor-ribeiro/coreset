@@ -11,9 +11,9 @@ from keras.losses import CategoricalCrossentropy
 from keras.regularizers import l2
 from keras.callbacks import Callback
 
-from keras import backend as K
+# from keras import backend as K
 
-K.tensorflow_backend._get_available_gpus()
+# K.tensorflow_backend._get_available_gpus()
 
 from coreset.environ import load_config
 
@@ -57,7 +57,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 
-for _ in range(2):
+for _ in range(15):
     ##########################################################################################
     ##########################################################################################
     ##########################################################################################
