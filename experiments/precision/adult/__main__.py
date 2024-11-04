@@ -54,9 +54,8 @@ if __name__ == "__main__":
 
     adult = BaseExperiment(
         data,
-        model=XGBClassifier,
+        model=partial(XGBClassifier, device="gpu"),
         lbl_name=tgt_name,
-        device="gpu",
         repeat=REPEAT,
     )
 
