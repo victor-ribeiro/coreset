@@ -25,6 +25,7 @@ torchtext = "0.18"
 spacy = "^3.8.2"
 imbalanced-learn = "^0.12.4"
 tensorflow = "^2.18.0"
+jax = "^0.4.35"
 
 
 
