@@ -128,6 +128,7 @@ for _ in range(2):
     from coreset.utils import craig_baseline
     from sklearn.decomposition import PCA
 
+    cb = TimingCallback()
     ft = PCA(n_components=10).fit_transform(X_train)
     idx = craig_baseline(ft, K=int(len(X_train) * core_size))
     X_random = X_train[idx]
