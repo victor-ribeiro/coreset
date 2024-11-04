@@ -56,6 +56,7 @@ if __name__ == "__main__":
         data,
         model=XGBClassifier,
         lbl_name=tgt_name,
+        device="gpu",
         repeat=REPEAT,
     )
 
