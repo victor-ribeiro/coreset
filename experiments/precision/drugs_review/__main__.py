@@ -13,7 +13,7 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 
 from xgboost import XGBClassifier
 
-from coreset.lazzy_greed import lazy_greed
+from coreset.lazzy_greed import fastcore
 from coreset.utils import random_sampler, craig_baseline
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
@@ -50,14 +50,14 @@ max_size = len(data) * 0.8
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(lazy_greed, K=int(max_size * 0.01)),
-        partial(lazy_greed, K=int(max_size * 0.02)),
-        partial(lazy_greed, K=int(max_size * 0.03)),
-        partial(lazy_greed, K=int(max_size * 0.04)),
-        partial(lazy_greed, K=int(max_size * 0.05)),
-        partial(lazy_greed, K=int(max_size * 0.10)),
-        partial(lazy_greed, K=int(max_size * 0.15)),
-        partial(lazy_greed, K=int(max_size * 0.25)),
+        partial(fastcore, K=int(max_size * 0.01)),
+        partial(fastcore, K=int(max_size * 0.02)),
+        partial(fastcore, K=int(max_size * 0.03)),
+        partial(fastcore, K=int(max_size * 0.04)),
+        partial(fastcore, K=int(max_size * 0.05)),
+        partial(fastcore, K=int(max_size * 0.10)),
+        partial(fastcore, K=int(max_size * 0.15)),
+        partial(fastcore, K=int(max_size * 0.25)),
         partial(random_sampler, K=int(max_size * 0.01)),
         partial(random_sampler, K=int(max_size * 0.02)),
         partial(random_sampler, K=int(max_size * 0.03)),

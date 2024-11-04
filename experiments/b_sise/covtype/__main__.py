@@ -8,7 +8,7 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 from sklearn.preprocessing import normalize
 
 from coreset.evaluator import BaseExperiment, REPEAT
-from coreset.lazzy_greed import lazy_greed
+from coreset.lazzy_greed import fastcore
 from coreset.utils import (
     hash_encoding,
     oht_coding,
@@ -40,14 +40,14 @@ if __name__ == "__main__":
         partial(craig_baseline, 0.10),
         partial(craig_baseline, 0.15),
         partial(craig_baseline, 0.25),
-        partial(lazy_greed, K=int(max_size * 0.01)),
-        partial(lazy_greed, K=int(max_size * 0.02)),
-        partial(lazy_greed, K=int(max_size * 0.03)),
-        partial(lazy_greed, K=int(max_size * 0.04)),
-        partial(lazy_greed, K=int(max_size * 0.05)),
-        partial(lazy_greed, K=int(max_size * 0.10)),
-        partial(lazy_greed, K=int(max_size * 0.15)),
-        partial(lazy_greed, K=int(max_size * 0.25)),
+        partial(fastcore, K=int(max_size * 0.01)),
+        partial(fastcore, K=int(max_size * 0.02)),
+        partial(fastcore, K=int(max_size * 0.03)),
+        partial(fastcore, K=int(max_size * 0.04)),
+        partial(fastcore, K=int(max_size * 0.05)),
+        partial(fastcore, K=int(max_size * 0.10)),
+        partial(fastcore, K=int(max_size * 0.15)),
+        partial(fastcore, K=int(max_size * 0.25)),
         partial(kmeans_sampler, K=int(max_size * 0.01)),
         partial(kmeans_sampler, K=int(max_size * 0.02)),
         partial(kmeans_sampler, K=int(max_size * 0.03)),

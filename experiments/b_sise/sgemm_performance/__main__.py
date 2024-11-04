@@ -10,7 +10,7 @@ from itertools import product
 
 from coreset.environ import load_config
 from coreset.utils import transform_fn, random_sampler
-from coreset.lazzy_greed import lazy_greed
+from coreset.lazzy_greed import fastcore
 from coreset.evaluator import BSizeExperiment
 
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     sgemm()  # base de comparação
     for size in b_size:
         sgemm(
-            sampler=partial(lazy_greed, K=int(max_size * 0.10)),
+            sampler=partial(fastcore, K=int(max_size * 0.10)),
             batch_size=size,
         )
     sgemm(sampler=partial(random_sampler, K=int(max_size * 0.10)))

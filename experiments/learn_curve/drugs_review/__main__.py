@@ -17,7 +17,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from functools import partial
 
 from coreset.train import train
-from coreset.lazzy_greed import lazy_greed
+from coreset.lazzy_greed import fastcore
 from coreset.model.basics import TorchLearner
 from coreset.model.neuralnet import MLP
 from coreset.environ import load_config
@@ -64,7 +64,7 @@ features = (
 
 features = PCA(n_components=300).fit_transform(features)
 
-LazyDataset = sampling_dataset(BaseDataset, partial(lazy_greed, beta=0))
+LazyDataset = sampling_dataset(BaseDataset, partial(fastcore, beta=0))
 RandomDataset = sampling_dataset(BaseDataset, random_sampler)
 CraigDataset = sampling_dataset(BaseDataset, craig_baseline)
 

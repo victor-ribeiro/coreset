@@ -13,7 +13,7 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 
 from xgboost import XGBClassifier
 
-from coreset.lazzy_greed import lazy_greed
+from coreset.lazzy_greed import fastcore
 from coreset.utils import random_sampler
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
@@ -51,9 +51,9 @@ REPEAT = 30
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(lazy_greed, K=int(max_size * 0.01)),
-        partial(lazy_greed, K=int(max_size * 0.10)),
-        partial(lazy_greed, K=int(max_size * 0.15)),
+        partial(fastcore, K=int(max_size * 0.01)),
+        partial(fastcore, K=int(max_size * 0.10)),
+        partial(fastcore, K=int(max_size * 0.15)),
     ]
 
     n_threads = int(multiprocessing.cpu_count() / 2)

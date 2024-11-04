@@ -6,7 +6,7 @@ from functools import partial
 from configparser import ConfigParser
 
 from coreset.utils import random_sampler
-from coreset.lazzy_greed import lazy_greed
+from coreset.lazzy_greed import fastcore
 
 load_dotenv()
 

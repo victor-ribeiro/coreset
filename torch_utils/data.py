@@ -21,12 +21,12 @@ from functools import partial
 
 from coreset.kmeans import kmeans_sampler
 from coreset.utils import random_sampler
-from coreset.lazzy_greed import lazy_greed
+from coreset.lazzy_greed import fastcore
 
 SAMPLING = {
     "kmeans_sampler": kmeans_sampler,
     "random_sampler": random_sampler,
-    "lazy_greed": lazy_greed,
+    "lazy_greed": fastcore,
 }
 
 # __all__ = ["RandomTrainingSet", "CoresetRandomDataset", "PandasDataset"]

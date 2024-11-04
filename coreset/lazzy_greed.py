@@ -54,14 +54,14 @@ def utility_score(e, sset, /, acc=0, alpha=1, beta=0):
 
 
 @timeit
-def lazy_greed(
+def fastcore(
     dataset,
     base_inc=base_inc,
-    alpha=1,
+    alpha=0.05,
     metric="similarity",
     K=1,
     batch_size=32,
-    beta=1,
+    beta=0.95,
 ):
     # basic config
     base_inc = base_inc(alpha)
@@ -70,7 +70,7 @@ def lazy_greed(
     sset = []
     vals = []
     argmax = 0
-    dataset = dataset.astype(np.float32)
+    dataset = dataset
     for ds, V in zip(
         batched(dataset, batch_size),
         batched(idx, batch_size),
@@ -126,7 +126,7 @@ def lazy_greed_class(
             sset.append(idx_)
             continue
         f_ = features[idx_]
-        s_ = lazy_greed(f_, base_inc, alpha, metric, k, batch_size, beta=beta)
+        s_ = fastcore(f_, base_inc, alpha, metric, k, batch_size, beta=beta)
         sset.append(idx_[s_])
 
     sset = [idx[i] for i in sset]

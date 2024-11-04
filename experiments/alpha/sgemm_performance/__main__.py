@@ -10,7 +10,7 @@ from itertools import product
 
 from coreset.environ import load_config
 from coreset.utils import transform_fn
-from coreset.lazzy_greed import lazy_greed
+from coreset.lazzy_greed import fastcore
 from coreset.evaluator import BSizeExperiment
 
 
@@ -33,9 +33,9 @@ REPEAT = 30
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(lazy_greed, K=int(max_size * 0.01)),
-        partial(lazy_greed, K=int(max_size * 0.10)),
-        partial(lazy_greed, K=int(max_size * 0.15)),
+        partial(fastcore, K=int(max_size * 0.01)),
+        partial(fastcore, K=int(max_size * 0.10)),
+        partial(fastcore, K=int(max_size * 0.15)),
     ]
     sgemm = BSizeExperiment(
         dataset,
