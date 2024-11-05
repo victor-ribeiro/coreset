@@ -2,10 +2,7 @@
 ### |S| <= 1 + log max F( e | [] ) x | S* | ###
 ###############################################
 
-try:
-    import cupy as np
-except:
-    import numpy as np
+import numpy as np
 import heapq
 import math
 from itertools import batched

@@ -1,9 +1,5 @@
-try:
-    import cupy as np
-    from cuml.metrics import pairwise_distances
-except:
-    import numpy as np
-    from sklearn.metrics import pairwise_distances
+import numpy as np
+from sklearn.metrics import pairwise_distances
 from sklearn.decomposition import PCA
 
 from coreset.dataset.dataset import Dataset

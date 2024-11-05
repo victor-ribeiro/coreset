@@ -1,15 +1,8 @@
-try:
-    import cupy as np
-    import cudf as pd
-    from cuml.model_selection import train_test_split
-    from cuml.metrics import pairwise_distances
-    from cuml.feature_extraction.text import HashingVectorizer
-except:
-    # import numpy as np
-    # import pandas as pd
-    from sklearn.model_selection import train_test_split
-    from sklearn.metrics import pairwise_distances
-    from sklearn.feature_extraction.text import HashingVectorizer
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import pairwise_distances
+from sklearn.feature_extraction.text import HashingVectorizer
 
 import re
 from datetime import datetime

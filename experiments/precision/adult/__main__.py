@@ -1,9 +1,5 @@
-try:
-    import cudf as pd
-    import cupy as np
-except:
-    import pandas as pd
-    import numpy as np
+import pandas as pd
+import numpy as np
 from functools import partial
 from xgboost import XGBClassifier
 from sklearn.tree import DecisionTreeClassifier
