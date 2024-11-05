@@ -46,7 +46,7 @@ if __name__ == "__main__":
     sgemm()  # base de comparação
     for size in b_size:
         sgemm(
-            sampler=partial(fastcore, K=int(max_size * 0.25), alpha=40, beta=1.5),
+            sampler=partial(fastcore, K=int(max_size * 0.25)),
             batch_size=size,
         )
     sgemm(sampler=partial(random_sampler, K=int(max_size * 0.25)))
