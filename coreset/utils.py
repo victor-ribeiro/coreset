@@ -105,8 +105,8 @@ def random_sampler(data, K):
 @timeit
 def craig_baseline(data, K):
     # features = data.astype(np.float32)
-    features = data.astype(np.float16)
-    D = pairwise_distances(features, metric="euclidean", n_jobs=20)
+    features = data.astype(np.half)
+    D = pairwise_distances(features, metric="euclidean", n_jobs=20).astype(np.half)
     D = D.max() - D
     V = np.arange(len(features), dtype=int).reshape(-1, 1)
     locator = FacilityLocation(D=D, V=V)
