@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
 import pandas as pd
 
 from keras.datasets import mnist
@@ -12,6 +13,9 @@ from keras.regularizers import l2
 from keras.callbacks import Callback
 
 
+from coreset.lazzy_greed import fastcore
+from coreset.utils import craig_baseline
+from coreset.utils import random_sampler
 from coreset.environ import load_config
 
 
@@ -84,14 +88,15 @@ for _ in range(15):
     ##########################################################################################
     ##########################################################################################
     ##########################################################################################
-    from coreset.lazzy_greed import fastcore
 
     cb = TimingCallback()
     alpha = 0.1
     beta = 1.1
 
+    ft = PCA(n_components=10).fit_transform(X_train)
     idx = fastcore(
-        X_train,
+        ft,
+        # X_train,
         K=int(len(X_train) * core_size),
         batch_size=256 * 6,
         # batch_size=batch_size,
@@ -125,14 +130,12 @@ for _ in range(15):
     ##########################################################################################
     ##########################################################################################
     ##########################################################################################
-    from coreset.utils import craig_baseline
-    from sklearn.decomposition import PCA
 
     cb = TimingCallback()
     ft = PCA(n_components=10).fit_transform(X_train)
     idx = craig_baseline(ft, K=int(len(X_train) * core_size))
-    X_random = X_train[idx]
-    y_random = y_train[idx]
+    X_craig = X_train[idx]
+    y_craig = y_train[idx]
     model = Sequential()
     model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
     model.add(Activation("sigmoid"))
@@ -140,11 +143,11 @@ for _ in range(15):
     model.add(Activation("softmax"))
 
     model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
-    hist_ = model.fit(X_random, y_random, batch_size=batch_size, epochs=epochs)
+    hist_ = model.fit(X_craig, y_craig, batch_size=batch_size, epochs=epochs)
     hist_ = hist_.history
     hist_ = model.fit(
-        X_random,
-        y_random,
+        X_craig,
+        y_craig,
         batch_size=batch_size,
         epochs=epochs,
         validation_data=(X_test, y_test),
@@ -160,7 +163,6 @@ for _ in range(15):
     ##########################################################################################
     ##########################################################################################
     ##########################################################################################
-    from coreset.utils import random_sampler
 
     cb = TimingCallback()
 
