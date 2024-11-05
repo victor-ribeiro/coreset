@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import pandas as pd
 
+import tensorflow as tf
 from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense, Activation
@@ -36,6 +37,11 @@ class TimingCallback(Callback):
         self.logs.append(elapsed)
 
 
+##########################################################################################
+gpus = tf.config.experimental.list_physical_devices("GPU")
+
+##########################################################################################
+
 outfile, DATA_HOME, names, tgt_name = load_config()
 result = []
 
@@ -52,152 +58,164 @@ X_train = np.vstack([X_train, X_train])
 y_train = np.hstack([y_train, y_train])
 y_train = to_categorical(y_train)
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X_train, y_train, test_size=0.2, shuffle=True
-)
+for gpu in gpus:
+    with tf.device(gpu.name):
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_train, y_train, test_size=0.2, shuffle=True
+        )
 
+        for _ in range(15):
+            ##########################################################################################
+            ##########################################################################################
+            ##########################################################################################
+            cb = TimingCallback()
 
-for _ in range(15):
-    ##########################################################################################
-    ##########################################################################################
-    ##########################################################################################
-    cb = TimingCallback()
+            model = Sequential()
+            model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
+            model.add(Activation("sigmoid"))
+            model.add(Dense(10, kernel_regularizer=l2(reg)))
+            model.add(Activation("softmax"))
 
-    model = Sequential()
-    model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
-    model.add(Activation("sigmoid"))
-    model.add(Dense(10, kernel_regularizer=l2(reg)))
-    model.add(Activation("softmax"))
+            model.compile(
+                loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd"
+            )
+            hist_ = model.fit(
+                X_train,
+                y_train,
+                batch_size=batch_size,
+                epochs=epochs,
+                validation_data=(X_test, y_test),
+                callbacks=[cb],
+            )
+            hist_ = hist_.history
+            tmp = pd.DataFrame(hist_)
+            tmp["sampler"] = "Full dataset"
+            tmp["elapsed"] = np.cumsum(cb.logs).round()
 
-    model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
-    hist_ = model.fit(
-        X_train,
-        y_train,
-        batch_size=batch_size,
-        epochs=epochs,
-        validation_data=(X_test, y_test),
-        callbacks=[cb],
-    )
-    hist_ = hist_.history
-    tmp = pd.DataFrame(hist_)
-    tmp["sampler"] = "Full dataset"
-    tmp["elapsed"] = np.cumsum(cb.logs).round()
+            result.append(tmp)
 
-    result.append(tmp)
+            ##########################################################################################
+            ##########################################################################################
+            ##########################################################################################
+            from coreset.lazzy_greed import fastcore
 
-    ##########################################################################################
-    ##########################################################################################
-    ##########################################################################################
-    from coreset.lazzy_greed import fastcore
+            cb = TimingCallback()
+            alpha = 0.1
+            beta = 1.1
 
-    cb = TimingCallback()
-    alpha = 0.1
-    beta = 1.1
+            idx = fastcore(
+                X_train,
+                K=int(len(X_train) * core_size),
+                batch_size=256 * 6,
+                # batch_size=batch_size,
+                alpha=alpha,
+                beta=beta,
+            )
+            X_lazy = X_train[idx]
+            y_lazy = y_train[idx]
+            model = Sequential()
+            model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
+            model.add(Activation("sigmoid"))
+            model.add(Dense(10, kernel_regularizer=l2(reg)))
+            model.add(Activation("softmax"))
+            model.compile(
+                loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd"
+            )
+            hist_ = model.fit(
+                X_lazy,
+                y_lazy,
+                batch_size=batch_size,
+                epochs=epochs,
+                validation_data=(X_test, y_test),
+                callbacks=[cb],
+            )
+            hist_ = hist_.history
 
-    idx = fastcore(
-        X_train,
-        K=int(len(X_train) * core_size),
-        batch_size=256 * 6,
-        # batch_size=batch_size,
-        alpha=alpha,
-        beta=beta,
-    )
-    X_lazy = X_train[idx]
-    y_lazy = y_train[idx]
-    model = Sequential()
-    model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
-    model.add(Activation("sigmoid"))
-    model.add(Dense(10, kernel_regularizer=l2(reg)))
-    model.add(Activation("softmax"))
-    model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
-    hist_ = model.fit(
-        X_lazy,
-        y_lazy,
-        batch_size=batch_size,
-        epochs=epochs,
-        validation_data=(X_test, y_test),
-        callbacks=[cb],
-    )
-    hist_ = hist_.history
+            tmp = pd.DataFrame(hist_)
+            tmp["sampler"] = "FastCORE"
+            tmp["elapsed"] = np.cumsum(cb.logs).round()
 
-    tmp = pd.DataFrame(hist_)
-    tmp["sampler"] = "FastCORE"
-    tmp["elapsed"] = np.cumsum(cb.logs).round()
+            result.append(tmp)
 
-    result.append(tmp)
+            ##########################################################################################
+            ##########################################################################################
+            ##########################################################################################
+            from coreset.utils import craig_baseline
+            from sklearn.decomposition import PCA
 
-    ##########################################################################################
-    ##########################################################################################
-    ##########################################################################################
-    from coreset.utils import craig_baseline
-    from sklearn.decomposition import PCA
+            cb = TimingCallback()
+            ft = PCA(n_components=10).fit_transform(X_train)
+            idx = craig_baseline(ft, K=int(len(X_train) * core_size))
+            X_random = X_train[idx]
+            y_random = y_train[idx]
+            model = Sequential()
+            model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
+            model.add(Activation("sigmoid"))
+            model.add(Dense(10, kernel_regularizer=l2(reg)))
+            model.add(Activation("softmax"))
 
-    cb = TimingCallback()
-    ft = PCA(n_components=10).fit_transform(X_train)
-    idx = craig_baseline(ft, K=int(len(X_train) * core_size))
-    X_random = X_train[idx]
-    y_random = y_train[idx]
-    model = Sequential()
-    model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
-    model.add(Activation("sigmoid"))
-    model.add(Dense(10, kernel_regularizer=l2(reg)))
-    model.add(Activation("softmax"))
+            model.compile(
+                loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd"
+            )
+            hist_ = model.fit(X_random, y_random, batch_size=batch_size, epochs=epochs)
+            hist_ = hist_.history
+            hist_ = model.fit(
+                X_random,
+                y_random,
+                batch_size=batch_size,
+                epochs=epochs,
+                validation_data=(X_test, y_test),
+                callbacks=[cb],
+            )
+            hist_ = hist_.history
 
-    model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
-    hist_ = model.fit(X_random, y_random, batch_size=batch_size, epochs=epochs)
-    hist_ = hist_.history
-    hist_ = model.fit(
-        X_random,
-        y_random,
-        batch_size=batch_size,
-        epochs=epochs,
-        validation_data=(X_test, y_test),
-        callbacks=[cb],
-    )
-    hist_ = hist_.history
+            tmp = pd.DataFrame(hist_)
+            tmp["sampler"] = "CRAIG"
+            tmp["elapsed"] = np.cumsum(cb.logs).round()
+            result.append(tmp)
 
-    tmp = pd.DataFrame(hist_)
-    tmp["sampler"] = "CRAIG"
-    tmp["elapsed"] = np.cumsum(cb.logs).round()
-    result.append(tmp)
+            ##########################################################################################
+            ##########################################################################################
+            ##########################################################################################
+            from coreset.utils import random_sampler
 
-    ##########################################################################################
-    ##########################################################################################
-    ##########################################################################################
-    from coreset.utils import random_sampler
+            cb = TimingCallback()
 
-    cb = TimingCallback()
+            idx = random_sampler(X_train, K=int(len(X_train) * core_size))
+            X_random = X_train[idx]
+            y_random = y_train[idx]
+            model = Sequential()
+            model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
+            model.add(Activation("sigmoid"))
+            model.add(Dense(10, kernel_regularizer=l2(reg)))
+            model.add(Activation("softmax"))
 
-    idx = random_sampler(X_train, K=int(len(X_train) * core_size))
-    X_random = X_train[idx]
-    y_random = y_train[idx]
-    model = Sequential()
-    model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
-    model.add(Activation("sigmoid"))
-    model.add(Dense(10, kernel_regularizer=l2(reg)))
-    model.add(Activation("softmax"))
+            model.compile(
+                loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd"
+            )
 
-    model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
+            hist_ = model.fit(
+                X_random,
+                y_random,
+                batch_size=batch_size,
+                epochs=epochs,
+                validation_data=(X_test, y_test),
+                callbacks=[cb],
+            )
+            hist_ = hist_.history
 
-    hist_ = model.fit(
-        X_random,
-        y_random,
-        batch_size=batch_size,
-        epochs=epochs,
-        validation_data=(X_test, y_test),
-        callbacks=[cb],
-    )
-    hist_ = hist_.history
+            tmp = pd.DataFrame(hist_)
+            tmp["sampler"] = "Random sampler"
+            tmp["elapsed"] = np.cumsum(cb.logs).round()
+            result.append(tmp)
 
-    tmp = pd.DataFrame(hist_)
-    tmp["sampler"] = "Random sampler"
-    tmp["elapsed"] = np.cumsum(cb.logs).round()
-    result.append(tmp)
-
-    ##########################################################################################
-    ##########################################################################################
-result = pd.concat(result, ignore_index=True)
-result.to_csv(outfile)
+            ##########################################################################################
+            ##########################################################################################
+with tf.device("/CPU:0"):
+    result = pd.concat(result, ignore_index=True)
+    result.to_csv(outfile)
+# result = pd.concat(result, ignore_index=True)
+# result.to_csv(outfile)
 
 import seaborn as sns
 
