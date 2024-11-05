@@ -94,15 +94,8 @@ for _ in range(15):
     beta = 1.1
 
     ft = PCA(n_components=10).fit_transform(X_train)
-    idx = fastcore(
-        ft,
-        # X_train,
-        K=int(len(X_train) * core_size),
-        batch_size=256 * 6,
-        # batch_size=batch_size,
-        alpha=alpha,
-        beta=beta,
-    )
+    # idx = fastcore(X_train, K=int(len(X_train) * core_size), batch_size=256)
+    idx = fastcore(ft, K=int(len(X_train) * core_size), batch_size=256)
     X_lazy = X_train[idx]
     y_lazy = y_train[idx]
     model = Sequential()
