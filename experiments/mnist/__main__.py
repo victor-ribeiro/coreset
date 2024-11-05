@@ -157,7 +157,7 @@ for _ in range(15):
     hist_ = hist_.history
 
     tmp = pd.DataFrame(hist_)
-    tmp["sampler"] = "FastCORE"
+    tmp["sampler"] = "CRAIG"
     tmp["elapsed"] = np.cumsum(cb.logs).round()
     result.append(tmp)
 
