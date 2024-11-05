@@ -58,6 +58,9 @@ X_train = np.vstack([X_train, X_train])
 y_train = np.hstack([y_train, y_train])
 y_train = to_categorical(y_train)
 
+print(gpus)
+exit()
+
 for gpu in gpus:
     print(f"DEVICE: {gpu.name}")
     with tf.device(gpu.name):
