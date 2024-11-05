@@ -108,7 +108,7 @@ def craig_baseline(data, K):
     features = data.astype(np.single)
     # D = pairwise_distances(features, metric="euclidean", n_jobs=20).astype(np.single)
     D = pairwise_distances(
-        features.astype(np.half),
+        features.astype(np.int32),
         metric="euclidean",
         n_jobs=-1,
     ).astype(np.half)
