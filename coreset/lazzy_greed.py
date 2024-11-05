@@ -1,12 +1,15 @@
 ###############################################
 ### |S| <= 1 + log max F( e | [] ) x | S* | ###
 ###############################################
-from numba import jit
+
+try:
+    import cupy as np
+except:
+    import numpy as np
 import heapq
 import math
-import numpy as np
 from itertools import batched
-import random
+
 
 from coreset.metrics import METRICS
 from coreset.utils import timeit

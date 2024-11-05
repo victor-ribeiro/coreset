@@ -1,5 +1,9 @@
-import pandas as pd
-import numpy as np
+try:
+    import cudf as pd
+    import cupy as np
+except:
+    import pandas as pd
+    import numpy as np
 from functools import partial
 from xgboost import XGBClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -34,22 +38,22 @@ if __name__ == "__main__":
         partial(fastcore, K=int(max_size * 0.10)),
         partial(fastcore, K=int(max_size * 0.15)),
         partial(fastcore, K=int(max_size * 0.25)),
-        partial(random_sampler, K=int(max_size * 0.01)),
-        partial(random_sampler, K=int(max_size * 0.02)),
-        partial(random_sampler, K=int(max_size * 0.03)),
-        partial(random_sampler, K=int(max_size * 0.04)),
-        partial(random_sampler, K=int(max_size * 0.05)),
-        partial(random_sampler, K=int(max_size * 0.10)),
-        partial(random_sampler, K=int(max_size * 0.15)),
-        partial(random_sampler, K=int(max_size * 0.25)),
-        partial(craig_baseline, K=int(max_size * 0.01)),
-        partial(craig_baseline, K=int(max_size * 0.02)),
-        partial(craig_baseline, K=int(max_size * 0.03)),
-        partial(craig_baseline, K=int(max_size * 0.04)),
-        partial(craig_baseline, K=int(max_size * 0.05)),
-        partial(craig_baseline, K=int(max_size * 0.10)),
-        partial(craig_baseline, K=int(max_size * 0.15)),
-        partial(craig_baseline, K=int(max_size * 0.25)),
+        # partial(random_sampler, K=int(max_size * 0.01)),
+        # partial(random_sampler, K=int(max_size * 0.02)),
+        # partial(random_sampler, K=int(max_size * 0.03)),
+        # partial(random_sampler, K=int(max_size * 0.04)),
+        # partial(random_sampler, K=int(max_size * 0.05)),
+        # partial(random_sampler, K=int(max_size * 0.10)),
+        # partial(random_sampler, K=int(max_size * 0.15)),
+        # partial(random_sampler, K=int(max_size * 0.25)),
+        # partial(craig_baseline, K=int(max_size * 0.01)),
+        # partial(craig_baseline, K=int(max_size * 0.02)),
+        # partial(craig_baseline, K=int(max_size * 0.03)),
+        # partial(craig_baseline, K=int(max_size * 0.04)),
+        # partial(craig_baseline, K=int(max_size * 0.05)),
+        # partial(craig_baseline, K=int(max_size * 0.10)),
+        # partial(craig_baseline, K=int(max_size * 0.15)),
+        # partial(craig_baseline, K=int(max_size * 0.25)),
     ]
 
     adult = BaseExperiment(
