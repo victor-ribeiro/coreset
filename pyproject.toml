@@ -26,10 +26,6 @@ spacy = "^3.8.2"
 imbalanced-learn = "^0.12.4"
 tensorflow = "^2.18.0"
 jax = "^0.4.35"
-cudf-cu11 = { version="^23.02", source="rapids" }
-dask-cudf-cu11 = { version="^23.02", source="rapids" }
-cuml-cu11 = { version="^23.02", source="rapids" }
-
 
 
 [[tool.poetry.source]]
@@ -41,11 +37,6 @@ priority = "primary"
 name = "torch"
 url = "https://download.pytorch.org/whl/cpu"
 priority = "supplemental"
-
-[[tool.poetry.source]]
-name="rapids"
-url="https://pypi.nvidia.com"
-priority = "primary"
 
 [tool.poetry.plugins.dotenv]
 # ignore = "true"
