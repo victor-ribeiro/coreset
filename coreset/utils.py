@@ -1,17 +1,19 @@
+try:
+    import cupy as np
+    from cuml.model_selection import train_test_split
+    from cuml.metrics import pairwise_distances
+    from cuml.feature_extraction.text import HashingVectorizer
+except:
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import pairwise_distances
+    from sklearn.feature_extraction.text import HashingVectorizer
+
 import re
-import pandas as pd
-import numpy as np
-import math
 from datetime import datetime
 from itertools import batched
 from functools import wraps
 from unidecode import unidecode
-
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import pairwise_distances, pairwise_distances_chunked
-from sklearn.feature_extraction.text import HashingVectorizer
-from sklearn.decomposition import PCA
-from scipy.spatial.distance import pdist, squareform, cdist
 
 from .craig.lazy_greedy import FacilityLocation, lazy_greedy_heap
 from coreset.metrics import low_similarity
