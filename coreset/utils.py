@@ -105,10 +105,10 @@ def random_sampler(data, K):
 @timeit
 def craig_baseline(data, K):
     # features = data.astype(np.float32)
-    features = data.astype(np.half)
+    features = data.astype(np.single)
     # D = pairwise_distances(features, metric="euclidean", n_jobs=20).astype(np.single)
     D = pairwise_distances(
-        features,
+        features.astype(np.half),
         metric="euclidean",
         n_jobs=-1,
     ).astype(np.half)
