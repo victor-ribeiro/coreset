@@ -73,10 +73,10 @@ if __name__ == "__main__":
     )
 
     review()  # base de comparação
-    review(sampler=partial(random_sampler, K=int(max_size * 0.10)))
+    review(sampler=partial(random_sampler, K=int(max_size * 0.25)))
     for size in b_size:
         review(
-            sampler=partial(fastcore, K=int(max_size * 0.10)),
+            sampler=partial(fastcore, K=int(max_size * 0.25)),
             batch_size=size,
         )
 
