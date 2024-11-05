@@ -45,8 +45,7 @@ priority = "supplemental"
 [[tool.poetry.source]]
 name="rapids"
 url="https://pypi.nvidia.com"
-default=false
-secondary=false
+priority = "secondary"
 
 [tool.poetry.plugins.dotenv]
 # ignore = "true"
