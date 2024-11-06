@@ -43,14 +43,14 @@ dataset = dataset.drop(columns=avg_names)
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(craig_baseline, K=int(max_size * 0.01)),
-        partial(craig_baseline, K=int(max_size * 0.02)),
-        partial(craig_baseline, K=int(max_size * 0.03)),
-        partial(craig_baseline, K=int(max_size * 0.04)),
-        partial(craig_baseline, K=int(max_size * 0.05)),
-        partial(craig_baseline, K=int(max_size * 0.10)),
-        partial(craig_baseline, K=int(max_size * 0.15)),
-        partial(craig_baseline, K=int(max_size * 0.25)),
+        partial(craig_baseline, K=int(max_size * 0.01), low_dim=10),
+        partial(craig_baseline, K=int(max_size * 0.02), low_dim=10),
+        partial(craig_baseline, K=int(max_size * 0.03), low_dim=10),
+        partial(craig_baseline, K=int(max_size * 0.04), low_dim=10),
+        partial(craig_baseline, K=int(max_size * 0.05), low_dim=10),
+        partial(craig_baseline, K=int(max_size * 0.10), low_dim=10),
+        partial(craig_baseline, K=int(max_size * 0.15), low_dim=10),
+        partial(craig_baseline, K=int(max_size * 0.25), low_dim=10),
         partial(fastcore, K=int(max_size * 0.01)),
         partial(fastcore, K=int(max_size * 0.02)),
         partial(fastcore, K=int(max_size * 0.03)),

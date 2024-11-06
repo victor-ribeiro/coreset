@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import pairwise_distances
 from sklearn.feature_extraction.text import HashingVectorizer
-
+from sklearn.decomposition import PCA
 import re
 from datetime import datetime
 from itertools import batched
@@ -97,8 +97,10 @@ def random_sampler(data, K):
 
 
 @timeit
-def craig_baseline(data, K):
+def craig_baseline(data, K, low_dim=False):
     features = data.astype(np.single)
+    if low_dim:
+        features = PCA(n_components=low_dim).fit_transform(features)
     D = np.asarray(
         pairwise_distances(features, metric="euclidean", n_jobs=-1), dtype=np.half
     )
