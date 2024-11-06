@@ -99,8 +99,6 @@ def random_sampler(data, K):
 @timeit
 def craig_baseline(data, K, low_dim=False):
     features = data.astype(np.single)
-    if low_dim:
-        features = PCA(n_components=low_dim).fit_transform(features)
     D = np.asarray(
         pairwise_distances(features, metric="euclidean", n_jobs=-1), dtype=np.half
     )
@@ -108,6 +106,6 @@ def craig_baseline(data, K, low_dim=False):
     V = np.arange(len(features), dtype=int).reshape(-1, 1)
     locator = FacilityLocation(D=D, V=V)
     sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=K)
-    sset_idx = np.array(sset_idx).reshape(1, -1)[0]
+    sset_idx = np.array(sset_idx, dtype=int).reshape(1, -1)[0]
     print(f"Selected {len(sset_idx)}")
     return sset_idx
