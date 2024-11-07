@@ -103,7 +103,7 @@ if __name__ == "__main__":
     bike_share.register_preprocessing(
         oht_coding("workingday", "holiday", "weathersit"),
         transform_fn(normal_cols, tgt_name, "atemp", "temp", "hum", "windspeed"),
-        # transform_fn(scale_cols, tgt_name, "casual", "registered"),
+        transform_fn(scale_cols, tgt_name, "casual", "registered"),
     )
 
     bike_share.register_metrics(mean_squared_error)
