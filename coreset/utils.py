@@ -11,6 +11,7 @@ from functools import wraps
 from unidecode import unidecode
 
 from .craig.lazy_greedy import FacilityLocation, lazy_greedy_heap
+from .craig.util import get_orders_and_weights
 from coreset.metrics import low_similarity
 
 
@@ -96,15 +97,22 @@ def random_sampler(data, K):
     return sset
 
 
+# @timeit
+# def craig_baseline(data, K):
+#     features = data.astype(np.single)
+#     # D = pairwise_distances(features, metric="cosine", n_jobs=-1)
+#     D = pairwise_distances(features, metric="euclidean", n_jobs=10)
+#     D = D.max() - D
+#     V = np.arange(len(features), dtype=int).reshape(-1, 1)
+#     locator = FacilityLocation(D=D, V=V)
+#     sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=K)
+#     sset_idx = np.array(sset_idx, dtype=int).reshape(1, -1)[0]
+#     print(f"Selected {len(sset_idx)}")
+#     return sset_idx
+
+
 @timeit
 def craig_baseline(data, K, low_dim=False):
     features = data.astype(np.single)
-    # D = pairwise_distances(features, metric="cosine", n_jobs=-1)
-    D = pairwise_distances(features, metric="euclidean", n_jobs=10)
-    D = D.max() - D
-    V = np.arange(len(features), dtype=int).reshape(-1, 1)
-    locator = FacilityLocation(D=D, V=V)
-    sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=K)
-    sset_idx = np.array(sset_idx, dtype=int).reshape(1, -1)[0]
-    print(f"Selected {len(sset_idx)}")
-    return sset_idx
+    sset, *_ = get_orders_and_weights(B=K, metric="euclidean", X=features, smtk=0)
+    return np.array(sset, dtype=int)

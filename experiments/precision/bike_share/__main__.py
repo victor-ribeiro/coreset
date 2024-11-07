@@ -67,6 +67,14 @@ def scale_cols(dataset, *names):
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
+        partial(craig_baseline, K=int(max_size * 0.01)),
+        partial(craig_baseline, K=int(max_size * 0.02)),
+        partial(craig_baseline, K=int(max_size * 0.03)),
+        partial(craig_baseline, K=int(max_size * 0.04)),
+        partial(craig_baseline, K=int(max_size * 0.05)),
+        partial(craig_baseline, K=int(max_size * 0.10)),
+        partial(craig_baseline, K=int(max_size * 0.15)),
+        partial(craig_baseline, K=int(max_size * 0.25)),
         partial(fastcore, K=int(max_size * 0.01)),
         partial(fastcore, K=int(max_size * 0.02)),
         partial(fastcore, K=int(max_size * 0.03)),
@@ -83,14 +91,6 @@ if __name__ == "__main__":
         partial(random_sampler, K=int(max_size * 0.10)),
         partial(random_sampler, K=int(max_size * 0.15)),
         partial(random_sampler, K=int(max_size * 0.25)),
-        partial(craig_baseline, K=int(max_size * 0.01)),
-        partial(craig_baseline, K=int(max_size * 0.02)),
-        partial(craig_baseline, K=int(max_size * 0.03)),
-        partial(craig_baseline, K=int(max_size * 0.04)),
-        partial(craig_baseline, K=int(max_size * 0.05)),
-        partial(craig_baseline, K=int(max_size * 0.10)),
-        partial(craig_baseline, K=int(max_size * 0.15)),
-        partial(craig_baseline, K=int(max_size * 0.25)),
     ]
     bike_share = BaseExperiment(
         dataset,
