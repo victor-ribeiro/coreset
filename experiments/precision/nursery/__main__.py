@@ -75,6 +75,7 @@ if __name__ == "__main__":
         repeat=REPEAT,
     )
 
+    # teste com oht_coding. mudar voltar para hash_encoding
     nursery.register_preprocessing(
         # hash_encoding("parents", "has_nurs", "form", n_features=5),
         oht_coding("parents", "has_nurs", "form"),
