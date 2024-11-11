@@ -2,7 +2,7 @@ import torch
 from typing import Generator
 import time
 
-import torch.utils
+from torch.utils.data import DataLoader
 
 
 __all__ = ["train_loop", "eval_train"]
@@ -43,7 +43,7 @@ def train_loop(data_train, loss_fn, optmizer, model, epochs, agg_fn=sum):
         total = 0
         ################################################################
         start_time = time.time()
-        data_train = [_ for _ in data_train]
+        # data_train = [_ for _ in data_train]
         for ftrs, tgt in data_train:
             total += len(ftrs)
             pred = model(ftrs)
@@ -61,6 +61,41 @@ def train_loop(data_train, loss_fn, optmizer, model, epochs, agg_fn=sum):
         print(
             f"[{i}] \t {model.__class__.__name__} :: {epoch_loss:.4f} :: {elapsed:.4f} sec :: \t{total} "
         )
+
+
+# def gradual_train(data_train, loss_fn, optmizer, model, epochs, sampler=None, rounds=1):
+#     elapsed = 0
+#     features = None
+#     for i in range(epochs):
+#         model.train(True)
+#         epoch_loss = 0
+#         total = 0
+#         start_time = time.time()
+#         data_train = [_ for _ in data_train]
+#         for x_train, y_train in data_train:
+#             if sampler:
+#                 if features:
+
+#                 sset = sampler(x_train)
+#                 x_train = x_train[sset]
+#                 y_train
+
+#             total += len(x_train)
+#             pred = model(x_train)
+#             loss = loss_fn(pred.squeeze(), y_train)
+#             epoch_loss += loss.item()
+#             optmizer.zero_grad()
+#             loss.backward()
+#             optmizer.step()
+#         ################################################################
+#         epoch_loss /= len(data_train)
+#         # epoch_loss = epoch_loss / len(data_train)
+#         yield epoch_loss
+#         end_time = time.time()
+#         elapsed += end_time - start_time
+#         print(
+#             f"[{i}] \t {model.__class__.__name__} :: {epoch_loss:.4f} :: {elapsed:.4f} sec :: \t{total} "
+#         )
 
 
 eval_train = _valid_model(train_loop)

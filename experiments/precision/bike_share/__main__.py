@@ -32,22 +32,15 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 ###   MIN_MAX: casual, registered                                                 ###
 #####################################################################################
 
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize, minmax_scale, OrdinalEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.decomposition import PCA
 from functools import partial
 
 dataset = pd.read_csv(DATA_HOME, names=names, engine="pyarrow", index_col=0, skiprows=1)
 max_size = len(dataset) * 0.8
 *names, _ = names
-
-# preprocessing
-# encoder = oht_coding("workingday", "holiday", "weathersit")
 dataset["dteday"] = OrdinalEncoder().fit_transform(
     dataset["dteday"].values.reshape(-1, 1)
 )
-# dataset = encoder(dataset)
 
 
 def normal_cols(dataset, *names):
@@ -102,8 +95,8 @@ if __name__ == "__main__":
     # ajustar aqui
     bike_share.register_preprocessing(
         oht_coding("workingday", "holiday", "weathersit"),
-        transform_fn(normal_cols, tgt_name, "atemp", "temp", "hum", "windspeed"),
-        transform_fn(scale_cols, tgt_name, "casual", "registered"),
+        # transform_fn(normal_cols, tgt_name, "atemp", "temp", "hum", "windspeed"),
+        # transform_fn(scale_cols, tgt_name, "casual", "registered"),
     )
 
     bike_share.register_metrics(mean_squared_error)

@@ -7,7 +7,13 @@ from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 from coreset.environ import load_config
-from coreset.utils import random_sampler, hash_encoding, transform_fn, craig_baseline
+from coreset.utils import (
+    random_sampler,
+    hash_encoding,
+    transform_fn,
+    craig_baseline,
+    oht_coding,
+)
 from coreset.lazzy_greed import fastcore
 from coreset.kmeans import kmeans_sampler
 from coreset.evaluator import BaseExperiment, TrainCurve, REPEAT
@@ -70,7 +76,8 @@ if __name__ == "__main__":
     )
 
     nursery.register_preprocessing(
-        hash_encoding("parents", "has_nurs", "form", n_features=5),
+        # hash_encoding("parents", "has_nurs", "form", n_features=5),
+        oht_coding("parents", "has_nurs", "form"),
         transform_fn(encoding, tgt_name, *names[4:]),
     )
 

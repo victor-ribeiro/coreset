@@ -19,6 +19,7 @@ from coreset.utils import (
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
 
+REPEAT = 1
 
 outfile, DATA_HOME, names, tgt_name = load_config()
 
@@ -28,33 +29,10 @@ data = pd.read_csv(DATA_HOME, engine="pyarrow", names=names)
 data[tgt_name] = data[tgt_name] - 1
 
 max_size = len(data) * 0.8
-
+K = [0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.15, 0.25]
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [
-        partial(fastcore, K=int(max_size * 0.01)),
-        partial(fastcore, K=int(max_size * 0.02)),
-        partial(fastcore, K=int(max_size * 0.03)),
-        partial(fastcore, K=int(max_size * 0.04)),
-        partial(fastcore, K=int(max_size * 0.05)),
-        partial(fastcore, K=int(max_size * 0.10)),
-        partial(random_sampler, K=int(max_size * 0.01)),
-        partial(random_sampler, K=int(max_size * 0.02)),
-        partial(random_sampler, K=int(max_size * 0.03)),
-        partial(random_sampler, K=int(max_size * 0.04)),
-        partial(random_sampler, K=int(max_size * 0.05)),
-        partial(random_sampler, K=int(max_size * 0.10)),
-        partial(random_sampler, K=int(max_size * 0.15)),
-        partial(random_sampler, K=int(max_size * 0.25)),
-        partial(craig_baseline, K=int(max_size * 0.01)),
-        partial(craig_baseline, K=int(max_size * 0.02)),
-        partial(craig_baseline, K=int(max_size * 0.03)),
-        partial(craig_baseline, K=int(max_size * 0.04)),
-        partial(craig_baseline, K=int(max_size * 0.05)),
-        partial(craig_baseline, K=int(max_size * 0.10)),
-        partial(craig_baseline, K=int(max_size * 0.15)),
-        partial(craig_baseline, K=int(max_size * 0.25)),
-    ]
+    smpln = [fastcore, random_sampler, craig_baseline]
 
     covtype = BaseExperiment(
         data,
@@ -70,10 +48,9 @@ if __name__ == "__main__":
         partial(recall_score, average="macro"),
         partial(f1_score, average="macro"),
     )
-
-    for sampler in smpln:
-        # covtype(sampler=sampler, task="classification")
-        covtype(sampler=sampler)
+    for k in K:
+        for sampler in smpln:
+            covtype(sampler=partial(sampler, K=int(max_size * k)))
     covtype()  # base de comparação
     result = covtype.metrics  # base de comparação
 

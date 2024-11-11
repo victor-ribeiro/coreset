@@ -7,7 +7,7 @@ from torch import nn
 class MLP(nn.Module):
     n_neurons = 32
 
-    def __init__(self, input_size, vocab_size=0, n_layers=3):
+    def __init__(self, input_size, output_size=1):
         super().__init__()
         self.shape = [self.n_neurons, self.n_neurons]
         self.activation = nn.Sigmoid()
@@ -18,7 +18,7 @@ class MLP(nn.Module):
         self.hidden = nn.Sequential(nn.Linear(100, 10), self.activation)
 
         self.preput = nn.Sequential(
-            nn.Linear(10, 1),
+            nn.Linear(10, output_size),
             nn.Sigmoid(),
         )
 

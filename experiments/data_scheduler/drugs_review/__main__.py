@@ -10,6 +10,7 @@ from torch.optim import Adam, SGD
 from torch.utils.data import DataLoader
 
 from sklearn.decomposition import PCA, TruncatedSVD, FastICA
+from sklearn.preprocessing import OneHotEncoder
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
@@ -37,6 +38,8 @@ def clean_sent(sent, sub_pattern=r"[\W\s]+"):
     return sent
 
 
+REPEAT = 1
+
 batch_size = 256 * 5
 
 ####################################
@@ -50,11 +53,11 @@ with open(DATA_HOME, "rb") as file:
     features = pickle.load(file)
 
 # SGD = partial(SGD, weight_decay=10e-2, momentum=0.9, nesterov=True)
-SGD = partial(SGD, momentum=0.009, weight_decay=10e2)
 
 features, target = features["features"], features["target"]
 target = map(lambda x: 1 if x > 5 else 0, target)
 target = np.array([*target])
+target = OneHotEncoder().fit_transform(target.reshape(-1, 1)).toarray()
 
 features = map(clean_sent, features)
 
@@ -64,7 +67,7 @@ features = (
 
 features = PCA(n_components=300).fit_transform(features)
 
-LazyDataset = sampling_dataset(BaseDataset, partial(fastcore, beta=0))
+LazyDataset = sampling_dataset(BaseDataset, fastcore)
 RandomDataset = sampling_dataset(BaseDataset, random_sampler)
 CraigDataset = sampling_dataset(BaseDataset, craig_baseline)
 
@@ -76,6 +79,8 @@ X_train, X_test, y_train, y_test = train_test_split(
     features, target, test_size=0.2, shuffle=True
 )
 
+nsize, output_size = y_train.shape
+model_args = {"input_size": nsize, "output_size": output_size}
 # Adam = partial(Adam, weight_decay=10e-4, betas=[0.9, 0.999])
 for i in range(REPEAT):
     ####################################
@@ -87,7 +92,6 @@ for i in range(REPEAT):
     lr = 10e-3
     epochs = 15
 
-    _, nsize = X_train.shape
     size = int(len(target) * 0.1)
 
     # craig_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
@@ -100,9 +104,9 @@ for i in range(REPEAT):
     # del craig_model
     # del dataset
 
-    base_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    base_model = TorchLearner(MLP, **model_args)
     dataset = Loader(BaseDataset(X_train, y_train), batch_size=batch_size)
-    hist, elapsed = train(base_model, dataset, loss_fn(), Adam, lr, epochs)
+    hist, elapsed = train(base_model, dataset, loss_fn(), SGD, lr, epochs)
     tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
     tmp["method"] = "full_dataset"
     result = pd.concat([result, tmp], ignore_index=True)
@@ -111,10 +115,10 @@ for i in range(REPEAT):
     del base_model
     del dataset
 
-    lazy_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    lazy_model = TorchLearner(MLP, **model_args)
     dataset = LazyDataset(features=X_train, target=y_train, coreset_size=size)
     dataset = Loader(dataset=dataset, batch_size=batch_size)
-    hist, elapsed = train(lazy_model, dataset, loss_fn(), Adam, lr, epochs)
+    hist, elapsed = train(lazy_model, dataset, loss_fn(), SGD, lr, epochs)
     tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
     tmp["method"] = "lazy_greed"
     result = pd.concat([result, tmp], ignore_index=True)
@@ -125,10 +129,10 @@ for i in range(REPEAT):
     del dataset
     # plt.plot(elapsed, hist, label="lazy_greed")
 
-    random_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    random_model = TorchLearner(MLP, **model_args)
     dataset = RandomDataset(features=X_train, target=y_train, coreset_size=size)
     dataset = Loader(dataset=dataset, batch_size=batch_size)
-    hist, elapsed = train(random_model, dataset, loss_fn(), Adam, lr, epochs)
+    hist, elapsed = train(random_model, dataset, loss_fn(), SGD, lr, epochs)
     tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
     tmp["method"] = "random_sampler"
     result = pd.concat([result, tmp], ignore_index=True)

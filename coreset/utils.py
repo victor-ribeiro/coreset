@@ -1,18 +1,15 @@
+import re
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import pairwise_distances
+from sklearn.metrics import pairwise_distances, pairwise_distances_chunked
 from sklearn.feature_extraction.text import HashingVectorizer
-from sklearn.decomposition import PCA
-import re
 from datetime import datetime
 from itertools import batched
 from functools import wraps
 from unidecode import unidecode
 
 from .craig.lazy_greedy import FacilityLocation, lazy_greedy_heap
-from .craig.util import get_orders_and_weights
-from coreset.metrics import low_similarity
 
 
 def timeit(f_):
@@ -100,11 +97,32 @@ def random_sampler(data, K):
 @timeit
 def craig_baseline(data, K):
     features = data.astype(np.single)
-    D = pairwise_distances(features, metric="euclidean", n_jobs=3)
-    D = D.max() - D
-    V = np.arange(len(features), dtype=int).reshape(-1, 1)
-    locator = FacilityLocation(D=D, V=V)
-    sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=K)
-    sset_idx = np.array(sset_idx, dtype=int).reshape(1, -1)[0]
-    print(f"Selected {len(sset_idx)}")
-    return sset_idx
+    start = 0
+    sset = []
+    # V = np.arange(len(features), dtype=int).reshape(-1, 1)
+    for D in pairwise_distances_chunked(features, metric="euclidean", n_jobs=3):
+        size = len(D)
+        V = np.arange(start, start + size, dtype=int).reshape(-1, 1)
+        D = D.max() - D
+        B = int(len(D) * (K / len(features)))
+        locator = FacilityLocation(D=D, V=V)
+        sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=B)
+        sset_idx = np.array(sset_idx, dtype=int).reshape(1, -1)[0]
+        sset.append(sset_idx)
+        start += size
+    sset = np.hstack(sset)
+    print(f"Selected {len(sset)}")
+    return sset
+
+
+# @timeit
+# def craig_baseline(data, K):
+#     features = data.astype(np.single)
+#     D = pairwise_distances(features, metric="euclidean", n_jobs=3)
+#     D = D.max() - D
+#     V = np.arange(len(features), dtype=int).reshape(-1, 1)
+#     locator = FacilityLocation(D=D, V=V)
+#     sset_idx, *_ = lazy_greedy_heap(F=locator, V=V, B=K)
+#     sset_idx = np.array(sset_idx, dtype=int).reshape(1, -1)[0]
+#     print(f"Selected {len(sset_idx)}")
+#     return sset_idx
