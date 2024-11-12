@@ -90,7 +90,7 @@ for i in range(REPEAT):
     _, nsize = X_train.shape
     size = int(len(target) * 0.1)
 
-    craig_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    craig_model = TorchLearner(MLP, {"input_size": nsize})
     dataset = CraigDataset(features=X_train, target=y_train, coreset_size=size)
     dataset = Loader(dataset=dataset, batch_size=batch_size)
     hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
