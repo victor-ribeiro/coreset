@@ -50,7 +50,7 @@ max_size = len(data) * 0.8
 if __name__ == "__main__":
     # sampling strategies
     smpln = [fastcore, random_sampler, craig_baseline]
-    size = [0.01, 0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 
     n_threads = int(multiprocessing.cpu_count() / 2)
 

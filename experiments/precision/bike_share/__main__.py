@@ -7,7 +7,7 @@ from sklearn.preprocessing import OrdinalEncoder
 from sklearn.metrics import mean_squared_error
 
 from coreset.environ import load_config
-from coreset.utils import random_sampler, craig_baseline, oht_coding
+from coreset.utils import random_sampler, craig_baseline, oht_coding, transform_fn
 from coreset.lazzy_greed import fastcore
 from coreset.evaluator import BaseExperiment, REPEAT
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     # ajustar aqui
     bike_share.register_preprocessing(
         oht_coding("workingday", "holiday", "weathersit"),
-        # transform_fn(normal_cols, tgt_name, "atemp", "temp", "hum", "windspeed"),
+        transform_fn(normal_cols, tgt_name, "atemp", "temp", "hum", "windspeed"),
         # transform_fn(scale_cols, tgt_name, "casual", "registered"),
     )
 

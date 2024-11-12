@@ -42,7 +42,7 @@ dataset[tgt_name] = LabelEncoder().fit_transform(dataset[tgt_name]).astype(int)
 
 if __name__ == "__main__":
     # sampling strategies
-    size = [0.01, 0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 
     smpln = [fastcore, random_sampler, craig_baseline]
     nursery = BaseExperiment(
