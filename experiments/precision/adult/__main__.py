@@ -2,9 +2,7 @@ import pandas as pd
 import numpy as np
 from functools import partial
 from xgboost import XGBClassifier
-from sklearn.tree import DecisionTreeClassifier
-
-
+from datetime import datetime
 from sklearn.metrics import precision_score, f1_score, recall_score
 
 from coreset.evaluator import BaseExperiment, REPEAT
@@ -25,32 +23,9 @@ max_size = len(data) * 0.8
 
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [
-        partial(craig_baseline, K=int(max_size * 0.01)),
-        partial(craig_baseline, K=int(max_size * 0.02)),
-        partial(craig_baseline, K=int(max_size * 0.03)),
-        partial(craig_baseline, K=int(max_size * 0.04)),
-        partial(craig_baseline, K=int(max_size * 0.05)),
-        partial(craig_baseline, K=int(max_size * 0.10)),
-        partial(craig_baseline, K=int(max_size * 0.15)),
-        partial(craig_baseline, K=int(max_size * 0.25)),
-        partial(fastcore, K=int(max_size * 0.01)),
-        partial(fastcore, K=int(max_size * 0.02)),
-        partial(fastcore, K=int(max_size * 0.03)),
-        partial(fastcore, K=int(max_size * 0.04)),
-        partial(fastcore, K=int(max_size * 0.05)),
-        partial(fastcore, K=int(max_size * 0.10)),
-        partial(fastcore, K=int(max_size * 0.15)),
-        partial(fastcore, K=int(max_size * 0.25)),
-        partial(random_sampler, K=int(max_size * 0.01)),
-        partial(random_sampler, K=int(max_size * 0.02)),
-        partial(random_sampler, K=int(max_size * 0.03)),
-        partial(random_sampler, K=int(max_size * 0.04)),
-        partial(random_sampler, K=int(max_size * 0.05)),
-        partial(random_sampler, K=int(max_size * 0.10)),
-        partial(random_sampler, K=int(max_size * 0.15)),
-        partial(random_sampler, K=int(max_size * 0.25)),
-    ]
+    size = [0.01, 0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+
+    smpln = [craig_baseline, fastcore, random_sampler]
 
     adult = BaseExperiment(
         data,
@@ -60,24 +35,21 @@ if __name__ == "__main__":
         repeat=REPEAT,
     )
 
-    ### datasets baharam : minist e cifar
-    ### matrix de distâncias (mapa de calor)
-
     adult.register_preprocessing(
-        # hash_encoding(
-        #     "native-country", "occupation", "marital-status", "fnlwgt", n_features=5
-        # ),
-        # oht_coding("sex", "education", "race", "relationship", "workclass"),
-        oht_coding(
-            "sex",
-            "education",
-            "race",
-            "relationship",
-            "workclass",
-            "marital-status",
-            "occupation",
-            "native-country",
+        hash_encoding(
+            "native-country", "occupation", "marital-status", "fnlwgt", n_features=5
         ),
+        oht_coding("sex", "education", "race", "relationship", "workclass"),
+        # oht_coding(
+        #     "sex",
+        #     "education",
+        #     "race",
+        #     "relationship",
+        #     "workclass",
+        #     "marital-status",
+        #     "occupation",
+        #     "native-country",
+        # ),
     )
 
     adult.register_metrics(
@@ -88,7 +60,11 @@ if __name__ == "__main__":
 
     adult()  # base de comparação
     for sampler in smpln:
-        adult(sampler=sampler)
+        print(f"[{datetime.now()}] {sampler.__name__}")
+        for K in size:
+            adult(sampler=sampler)
+        print(f"[{datetime.now()}] {sampler.__name__}\t::\t OK")
+
     result = adult.metrics  # base de comparação
 
     result.to_csv(outfile, index=False)

@@ -1,7 +1,7 @@
 import pandas as pd
 from functools import partial
+from datetime import datetime
 from xgboost import XGBClassifier
-from sklearn.tree import DecisionTreeClassifier
 
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score
@@ -42,32 +42,9 @@ dataset[tgt_name] = LabelEncoder().fit_transform(dataset[tgt_name]).astype(int)
 
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [
-        partial(fastcore, K=int(max_size * 0.01)),
-        partial(fastcore, K=int(max_size * 0.02)),
-        partial(fastcore, K=int(max_size * 0.03)),
-        partial(fastcore, K=int(max_size * 0.04)),
-        partial(fastcore, K=int(max_size * 0.05)),
-        partial(fastcore, K=int(max_size * 0.10)),
-        partial(fastcore, K=int(max_size * 0.15)),
-        partial(fastcore, K=int(max_size * 0.25)),
-        partial(random_sampler, K=int(max_size * 0.01)),
-        partial(random_sampler, K=int(max_size * 0.02)),
-        partial(random_sampler, K=int(max_size * 0.03)),
-        partial(random_sampler, K=int(max_size * 0.04)),
-        partial(random_sampler, K=int(max_size * 0.05)),
-        partial(random_sampler, K=int(max_size * 0.10)),
-        partial(random_sampler, K=int(max_size * 0.15)),
-        partial(random_sampler, K=int(max_size * 0.25)),
-        partial(craig_baseline, K=int(max_size * 0.01)),
-        partial(craig_baseline, K=int(max_size * 0.02)),
-        partial(craig_baseline, K=int(max_size * 0.03)),
-        partial(craig_baseline, K=int(max_size * 0.04)),
-        partial(craig_baseline, K=int(max_size * 0.05)),
-        partial(craig_baseline, K=int(max_size * 0.10)),
-        partial(craig_baseline, K=int(max_size * 0.15)),
-        partial(craig_baseline, K=int(max_size * 0.25)),
-    ]
+    size = [0.01, 0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+
+    smpln = [fastcore, random_sampler, craig_baseline]
     nursery = BaseExperiment(
         dataset,
         model=XGBClassifier,
@@ -77,12 +54,12 @@ if __name__ == "__main__":
 
     # teste com oht_coding. mudar voltar para hash_encoding
     nursery.register_preprocessing(
-        # hash_encoding("parents", n_features=3),
-        # hash_encoding("has_nurs", n_features=3),
-        # hash_encoding("form", n_features=3),
-        # transform_fn(encoding, tgt_name, *names[4:]),
+        hash_encoding("parents", n_features=3),
+        hash_encoding("has_nurs", n_features=3),
+        hash_encoding("form", n_features=3),
+        transform_fn(encoding, tgt_name, *names[4:]),
         # oht_coding("parents", "has_nurs", "form"),
-        transform_fn(encoding, tgt_name, *names),
+        # transform_fn(encoding, tgt_name, *names),
     )
 
     nursery.register_metrics(
@@ -92,7 +69,10 @@ if __name__ == "__main__":
     )
 
     nursery()
-    for sampler in smpln:
-        nursery(sampler=sampler)
+    for K in size:
+        print(f"[{datetime.now()}] {sampler.__name__}")
+        for sampler in smpln:
+            nursery(sampler=sampler)
+        print(f"[{datetime.now()}] {sampler.__name__}\t::\t OK")
     result = nursery.metrics  # base de comparação
     result.to_csv(outfile, index=False)
