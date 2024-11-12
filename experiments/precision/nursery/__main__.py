@@ -69,10 +69,11 @@ if __name__ == "__main__":
     )
 
     nursery()
-    for K in size:
+    for sampler in smpln:
         print(f"[{datetime.now()}] {sampler.__name__}")
-        for sampler in smpln:
-            nursery(sampler=sampler)
+        for K in size:
+            nursery(sampler=partial(sampler, K=int(max_size * K)))
         print(f"[{datetime.now()}] {sampler.__name__}\t::\t OK")
+
     result = nursery.metrics  # base de comparação
     result.to_csv(outfile, index=False)

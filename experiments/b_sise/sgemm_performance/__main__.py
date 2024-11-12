@@ -11,7 +11,7 @@ from itertools import product
 from coreset.environ import load_config
 from coreset.utils import transform_fn, random_sampler
 from coreset.lazzy_greed import fastcore
-from coreset.evaluator import BSizeExperiment
+from coreset.evaluator import BSizeExperiment, REPEAT
 
 
 outfile, DATA_HOME, names, tgt_name = load_config()
@@ -28,9 +28,6 @@ dataset = dataset.drop(columns=avg_names)
 
 b_size = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
 
-REPEAT = 30
-
-
 if __name__ == "__main__":
     # sampling strategies
     sgemm = BSizeExperiment(
@@ -44,12 +41,13 @@ if __name__ == "__main__":
 
     sgemm.register_metrics(mean_squared_error)
     sgemm()  # base de comparação
-    for size in b_size:
-        sgemm(
-            sampler=partial(fastcore, K=int(max_size * 0.25)),
-            batch_size=size,
-        )
-    sgemm(sampler=partial(random_sampler, K=int(max_size * 0.25)))
+    for K in [0.1, 0.25, 0.4]:
+        for size in b_size:
+            sgemm(
+                sampler=partial(fastcore, K=int(max_size * K)),
+                batch_size=size,
+            )
+        sgemm(sampler=partial(random_sampler, K=int(max_size * K)))
     result = sgemm.metrics
 
     result.to_csv(outfile, index=False)

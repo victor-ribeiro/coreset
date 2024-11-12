@@ -9,17 +9,8 @@ from sklearn.preprocessing import normalize
 
 from coreset.evaluator import BaseExperiment, REPEAT
 from coreset.lazzy_greed import fastcore, lazy_greed_class
-from coreset.utils import (
-    hash_encoding,
-    oht_coding,
-    random_sampler,
-    craig_baseline,
-    transform_fn,
-)
-from coreset.kmeans import kmeans_sampler
+from coreset.utils import random_sampler, craig_baseline, transform_fn
 from coreset.environ import load_config
-
-REPEAT = 1
 
 outfile, DATA_HOME, names, tgt_name = load_config()
 
@@ -48,9 +39,9 @@ if __name__ == "__main__":
         partial(recall_score, average="macro"),
         partial(f1_score, average="macro"),
     )
-    for k in K:
+    for sampler in smpln:
         print(f"[{datetime.now()}] {sampler.__name__}")
-        for sampler in smpln:
+        for k in K:
             covtype(sampler=partial(sampler, K=int(max_size * k)))
         print(f"[{datetime.now()}] {sampler.__name__}\t::\t OK")
 

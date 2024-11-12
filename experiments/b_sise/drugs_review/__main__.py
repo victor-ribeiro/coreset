@@ -17,7 +17,7 @@ from coreset.lazzy_greed import fastcore
 from coreset.utils import random_sampler
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
-from coreset.evaluator import BSizeExperiment
+from coreset.evaluator import BSizeExperiment, REPEAT
 
 
 def clean_sent(sent, sub_pattern=r"[\W\s]+"):
@@ -48,7 +48,6 @@ dataset.columns = dataset.columns.astype(str)
 max_size = len(dataset) * 0.8
 b_size = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
 
-REPEAT = 30
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
@@ -74,11 +73,13 @@ if __name__ == "__main__":
 
     review()  # base de comparação
     review(sampler=partial(random_sampler, K=int(max_size * 0.25)))
-    for size in b_size:
-        review(
-            sampler=partial(fastcore, K=int(max_size * 0.25)),
-            batch_size=size,
-        )
+    for K in [0.1, 0.25, 0.40]:
+        for size in b_size:
+            review(
+                sampler=partial(fastcore, K=int(max_size * K)),
+                batch_size=size,
+            )
+        review(sampler=partial(random_sampler, K=int(max_size * K)))
 
     result = review.metrics
 

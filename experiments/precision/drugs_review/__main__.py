@@ -3,8 +3,8 @@ import multiprocessing
 import pickle
 import numpy as np
 import pandas as pd
-
 from functools import partial
+from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import PCA
@@ -49,32 +49,8 @@ max_size = len(data) * 0.8
 
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [
-        partial(fastcore, K=int(max_size * 0.01)),
-        partial(fastcore, K=int(max_size * 0.02)),
-        partial(fastcore, K=int(max_size * 0.03)),
-        partial(fastcore, K=int(max_size * 0.04)),
-        partial(fastcore, K=int(max_size * 0.05)),
-        partial(fastcore, K=int(max_size * 0.10)),
-        partial(fastcore, K=int(max_size * 0.15)),
-        partial(fastcore, K=int(max_size * 0.25)),
-        partial(random_sampler, K=int(max_size * 0.01)),
-        partial(random_sampler, K=int(max_size * 0.02)),
-        partial(random_sampler, K=int(max_size * 0.03)),
-        partial(random_sampler, K=int(max_size * 0.04)),
-        partial(random_sampler, K=int(max_size * 0.05)),
-        partial(random_sampler, K=int(max_size * 0.10)),
-        partial(random_sampler, K=int(max_size * 0.15)),
-        partial(random_sampler, K=int(max_size * 0.25)),
-        partial(craig_baseline, K=int(max_size * 0.01)),
-        partial(craig_baseline, K=int(max_size * 0.02)),
-        partial(craig_baseline, K=int(max_size * 0.03)),
-        partial(craig_baseline, K=int(max_size * 0.04)),
-        partial(craig_baseline, K=int(max_size * 0.05)),
-        partial(craig_baseline, K=int(max_size * 0.10)),
-        partial(craig_baseline, K=int(max_size * 0.15)),
-        partial(craig_baseline, K=int(max_size * 0.25)),
-    ]
+    smpln = [fastcore, random_sampler, craig_baseline]
+    size = [0.01, 0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 
     n_threads = int(multiprocessing.cpu_count() / 2)
 
@@ -100,9 +76,11 @@ if __name__ == "__main__":
         partial(recall_score, average="macro"),
         partial(f1_score, average="macro"),
     )
-
     for sampler in smpln:
-        review(sampler=sampler)
+        print(f"[{datetime.now()}] {sampler.__name__}")
+        for K in size:
+            review(sampler=partial(sampler, K=int(max_size * K)))
+        print(f"[{datetime.now()}] {sampler.__name__}\t::\t OK")
     review()  # base de comparação
     result = review.metrics  # base de comparação
 

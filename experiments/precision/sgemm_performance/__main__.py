@@ -1,9 +1,7 @@
 import pandas as pd
 from functools import partial
 from xgboost import XGBRegressor
-
-from sklearn.tree import DecisionTreeClassifier
-
+from datetime import datetime
 
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import mean_squared_error
@@ -42,32 +40,8 @@ dataset = dataset.drop(columns=avg_names)
 
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [
-        partial(craig_baseline, K=int(max_size * 0.01)),
-        partial(craig_baseline, K=int(max_size * 0.02)),
-        partial(craig_baseline, K=int(max_size * 0.03)),
-        partial(craig_baseline, K=int(max_size * 0.04)),
-        partial(craig_baseline, K=int(max_size * 0.05)),
-        partial(craig_baseline, K=int(max_size * 0.10)),
-        partial(craig_baseline, K=int(max_size * 0.15)),
-        partial(craig_baseline, K=int(max_size * 0.25)),
-        partial(fastcore, K=int(max_size * 0.01)),
-        partial(fastcore, K=int(max_size * 0.02)),
-        partial(fastcore, K=int(max_size * 0.03)),
-        partial(fastcore, K=int(max_size * 0.04)),
-        partial(fastcore, K=int(max_size * 0.05)),
-        partial(fastcore, K=int(max_size * 0.10)),
-        partial(fastcore, K=int(max_size * 0.15)),
-        partial(fastcore, K=int(max_size * 0.25)),
-        partial(random_sampler, K=int(max_size * 0.01)),
-        partial(random_sampler, K=int(max_size * 0.02)),
-        partial(random_sampler, K=int(max_size * 0.03)),
-        partial(random_sampler, K=int(max_size * 0.04)),
-        partial(random_sampler, K=int(max_size * 0.05)),
-        partial(random_sampler, K=int(max_size * 0.10)),
-        partial(random_sampler, K=int(max_size * 0.15)),
-        partial(random_sampler, K=int(max_size * 0.25)),
-    ]
+    size = [0.01, 0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+    smpln = [craig_baseline, fastcore, random_sampler]
     sgemm = BaseExperiment(
         dataset,
         model=XGBRegressor,
@@ -81,7 +55,10 @@ if __name__ == "__main__":
 
     sgemm()  # base de comparação
     for sampler in smpln:
-        sgemm(sampler=sampler)
+        print(f"[{datetime.now()}] {sampler.__name__}")
+        for K in size:
+            sgemm(sampler=partial(sampler, K=int(max_size * K)))
+        print(f"[{datetime.now()}] {sampler.__name__}\t::\t OK")
     result = sgemm.metrics
 
     result.to_csv(outfile, index=False)

@@ -62,7 +62,7 @@ if __name__ == "__main__":
     for sampler in smpln:
         print(f"[{datetime.now()}] {sampler.__name__}")
         for K in size:
-            adult(sampler=sampler)
+            adult(sampler=partial(sampler, K=int(max_size * K)))
         print(f"[{datetime.now()}] {sampler.__name__}\t::\t OK")
 
     result = adult.metrics  # base de comparação
