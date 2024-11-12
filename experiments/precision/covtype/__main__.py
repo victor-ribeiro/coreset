@@ -29,7 +29,7 @@ data = pd.read_csv(DATA_HOME, engine="pyarrow", names=names)
 data[tgt_name] = data[tgt_name] - 1
 
 max_size = len(data) * 0.8
-K = [0.01, 0.02, 0.03, 0.04, 0.05, 0.10, 0.15, 0.25]
+K = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 if __name__ == "__main__":
     # sampling strategies
     smpln = [fastcore, random_sampler, craig_baseline]

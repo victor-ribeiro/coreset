@@ -1,22 +1,14 @@
 import pandas as pd
 from functools import partial
+from itertools import batched
 from xgboost import XGBRegressor
-
-from sklearn.tree import DecisionTreeClassifier
-
-
-from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
+from datetime import datetime
+from sklearn.preprocessing import OrdinalEncoder
 from sklearn.metrics import mean_squared_error
 
 from coreset.environ import load_config
-from coreset.utils import (
-    random_sampler,
-    transform_fn,
-    craig_baseline,
-    oht_coding,
-)
+from coreset.utils import random_sampler, craig_baseline, oht_coding
 from coreset.lazzy_greed import fastcore
-from coreset.kmeans import kmeans_sampler
 from coreset.evaluator import BaseExperiment, REPEAT
 
 
@@ -59,32 +51,9 @@ def scale_cols(dataset, *names):
 
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [
-        partial(craig_baseline, K=int(max_size * 0.01)),
-        partial(craig_baseline, K=int(max_size * 0.02)),
-        partial(craig_baseline, K=int(max_size * 0.03)),
-        partial(craig_baseline, K=int(max_size * 0.04)),
-        partial(craig_baseline, K=int(max_size * 0.05)),
-        partial(craig_baseline, K=int(max_size * 0.10)),
-        partial(craig_baseline, K=int(max_size * 0.15)),
-        partial(craig_baseline, K=int(max_size * 0.25)),
-        partial(fastcore, K=int(max_size * 0.01)),
-        partial(fastcore, K=int(max_size * 0.02)),
-        partial(fastcore, K=int(max_size * 0.03)),
-        partial(fastcore, K=int(max_size * 0.04)),
-        partial(fastcore, K=int(max_size * 0.05)),
-        partial(fastcore, K=int(max_size * 0.10)),
-        partial(fastcore, K=int(max_size * 0.15)),
-        partial(fastcore, K=int(max_size * 0.25)),
-        partial(random_sampler, K=int(max_size * 0.01)),
-        partial(random_sampler, K=int(max_size * 0.02)),
-        partial(random_sampler, K=int(max_size * 0.03)),
-        partial(random_sampler, K=int(max_size * 0.04)),
-        partial(random_sampler, K=int(max_size * 0.05)),
-        partial(random_sampler, K=int(max_size * 0.10)),
-        partial(random_sampler, K=int(max_size * 0.15)),
-        partial(random_sampler, K=int(max_size * 0.25)),
-    ]
+    size = [0.02, 0.03, 0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+
+    smpln = [craig_baseline, fastcore, random_sampler]
     bike_share = BaseExperiment(
         dataset,
         model=XGBRegressor,
@@ -101,9 +70,14 @@ if __name__ == "__main__":
 
     bike_share.register_metrics(mean_squared_error)
 
+    print(f"[{datetime.now()}] BASELINE")
     bike_share()  # base de comparação
     for sampler in smpln:
-        bike_share(sampler=sampler)
+        print(f"[{datetime.now()}] {sampler.__name__}")
+        for K in size:
+            bike_share(sampler=partial(sampler, K=int(max_size * K)))
+        print(f"[{datetime.now()}] {sampler.__name__}\t::\t OK")
+
     result = bike_share.metrics
 
     result.to_csv(outfile, index=False)

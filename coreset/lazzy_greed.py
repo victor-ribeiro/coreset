@@ -57,11 +57,11 @@ def utility_score(e, sset, /, acc=0, alpha=1, beta=0):
 def fastcore(
     dataset,
     base_inc=base_inc,
-    alpha=0.1,
+    alpha=0.01,
     metric="similarity",
     K=1,
     batch_size=32,
-    beta=1,
+    beta=0.5,
 ):
     # basic config
     base_inc = base_inc(alpha)
