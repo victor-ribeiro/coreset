@@ -90,17 +90,17 @@ for i in range(REPEAT):
     _, nsize = X_train.shape
     size = int(len(target) * 0.1)
 
-    # craig_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
-    # dataset = CraigDataset(features=X_train, target=y_train, coreset_size=size)
-    # dataset = Loader(dataset=dataset, batch_size=batch_size)
-    # hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
-    # tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
-    # tmp["method"] = "craig_baseline"
-    # result = pd.concat([result, tmp], ignore_index=True)
-    # del craig_model
-    # del dataset
+    craig_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    dataset = CraigDataset(features=X_train, target=y_train, coreset_size=size)
+    dataset = Loader(dataset=dataset, batch_size=batch_size)
+    hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
+    tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
+    tmp["method"] = "craig_baseline"
+    result = pd.concat([result, tmp], ignore_index=True)
+    del craig_model
+    del dataset
 
-    base_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    base_model = TorchLearner(MLP, {"input_size": nsize})
     dataset = Loader(BaseDataset(X_train, y_train), batch_size=batch_size)
     hist, elapsed = train(base_model, dataset, loss_fn(), Adam, lr, epochs)
     tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
@@ -111,7 +111,7 @@ for i in range(REPEAT):
     del base_model
     del dataset
 
-    lazy_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    lazy_model = TorchLearner(MLP, {"input_size": nsize})
     dataset = LazyDataset(features=X_train, target=y_train, coreset_size=size)
     dataset = Loader(dataset=dataset, batch_size=batch_size)
     hist, elapsed = train(lazy_model, dataset, loss_fn(), Adam, lr, epochs)
@@ -125,7 +125,7 @@ for i in range(REPEAT):
     del dataset
     # plt.plot(elapsed, hist, label="lazy_greed")
 
-    random_model = TorchLearner(MLP, {"input_size": nsize, "n_layers": 5})
+    random_model = TorchLearner(MLP, {"input_size": nsize})
     dataset = RandomDataset(features=X_train, target=y_train, coreset_size=size)
     dataset = Loader(dataset=dataset, batch_size=batch_size)
     hist, elapsed = train(random_model, dataset, loss_fn(), Adam, lr, epochs)

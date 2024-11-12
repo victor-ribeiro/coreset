@@ -54,11 +54,11 @@ if __name__ == "__main__":
 
     # teste com oht_coding. mudar voltar para hash_encoding
     nursery.register_preprocessing(
-        hash_encoding("parents", n_features=3),
-        hash_encoding("has_nurs", n_features=3),
-        hash_encoding("form", n_features=3),
+        # hash_encoding("parents", n_features=3),
+        # hash_encoding("has_nurs", n_features=3),
+        # hash_encoding("form", n_features=3),
         transform_fn(encoding, tgt_name, *names[4:]),
-        # oht_coding("parents", "has_nurs", "form"),
+        oht_coding("parents", "has_nurs", "form"),
         # transform_fn(encoding, tgt_name, *names),
     )
 
