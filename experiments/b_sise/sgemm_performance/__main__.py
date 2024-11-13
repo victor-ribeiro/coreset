@@ -37,7 +37,7 @@ if __name__ == "__main__":
         repeat=REPEAT,
     )
 
-    sgemm.register_preprocessing(transform_fn(minmax_scale, tgt_name))
+    # sgemm.register_preprocessing(transform_fn(minmax_scale, tgt_name))
 
     sgemm.register_metrics(mean_squared_error)
     sgemm()  # base de comparação
