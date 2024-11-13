@@ -14,7 +14,7 @@ from coreset.utils import (
     craig_baseline,
     oht_coding,
 )
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 from coreset.kmeans import kmeans_sampler
 from coreset.evaluator import BaseExperiment, TrainCurve, REPEAT
 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     # sampling strategies
     size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 
-    smpln = [fastcore, random_sampler, craig_baseline]
+    smpln = [freddy, random_sampler, craig_baseline]
     nursery = BaseExperiment(
         dataset,
         model=XGBClassifier,

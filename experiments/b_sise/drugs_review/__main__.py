@@ -13,7 +13,7 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 
 from xgboost import XGBClassifier
 
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 from coreset.utils import random_sampler
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
@@ -51,9 +51,9 @@ b_size = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(fastcore, K=int(max_size * 0.01)),
-        partial(fastcore, K=int(max_size * 0.10)),
-        partial(fastcore, K=int(max_size * 0.15)),
+        partial(freddy, K=int(max_size * 0.01)),
+        partial(freddy, K=int(max_size * 0.10)),
+        partial(freddy, K=int(max_size * 0.15)),
     ]
 
     n_threads = int(multiprocessing.cpu_count() / 2)
@@ -76,10 +76,9 @@ if __name__ == "__main__":
     for K in [0.1, 0.25, 0.40]:
         for size in b_size:
             review(
-                sampler=partial(fastcore, K=int(max_size * K)),
+                sampler=partial(freddy, K=int(max_size * K)),
                 batch_size=size,
             )
-        review(sampler=partial(random_sampler, K=int(max_size * K)))
 
     result = review.metrics
 

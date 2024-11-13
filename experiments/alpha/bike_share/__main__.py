@@ -14,7 +14,7 @@ from coreset.utils import (
     transform_fn,
     oht_coding,
 )
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 from coreset.kmeans import kmeans_sampler
 from coreset.evaluator import BaseExperiment, REPEAT
 import seaborn as sns
@@ -67,14 +67,14 @@ def scale_cols(dataset, *names):
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(fastcore, K=int(max_size * 0.01)),
-        partial(fastcore, K=int(max_size * 0.02)),
-        partial(fastcore, K=int(max_size * 0.03)),
-        partial(fastcore, K=int(max_size * 0.04)),
-        partial(fastcore, K=int(max_size * 0.05)),
-        partial(fastcore, K=int(max_size * 0.10)),
-        partial(fastcore, K=int(max_size * 0.15)),
-        partial(fastcore, K=int(max_size * 0.25)),
+        partial(freddy, K=int(max_size * 0.01)),
+        partial(freddy, K=int(max_size * 0.02)),
+        partial(freddy, K=int(max_size * 0.03)),
+        partial(freddy, K=int(max_size * 0.04)),
+        partial(freddy, K=int(max_size * 0.05)),
+        partial(freddy, K=int(max_size * 0.10)),
+        partial(freddy, K=int(max_size * 0.15)),
+        partial(freddy, K=int(max_size * 0.25)),
         partial(kmeans_sampler, K=int(max_size * 0.01)),
         partial(kmeans_sampler, K=int(max_size * 0.02)),
         partial(kmeans_sampler, K=int(max_size * 0.03)),

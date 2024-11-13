@@ -10,7 +10,7 @@ from itertools import product
 
 from coreset.environ import load_config
 from coreset.utils import transform_fn, random_sampler
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 from coreset.evaluator import BSizeExperiment, REPEAT
 
 
@@ -44,10 +44,9 @@ if __name__ == "__main__":
     for K in [0.1, 0.25, 0.4]:
         for size in b_size:
             sgemm(
-                sampler=partial(fastcore, K=int(max_size * K)),
+                sampler=partial(freddy, K=int(max_size * K)),
                 batch_size=size,
             )
-        sgemm(sampler=partial(random_sampler, K=int(max_size * K)))
     result = sgemm.metrics
 
     result.to_csv(outfile, index=False)

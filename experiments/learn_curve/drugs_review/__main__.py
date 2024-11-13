@@ -17,7 +17,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from functools import partial
 
 from coreset.train import train
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 from coreset.model.basics import TorchLearner
 from coreset.model.neuralnet import MLP
 from coreset.environ import load_config
@@ -64,7 +64,7 @@ features = (
 
 features = PCA(n_components=300).fit_transform(features)
 
-LazyDataset = sampling_dataset(BaseDataset, partial(fastcore, beta=0))
+LazyDataset = sampling_dataset(BaseDataset, freddy)
 RandomDataset = sampling_dataset(BaseDataset, random_sampler)
 CraigDataset = sampling_dataset(BaseDataset, craig_baseline)
 
@@ -88,11 +88,11 @@ for i in range(REPEAT):
     epochs = 15
 
     _, nsize = X_train.shape
-    size = int(len(target) * 0.1)
+    size = int(len(target) * 0.3)
 
     craig_model = TorchLearner(MLP, {"input_size": nsize})
     dataset = CraigDataset(features=X_train, target=y_train, coreset_size=size)
-    dataset = Loader(dataset=dataset, batch_size=batch_size)
+    dataset = Loader(dataset, batch_size=batch_size)
     hist, elapsed = train(craig_model, dataset, loss_fn(), Adam, lr, epochs)
     tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
     tmp["method"] = "craig_baseline"
@@ -101,7 +101,8 @@ for i in range(REPEAT):
     del dataset
 
     base_model = TorchLearner(MLP, {"input_size": nsize})
-    dataset = Loader(BaseDataset(X_train, y_train), batch_size=batch_size)
+    dataset = BaseDataset(X_train, y_train)
+    dataset = Loader(dataset=dataset, batch_size=batch_size)
     hist, elapsed = train(base_model, dataset, loss_fn(), Adam, lr, epochs)
     tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
     tmp["method"] = "full_dataset"
@@ -116,7 +117,7 @@ for i in range(REPEAT):
     dataset = Loader(dataset=dataset, batch_size=batch_size)
     hist, elapsed = train(lazy_model, dataset, loss_fn(), Adam, lr, epochs)
     tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
-    tmp["method"] = "lazy_greed"
+    tmp["method"] = "freddy"
     result = pd.concat([result, tmp], ignore_index=True)
 
     pred = lazy_model(X_test).astype(int)

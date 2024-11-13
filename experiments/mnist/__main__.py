@@ -13,7 +13,7 @@ from keras.regularizers import l2
 from keras.callbacks import Callback
 
 
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 from coreset.utils import craig_baseline
 from coreset.utils import random_sampler
 from coreset.environ import load_config
@@ -95,7 +95,7 @@ for _ in range(15):
 
     ft = PCA(n_components=10).fit_transform(X_train)
     # idx = fastcore(X_train, K=int(len(X_train) * core_size), batch_size=256)
-    idx = fastcore(ft, K=int(len(X_train) * core_size), batch_size=256)
+    idx = freddy(ft, K=int(len(X_train) * core_size), batch_size=256)
     X_lazy = X_train[idx]
     y_lazy = y_train[idx]
     model = Sequential()

@@ -13,7 +13,7 @@ from coreset.utils import (
     craig_baseline,
     oht_coding,
 )
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 from coreset.kmeans import kmeans_sampler
 from coreset.evaluator import BaseExperiment, TrainCurve, REPEAT
 import seaborn as sns
@@ -66,7 +66,7 @@ def scale_cols(dataset, *names):
 if __name__ == "__main__":
     # sampling strategies
     smpln = [
-        partial(fastcore, K=int(max_size * 0.05)),
+        partial(freddy, K=int(max_size * 0.05)),
         partial(kmeans_sampler, K=int(max_size * 0.05)),
         partial(random_sampler, K=int(max_size * 0.05)),
         # craig_baseline(0.05),

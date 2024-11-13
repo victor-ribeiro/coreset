@@ -6,7 +6,7 @@ from datetime import datetime
 from sklearn.metrics import precision_score, f1_score, recall_score
 
 from coreset.evaluator import BaseExperiment, REPEAT
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 from coreset.utils import hash_encoding, oht_coding, random_sampler, craig_baseline
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # sampling strategies
     size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 
-    smpln = [craig_baseline, fastcore, random_sampler]
+    smpln = [craig_baseline, freddy, random_sampler]
 
     adult = BaseExperiment(
         data,

@@ -1,8 +1,8 @@
 from functools import singledispatchmethod
 from collections.abc import Callable
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 
-METHOD = {"coreset": fastcore, "random": None}
+METHOD = {"coreset": freddy, "random": None}
 
 
 class Sampler:

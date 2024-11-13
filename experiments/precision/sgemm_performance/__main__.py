@@ -13,7 +13,7 @@ from coreset.utils import (
     transform_fn,
     oht_coding,
 )
-from coreset.lazzy_greed import fastcore
+from coreset.lazzy_greed import freddy
 from coreset.kmeans import kmeans_sampler
 from coreset.evaluator import BaseExperiment, REPEAT
 import seaborn as sns
@@ -41,7 +41,7 @@ dataset = dataset.drop(columns=avg_names)
 if __name__ == "__main__":
     # sampling strategies
     size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
-    smpln = [craig_baseline, fastcore, random_sampler]
+    smpln = [craig_baseline, freddy, random_sampler]
     sgemm = BaseExperiment(
         dataset,
         model=XGBRegressor,
