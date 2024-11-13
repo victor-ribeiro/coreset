@@ -51,7 +51,7 @@ def scale_cols(dataset, *names):
 
 if __name__ == "__main__":
     # sampling strategies
-    size = [0.01, 0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 
     smpln = [craig_baseline, freddy, random_sampler]
     bike_share = BaseExperiment(

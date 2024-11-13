@@ -20,7 +20,7 @@ data = pd.read_csv(DATA_HOME, engine="pyarrow", names=names)
 data[tgt_name] = data[tgt_name] - 1
 
 max_size = len(data) * 0.8
-K = [0.01, 0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+K = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 if __name__ == "__main__":
     # sampling strategies
     smpln = [freddy, random_sampler, craig_baseline]
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         repeat=REPEAT,
     )
 
-    covtype.register_preprocessing(transform_fn(normalize, tgt_name=tgt_name))
+    # covtype.register_preprocessing(transform_fn(normalize, tgt_name=tgt_name))
 
     covtype.register_metrics(
         partial(precision_score, average="macro"),

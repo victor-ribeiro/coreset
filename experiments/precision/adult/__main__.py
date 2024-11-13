@@ -36,18 +36,10 @@ if __name__ == "__main__":
     )
 
     adult.register_preprocessing(
-        # hash_encoding("native-country", "occupation", "marital-status", n_features=5),
-        # oht_coding("sex", "education", "race", "relationship", "workclass"),
-        oht_coding(
-            "sex",
-            "education",
-            "race",
-            "relationship",
-            "workclass",
-            "marital-status",
-            "occupation",
-            "native-country",
-        ),
+        hash_encoding("native-country", n_features=5),
+        hash_encoding("occupation", n_features=5),
+        hash_encoding("marital-status", n_features=5),
+        oht_coding("sex", "education", "race", "relationship", "workclass"),
     )
 
     adult.register_metrics(
