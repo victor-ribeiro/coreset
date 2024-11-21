@@ -44,24 +44,26 @@ def base_inc(alpha=1):
     return math.log(1 + alpha)
 
 
-def utility_score(e, sset, /, acc=0, alpha=1, beta=0):
+def utility_score(e, sset, /, acc=0, alpha=0.1, beta=1.1, gamma=2):
     norm = 1 / base_inc(alpha)
     argmax = np.maximum(e, sset)
     f_norm = alpha / (sset.sum() + 1 + acc)
     util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
     # util = norm * math.log(1 + (argmax.sum()) * f_norm)
-    return util + (math.log(1 + ((sset**2).sum() + acc**2)) * beta)
+    # return util + (math.log(1 + ((sset**2).sum() + acc**gamma)) * beta)
+    return util + (math.log(1 + ((sset.sum() + acc) ** gamma)) * beta)
 
 
 @timeit
 def freddy(
     dataset,
     base_inc=base_inc,
-    alpha=0.01,
+    alpha=0.15,
+    gamma=0.1,
     metric="similarity",
     K=1,
     batch_size=32,
-    beta=0.5,
+    beta=0.75,
 ):
     # basic config
     base_inc = base_inc(alpha)
@@ -83,13 +85,17 @@ def freddy(
         while q and len(sset) < K:
             score, idx_s = q.head
             s = D[:, idx_s[1]]
-            score_s = utility_score(s, localmax, acc=argmax, alpha=alpha, beta=beta)
+            score_s = utility_score(
+                s, localmax, acc=argmax, alpha=alpha, beta=beta, gamma=gamma
+            )
             inc = score_s - score
             if (inc < 0) or (not q):
                 break
             score_t, idx_t = q.head
             if inc > score_t:
-                score = utility_score(s, localmax, acc=argmax, alpha=alpha, beta=beta)
+                score = utility_score(
+                    s, localmax, acc=argmax, alpha=alpha, beta=beta, gamma=gamma
+                )
                 localmax = np.maximum(localmax, s)
                 sset.append(idx_s[0])
                 vals.append(score)

@@ -6,7 +6,7 @@ import pandas as pd
 from functools import partial
 from datetime import datetime
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.decomposition import PCA
 from sklearn.utils import class_weight
 from sklearn.metrics import precision_score, f1_score, recall_score
@@ -38,7 +38,12 @@ with open(DATA_HOME, "rb") as file:
 data, tgt = data["features"], data["target"]
 data = map(clean_sent, data)
 
-data = CountVectorizer(max_features=1500).fit_transform(data).toarray()
+# data = CountVectorizer(max_features=1500).fit_transform(data).toarray()
+data = (
+    TfidfVectorizer(max_features=1500, min_df=0.05, max_df=0.98)
+    .fit_transform(data)
+    .toarray()
+)
 data = PCA(n_components=100).fit_transform(data)
 data = pd.DataFrame(data=data)
 data[tgt_name] = [*map(int, tgt)]
@@ -50,7 +55,7 @@ max_size = len(data) * 0.8
 if __name__ == "__main__":
     # sampling strategies
     smpln = [freddy, random_sampler, craig_baseline]
-    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
     n_threads = int(multiprocessing.cpu_count() / 2)
 
@@ -59,13 +64,14 @@ if __name__ == "__main__":
         model=partial(
             XGBClassifier,
             eta=0.15,
-            tree_method="hist",
-            grow_policy="lossguide",
+            max_depth=9,
+            # tree_method="hist",
+            # grow_policy="lossguide",
             n_estimators=200,
             nthread=n_threads,
-            subsample=0.6,
-            scale_pos_weight=1,
-            device="gpu",
+            # subsample=0.6,
+            # scale_pos_weight=1,
+            # device="gpu",
         ),
         lbl_name=tgt_name,
         repeat=REPEAT,
@@ -77,8 +83,8 @@ if __name__ == "__main__":
         partial(f1_score, average="macro"),
     )
     for sampler in smpln:
-        print(f"[{datetime.now()}] {sampler.__name__}")
         for K in size:
+            print(f"[{datetime.now()}] {sampler.__name__} ({K})")
             review(sampler=partial(sampler, K=int(max_size * K)))
         print(f"[{datetime.now()}] {sampler.__name__}\t::\t OK")
     review()  # base de comparação

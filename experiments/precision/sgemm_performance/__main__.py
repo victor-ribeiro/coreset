@@ -40,7 +40,8 @@ dataset = dataset.drop(columns=avg_names)
 
 if __name__ == "__main__":
     # sampling strategies
-    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+
     smpln = [craig_baseline, freddy, random_sampler]
     sgemm = BaseExperiment(
         dataset,
@@ -49,7 +50,7 @@ if __name__ == "__main__":
         repeat=REPEAT,
     )
 
-    sgemm.register_preprocessing(transform_fn(minmax_scale, tgt_name))
+    # sgemm.register_preprocessing(transform_fn(minmax_scale, tgt_name))
 
     sgemm.register_metrics(mean_squared_error)
 

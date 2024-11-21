@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA, TruncatedSVD, FastICA
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from functools import partial
 
 from coreset.train import train
@@ -59,7 +59,7 @@ target = np.array([*target])
 features = map(clean_sent, features)
 
 features = (
-    CountVectorizer(min_df=3, max_features=1800).fit_transform(features).toarray()
+    TfidfVectorizer(min_df=0.01, max_features=1800).fit_transform(features).toarray()
 )
 
 features = PCA(n_components=300).fit_transform(features)

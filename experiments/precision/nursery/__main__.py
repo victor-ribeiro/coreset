@@ -42,7 +42,7 @@ dataset[tgt_name] = LabelEncoder().fit_transform(dataset[tgt_name]).astype(int)
 
 if __name__ == "__main__":
     # sampling strategies
-    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
     smpln = [freddy, random_sampler, craig_baseline]
     nursery = BaseExperiment(
@@ -54,9 +54,6 @@ if __name__ == "__main__":
 
     # teste com oht_coding. mudar voltar para hash_encoding
     nursery.register_preprocessing(
-        # hash_encoding("parents", n_features=3),
-        # hash_encoding("has_nurs", n_features=3),
-        # hash_encoding("form", n_features=3),
         transform_fn(encoding, tgt_name, *names[4:]),
         oht_coding("parents", "has_nurs", "form"),
         # transform_fn(encoding, tgt_name, *names),

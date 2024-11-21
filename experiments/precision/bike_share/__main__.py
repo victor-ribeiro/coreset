@@ -51,8 +51,9 @@ def scale_cols(dataset, *names):
 
 if __name__ == "__main__":
     # sampling strategies
-    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
+    # smpln = [craig_baseline, partial(freddy, beta=1), random_sampler]
     smpln = [craig_baseline, freddy, random_sampler]
     bike_share = BaseExperiment(
         dataset,
@@ -64,8 +65,8 @@ if __name__ == "__main__":
     # ajustar aqui
     bike_share.register_preprocessing(
         oht_coding("workingday", "holiday", "weathersit"),
-        transform_fn(normal_cols, tgt_name, "atemp", "temp", "hum", "windspeed"),
-        # transform_fn(scale_cols, tgt_name, "casual", "registered"),
+        transform_fn(scale_cols, tgt_name, "casual", "registered"),
+        # transform_fn(normal_cols, tgt_name, "casual", "registered"),
     )
 
     bike_share.register_metrics(mean_squared_error)

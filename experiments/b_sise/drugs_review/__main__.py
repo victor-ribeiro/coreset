@@ -50,11 +50,6 @@ b_size = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192]
 
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [
-        partial(freddy, K=int(max_size * 0.01)),
-        partial(freddy, K=int(max_size * 0.10)),
-        partial(freddy, K=int(max_size * 0.15)),
-    ]
 
     n_threads = int(multiprocessing.cpu_count() / 2)
 
@@ -72,7 +67,6 @@ if __name__ == "__main__":
     )
 
     review()  # base de comparação
-    review(sampler=partial(random_sampler, K=int(max_size * 0.25)))
     for K in [0.1, 0.25, 0.40]:
         for size in b_size:
             review(

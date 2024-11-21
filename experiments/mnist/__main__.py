@@ -76,7 +76,7 @@ for _ in range(15):
         batch_size=batch_size,
         epochs=epochs,
         validation_data=(X_test, y_test),
-        callbacks=[cb],
+        callbacks=[TimingCallback()],
     )
     hist_ = hist_.history
     tmp = pd.DataFrame(hist_)
@@ -110,12 +110,12 @@ for _ in range(15):
         batch_size=batch_size,
         epochs=epochs,
         validation_data=(X_test, y_test),
-        callbacks=[cb],
+        callbacks=[TimingCallback()],
     )
     hist_ = hist_.history
 
     tmp = pd.DataFrame(hist_)
-    tmp["sampler"] = "FastCORE"
+    tmp["sampler"] = "freddy"
     tmp["elapsed"] = np.cumsum(cb.logs).round()
 
     result.append(tmp)
@@ -144,7 +144,7 @@ for _ in range(15):
         batch_size=batch_size,
         epochs=epochs,
         validation_data=(X_test, y_test),
-        callbacks=[cb],
+        callbacks=[TimingCallback()],
     )
     hist_ = hist_.history
 
@@ -176,7 +176,7 @@ for _ in range(15):
         batch_size=batch_size,
         epochs=epochs,
         validation_data=(X_test, y_test),
-        callbacks=[cb],
+        callbacks=[TimingCallback()],
     )
     hist_ = hist_.history
 

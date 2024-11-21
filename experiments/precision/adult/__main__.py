@@ -23,7 +23,7 @@ max_size = len(data) * 0.8
 
 if __name__ == "__main__":
     # sampling strategies
-    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
+    size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
     smpln = [craig_baseline, freddy, random_sampler]
 
@@ -36,9 +36,10 @@ if __name__ == "__main__":
     )
 
     adult.register_preprocessing(
-        hash_encoding("native-country", n_features=5),
-        hash_encoding("occupation", n_features=5),
-        hash_encoding("marital-status", n_features=5),
+        # hash_encoding("native-country", n_features=5),
+        # hash_encoding("occupation", n_features=5),
+        # hash_encoding("marital-status", n_features=5),
+        hash_encoding("native-country", "occupation", "marital-status", n_features=5),
         oht_coding("sex", "education", "race", "relationship", "workclass"),
     )
 
