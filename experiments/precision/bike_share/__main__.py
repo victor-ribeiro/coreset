@@ -53,8 +53,8 @@ if __name__ == "__main__":
     # sampling strategies
     size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
-    # smpln = [craig_baseline, partial(freddy, beta=1), random_sampler]
     smpln = [craig_baseline, freddy, random_sampler]
+    # smpln = [freddy]
     bike_share = BaseExperiment(
         dataset,
         model=XGBRegressor,

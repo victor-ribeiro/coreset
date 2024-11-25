@@ -48,22 +48,24 @@ def utility_score(e, sset, /, acc=0, alpha=0.1, beta=1.1, gamma=2):
     norm = 1 / base_inc(alpha)
     argmax = np.maximum(e, sset)
     f_norm = alpha / (sset.sum() + 1 + acc)
-    util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
-    # util = norm * math.log(1 + (argmax.sum()) * f_norm)
-    # return util + (math.log(1 + ((sset**2).sum() + acc**gamma)) * beta)
-    return util + (math.log(1 + ((sset.sum() + acc) ** gamma)) * beta)
+    # util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
+    # return util + (math.log(1 + ((sset.sum() + acc) ** gamma)) * beta)
+    util = norm * math.log(1 + (argmax.sum()) * f_norm)
+    return util + (math.log(1 + ((sset.sum()) ** gamma)) * beta)
 
 
 @timeit
 def freddy(
     dataset,
     base_inc=base_inc,
-    alpha=0.15,
+    # alpha=0.15,
+    alpha=1,
     gamma=0.1,
     metric="similarity",
     K=1,
     batch_size=32,
-    beta=0.75,
+    # beta=0.75,
+    beta=1,
 ):
     # basic config
     base_inc = base_inc(alpha)
@@ -82,6 +84,7 @@ def freddy(
         localmax = np.amax(D, axis=1)
         argmax += localmax.sum()
         _ = [q.push(base_inc, i) for i in zip(V, range(size))]
+        inc = 0
         while q and len(sset) < K:
             score, idx_s = q.head
             s = D[:, idx_s[1]]
@@ -102,9 +105,16 @@ def freddy(
             else:
                 q.push(inc, idx_s)
             q.push(score_t, idx_t)
+        # beta = alpha - (max(vals) / base_inc)
+        alpha = max(vals) / base_inc
     sset = np.array(sset)
-    print(len(sset), K, len(np.unique(sset)))
     np.random.shuffle(sset)
+    # import matplotlib.pyplot as plt
+
+    # plt.plot(vals)
+    # plt.plot(a)
+    # plt.show()
+
     return sset
 
 
@@ -118,7 +128,6 @@ def lazy_greed_class(
     batch_size=32,
     beta=1,
 ):
-    import math
 
     classes, w = np.unique(targets, return_counts=True)
     n_class = len(classes)
