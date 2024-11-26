@@ -58,7 +58,7 @@ n, r, c = X_train.shape
 c = r * c
 # reg, epochs, batch_size, core_size = 10e-4, 3000, 128, 0.1
 # reg, epochs, batch_size, core_size = 10e-4, 15, 256 * 2, 0.4
-reg, epochs, batch_size, core_size = 10e-4, 8000, 128, 0.1
+reg, epochs, batch_size, core_size = 10e-3, 100, 128, 0.1
 
 # X_train, X_test = X_train.reshape((n, c)), X_test.reshape((len(X_test), c))
 
@@ -70,7 +70,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X_train, y_train, test_size=0.2, shuffle=True
 )
 n, *size = X_train.shape
-for _ in range(1):
+for _ in range(15):
     # for _ in range(1):
     ##########################################################################################
     ##########################################################################################
@@ -86,9 +86,10 @@ for _ in range(1):
     model.add(MaxPool1D())
 
     model.add(Flatten())
-    model.add(Dense(32, input_dim=c, kernel_regularizer=l2(reg)))
+    model.add(Dense(32, kernel_regularizer=l2(reg)))
     model.add(Activation("sigmoid"))
-    model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
+    model.add(Dense(100, kernel_regularizer=l2(reg)))
+    model.add(Activation("sigmoid"))
     model.add(Dense(10, kernel_regularizer=l2(reg)))
     model.add(Activation("softmax"))
 
