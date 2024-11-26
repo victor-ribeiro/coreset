@@ -48,10 +48,10 @@ def utility_score(e, sset, /, acc=0, alpha=0.1, beta=1.1, gamma=2):
     norm = 1 / base_inc(alpha)
     argmax = np.maximum(e, sset)
     f_norm = alpha / (sset.sum() + 1 + acc)
-    # util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
-    # return util + (math.log(1 + ((sset.sum() + acc) ** gamma)) * beta)
-    util = norm * math.log(1 + (argmax.sum()) * f_norm)
-    return util + (math.log(1 + ((sset.sum()) ** gamma)) * beta)
+    util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
+    return util + (math.log(1 + ((sset.sum() + acc) ** gamma)) * beta)
+    # util = norm * math.log(1 + (argmax.sum()) * f_norm)
+    # return util + (math.log(1 + ((sset.sum()) ** gamma)) * beta)
 
 
 @timeit
@@ -60,7 +60,7 @@ def freddy(
     base_inc=base_inc,
     # alpha=0.15,
     alpha=1,
-    gamma=0.1,
+    gamma=0.15,
     metric="similarity",
     K=1,
     batch_size=32,
@@ -105,16 +105,16 @@ def freddy(
             else:
                 q.push(inc, idx_s)
             q.push(score_t, idx_t)
-        # beta = alpha - (max(vals) / base_inc)
-        alpha = max(vals) / base_inc
-    sset = np.array(sset)
+        _w = (vals[-1] - vals[0]) / (base_inc - vals[-1])
+        alpha -= _w
+        beta += _w
+    # sset = np.array(sset)
     np.random.shuffle(sset)
-    # import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
     # plt.plot(vals)
-    # plt.plot(a)
     # plt.show()
-
+    # exit()
     return sset
 
 

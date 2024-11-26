@@ -37,7 +37,7 @@ def clean_sent(sent, sub_pattern=r"[\W\s]+"):
     return sent
 
 
-batch_size = 256 * 5
+batch_size = 256
 
 ####################################
 ## preprocessing

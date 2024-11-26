@@ -58,7 +58,7 @@ n, r, c = X_train.shape
 c = r * c
 # reg, epochs, batch_size, core_size = 10e-4, 3000, 128, 0.1
 # reg, epochs, batch_size, core_size = 10e-4, 15, 256 * 2, 0.4
-reg, epochs, batch_size, core_size = 10e-4, 6000, 256, 0.1
+reg, epochs, batch_size, core_size = 10e-4, 1000, 128, 0.1
 
 # X_train, X_test = X_train.reshape((n, c)), X_test.reshape((len(X_test), c))
 
@@ -82,10 +82,13 @@ for _ in range(1):
     model.add(MaxPool1D())
     model.add(Conv1D(filters=100, kernel_size=3, activation="relu"))
     model.add(MaxPool1D())
-    model.add(Dropout(0.1))
+    model.add(Conv1D(filters=130, kernel_size=3, activation="relu"))
+    model.add(MaxPool1D())
+
     model.add(Flatten())
-    model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
+    model.add(Dense(32, input_dim=c, kernel_regularizer=l2(reg)))
     model.add(Activation("sigmoid"))
+    model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
     model.add(Dense(10, kernel_regularizer=l2(reg)))
     model.add(Activation("softmax"))
 
@@ -126,8 +129,12 @@ for _ in range(1):
     model.add(MaxPool1D())
     model.add(Conv1D(filters=100, kernel_size=3, activation="relu"))
     model.add(MaxPool1D())
-    model.add(Dropout(0.1))
+    model.add(Conv1D(filters=130, kernel_size=3, activation="relu"))
+    model.add(MaxPool1D())
+
     model.add(Flatten())
+    model.add(Dense(32, input_dim=c, kernel_regularizer=l2(reg)))
+    model.add(Activation("sigmoid"))
     model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
     model.add(Activation("sigmoid"))
     model.add(Dense(10, kernel_regularizer=l2(reg)))
@@ -154,6 +161,7 @@ for _ in range(1):
     del tmp
     del model
     del cb
+    del ft
 
     #     ##########################################################################################
     #     ##########################################################################################
@@ -170,15 +178,18 @@ for _ in range(1):
     model.add(MaxPool1D())
     model.add(Conv1D(filters=100, kernel_size=3, activation="relu"))
     model.add(MaxPool1D())
-    model.add(Dropout(0.1))
+    model.add(Conv1D(filters=130, kernel_size=3, activation="relu"))
+    model.add(MaxPool1D())
+
     model.add(Flatten())
+    model.add(Dense(32, input_dim=c, kernel_regularizer=l2(reg)))
+    model.add(Activation("sigmoid"))
     model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
     model.add(Activation("sigmoid"))
     model.add(Dense(10, kernel_regularizer=l2(reg)))
     model.add(Activation("softmax"))
+
     model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
-    hist_ = model.fit(X_craig, y_craig, batch_size=batch_size, epochs=epochs)
-    hist_ = hist_.history
     hist_ = model.fit(
         X_craig,
         y_craig,
@@ -199,6 +210,7 @@ for _ in range(1):
     del tmp
     del model
     del cb
+    del ft
 
     #     ##########################################################################################
     #     ##########################################################################################
