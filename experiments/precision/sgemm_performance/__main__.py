@@ -15,6 +15,7 @@ from coreset.utils import (
 )
 from coreset.lazzy_greed import freddy
 from coreset.kmeans import kmeans_sampler
+from coreset.opt_freddy import opt_freddy
 from coreset.evaluator import BaseExperiment, REPEAT
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     # sampling strategies
     size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
-    smpln = [craig_baseline, freddy, random_sampler]
+    smpln = [craig_baseline, opt_freddy, freddy, random_sampler]
     sgemm = BaseExperiment(
         dataset,
         model=XGBRegressor,

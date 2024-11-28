@@ -41,31 +41,35 @@ class Queue(list):
 
 
 def base_inc(alpha=1):
+    alpha = abs(alpha)
     return math.log(1 + alpha)
 
 
-def utility_score(e, sset, /, acc=0, alpha=0.1, beta=1.1, gamma=2):
+def utility_score(e, sset, /, acc=0, alpha=0.1, beta=1.1):
+    gamma = (alpha + beta) / 2
     norm = 1 / base_inc(alpha)
+    # norm = 1 / base_inc(sset.sum())
     argmax = np.maximum(e, sset)
-    f_norm = alpha / (sset.sum() + 1 + acc)
-    util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
+    f_norm = alpha / (sset.sum() + acc)
+    util = norm * math.log(1 + (argmax.sum()) + acc) * f_norm
+    # return util + (math.log(1 + ((sset.sum() + acc))) * beta)
     return util + (math.log(1 + ((sset.sum() + acc) ** gamma)) * beta)
-    # util = norm * math.log(1 + (argmax.sum()) * f_norm)
-    # return util + (math.log(1 + ((sset.sum()) ** gamma)) * beta)
+    # return util + (math.log(1 + ((sset.sum() + acc))) * beta)
+    # return (math.log(1 + ((sset.sum() + acc))) * beta) / util
 
 
-@timeit
+# @timeit
 def freddy(
     dataset,
     base_inc=base_inc,
-    # alpha=0.15,
-    alpha=1,
-    gamma=0.15,
+    alpha=0.15,
+    # alpha=1,
     metric="similarity",
     K=1,
-    batch_size=32,
-    # beta=0.75,
-    beta=1,
+    batch_size=100,
+    beta=0.75,
+    # beta=1,
+    return_vals=False,
 ):
     # basic config
     base_inc = base_inc(alpha)
@@ -74,6 +78,7 @@ def freddy(
     sset = []
     vals = []
     argmax = 0
+    inc = 0
     for ds, V in zip(
         batched(dataset, batch_size),
         batched(idx, batch_size),
@@ -84,37 +89,25 @@ def freddy(
         localmax = np.amax(D, axis=1)
         argmax += localmax.sum()
         _ = [q.push(base_inc, i) for i in zip(V, range(size))]
-        inc = 0
         while q and len(sset) < K:
             score, idx_s = q.head
             s = D[:, idx_s[1]]
-            score_s = utility_score(
-                s, localmax, acc=argmax, alpha=alpha, beta=beta, gamma=gamma
-            )
+            score_s = utility_score(s, localmax, acc=argmax, alpha=alpha, beta=beta)
             inc = score_s - score
             if (inc < 0) or (not q):
                 break
             score_t, idx_t = q.head
             if inc > score_t:
-                score = utility_score(
-                    s, localmax, acc=argmax, alpha=alpha, beta=beta, gamma=gamma
-                )
+                score = utility_score(s, localmax, acc=argmax, alpha=alpha, beta=beta)
                 localmax = np.maximum(localmax, s)
                 sset.append(idx_s[0])
                 vals.append(score)
             else:
                 q.push(inc, idx_s)
             q.push(score_t, idx_t)
-        _w = (vals[-1] - vals[0]) / (base_inc - vals[-1])
-        alpha -= _w
-        beta += _w
-    # sset = np.array(sset)
     np.random.shuffle(sset)
-    import matplotlib.pyplot as plt
-
-    # plt.plot(vals)
-    # plt.show()
-    # exit()
+    if return_vals:
+        return np.array(vals), sset
     return sset
 
 

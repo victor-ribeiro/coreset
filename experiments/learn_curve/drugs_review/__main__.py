@@ -18,6 +18,7 @@ from functools import partial
 
 from coreset.train import train
 from coreset.lazzy_greed import freddy
+from coreset.opt_freddy import opt_freddy
 from coreset.model.basics import TorchLearner
 from coreset.model.neuralnet import MLP
 from coreset.environ import load_config
@@ -65,6 +66,7 @@ features = (
 features = PCA(n_components=300).fit_transform(features)
 
 LazyDataset = sampling_dataset(BaseDataset, freddy)
+FreddyDataset = sampling_dataset(BaseDataset, opt_freddy)
 RandomDataset = sampling_dataset(BaseDataset, random_sampler)
 CraigDataset = sampling_dataset(BaseDataset, craig_baseline)
 
@@ -123,6 +125,19 @@ for i in range(REPEAT):
     pred = lazy_model(X_test).astype(int)
     print(classification_report(y_pred=pred, y_true=y_test))
     del lazy_model
+    del dataset
+
+    freddy_model = TorchLearner(MLP, {"input_size": nsize})
+    dataset = FreddyDataset(features=X_train, target=y_train, coreset_size=size)
+    dataset = Loader(dataset=dataset, batch_size=batch_size)
+    hist, elapsed = train(lazy_model, dataset, loss_fn(), Adam, lr, epochs)
+    tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
+    tmp["method"] = "opt_freddy"
+    result = pd.concat([result, tmp], ignore_index=True)
+
+    pred = freddy_model(X_test).astype(int)
+    print(classification_report(y_pred=pred, y_true=y_test))
+    del freddy_model
     del dataset
     # plt.plot(elapsed, hist, label="lazy_greed")
 

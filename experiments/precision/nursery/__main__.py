@@ -15,7 +15,7 @@ from coreset.utils import (
     oht_coding,
 )
 from coreset.lazzy_greed import freddy
-from coreset.kmeans import kmeans_sampler
+from coreset.opt_freddy import opt_freddy
 from coreset.evaluator import BaseExperiment, TrainCurve, REPEAT
 
 import matplotlib.pyplot as plt
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     # sampling strategies
     size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
-    smpln = [freddy, random_sampler, craig_baseline]
+    smpln = [opt_freddy, freddy, random_sampler, craig_baseline]
     nursery = BaseExperiment(
         dataset,
         model=XGBClassifier,

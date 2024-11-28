@@ -7,6 +7,7 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 
 from coreset.evaluator import BaseExperiment, REPEAT
 from coreset.lazzy_greed import freddy
+from coreset.opt_freddy import opt_freddy
 from coreset.utils import hash_encoding, oht_coding, random_sampler, craig_baseline
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
@@ -25,21 +26,20 @@ if __name__ == "__main__":
     # sampling strategies
     size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
-    smpln = [craig_baseline, freddy, random_sampler]
+    smpln = [opt_freddy, freddy, craig_baseline, random_sampler]
 
     adult = BaseExperiment(
         data,
-        # model=partial(XGBClassifier, device="gpu"),
-        model=partial(XGBClassifier),
+        model=XGBClassifier,
         lbl_name=tgt_name,
         repeat=REPEAT,
     )
 
     adult.register_preprocessing(
-        hash_encoding("native-country", n_features=5),
-        hash_encoding("occupation", n_features=5),
-        hash_encoding("marital-status", n_features=5),
-        # hash_encoding("native-country", "occupation", "marital-status", n_features=5),
+        # hash_encoding("native-country", n_features=5),
+        # hash_encoding("occupation", n_features=5),
+        # hash_encoding("marital-status", n_features=5),
+        hash_encoding("native-country", "occupation", "marital-status", n_features=5),
         oht_coding("sex", "education", "race", "relationship", "workclass"),
     )
 

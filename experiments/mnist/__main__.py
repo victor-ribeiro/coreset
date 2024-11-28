@@ -25,6 +25,7 @@ from keras.callbacks import Callback, EarlyStopping
 
 
 from coreset.lazzy_greed import freddy
+from coreset.opt_freddy import opt_freddy
 from coreset.utils import craig_baseline
 from coreset.utils import random_sampler
 from coreset.environ import load_config
@@ -121,7 +122,7 @@ for _ in range(15):
     cb = TimingCallback()
 
     ft = PCA(n_components=10).fit_transform(X_train.reshape((n, c)))
-    idx = freddy(ft, K=int(len(X_train) * core_size), batch_size=256, gamma=0.5)
+    idx = freddy(ft, K=int(len(X_train) * core_size), batch_size=256)
     X_lazy = X_train[idx]
     y_lazy = y_train[idx]
     model = Sequential()
@@ -154,6 +155,55 @@ for _ in range(15):
 
     tmp = pd.DataFrame(hist_)
     tmp["sampler"] = "freddy"
+    tmp["elapsed"] = np.cumsum(cb.logs).round()
+    tmp["epoch"] = np.arange(epochs)
+    result.append(tmp)
+
+    del hist_
+    del tmp
+    del model
+    del cb
+    del ft
+    #     ##########################################################################################
+    #     ##########################################################################################
+    #     ##########################################################################################
+
+    cb = TimingCallback()
+
+    ft = PCA(n_components=10).fit_transform(X_train.reshape((n, c)))
+    idx = opt_freddy(ft, K=int(len(X_train) * core_size), batch_size=256)
+    X_freddy = X_train[idx]
+    y_freddy = y_train[idx]
+    model = Sequential()
+    model.add(Input(size, name="image"))
+    model.add(Conv1D(filters=64, kernel_size=3, activation="relu"))
+    model.add(MaxPool1D())
+    model.add(Conv1D(filters=100, kernel_size=3, activation="relu"))
+    model.add(MaxPool1D())
+    model.add(Conv1D(filters=130, kernel_size=3, activation="relu"))
+    model.add(MaxPool1D())
+
+    model.add(Flatten())
+    model.add(Dense(32, input_dim=c, kernel_regularizer=l2(reg)))
+    model.add(Activation("sigmoid"))
+    model.add(Dense(100, input_dim=c, kernel_regularizer=l2(reg)))
+    model.add(Activation("sigmoid"))
+    model.add(Dense(10, kernel_regularizer=l2(reg)))
+    model.add(Activation("softmax"))
+
+    model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
+    hist_ = model.fit(
+        X_freddy,
+        y_freddy,
+        batch_size=batch_size,
+        epochs=epochs,
+        validation_data=(X_test, y_test),
+        callbacks=[cb],
+    )
+    hist_ = hist_.history
+
+    tmp = pd.DataFrame(hist_)
+    tmp["sampler"] = "opt_freddy"
     tmp["elapsed"] = np.cumsum(cb.logs).round()
     tmp["epoch"] = np.arange(epochs)
     result.append(tmp)

@@ -8,7 +8,8 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 from sklearn.preprocessing import normalize
 
 from coreset.evaluator import BaseExperiment, REPEAT
-from coreset.lazzy_greed import freddy, lazy_greed_class
+from coreset.lazzy_greed import freddy
+from coreset.opt_freddy import opt_freddy
 from coreset.utils import random_sampler, craig_baseline, transform_fn
 from coreset.environ import load_config
 
@@ -23,7 +24,7 @@ max_size = len(data) * 0.8
 K = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [freddy, random_sampler, craig_baseline]
+    smpln = [freddy, opt_freddy, random_sampler, craig_baseline]
 
     covtype = BaseExperiment(
         data,

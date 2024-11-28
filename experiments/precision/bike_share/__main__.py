@@ -9,6 +9,7 @@ from sklearn.metrics import mean_squared_error
 from coreset.environ import load_config
 from coreset.utils import random_sampler, craig_baseline, oht_coding, transform_fn
 from coreset.lazzy_greed import freddy
+from coreset.opt_freddy import opt_freddy
 from coreset.evaluator import BaseExperiment, REPEAT
 
 
@@ -53,7 +54,7 @@ if __name__ == "__main__":
     # sampling strategies
     size = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
-    smpln = [craig_baseline, freddy, random_sampler]
+    smpln = [opt_freddy, freddy, random_sampler, craig_baseline]
     # smpln = [freddy]
     bike_share = BaseExperiment(
         dataset,

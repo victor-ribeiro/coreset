@@ -11,6 +11,7 @@ from itertools import product
 from coreset.environ import load_config
 from coreset.utils import transform_fn, random_sampler
 from coreset.lazzy_greed import freddy
+from coreset.opt_freddy import opt_freddy
 from coreset.evaluator import BSizeExperiment, REPEAT
 
 
@@ -45,6 +46,10 @@ if __name__ == "__main__":
         for size in b_size:
             sgemm(
                 sampler=partial(freddy, K=int(max_size * K)),
+                batch_size=size,
+            )
+            sgemm(
+                sampler=partial(opt_freddy, K=int(max_size * K)),
                 batch_size=size,
             )
     result = sgemm.metrics

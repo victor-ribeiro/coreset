@@ -14,6 +14,7 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 from xgboost import XGBClassifier
 
 from coreset.lazzy_greed import freddy
+from coreset.opt_freddy import opt_freddy
 from coreset.utils import random_sampler
 from coreset.kmeans import kmeans_sampler
 from coreset.environ import load_config
@@ -71,6 +72,10 @@ if __name__ == "__main__":
         for size in b_size:
             review(
                 sampler=partial(freddy, K=int(max_size * K)),
+                batch_size=size,
+            )
+            review(
+                sampler=partial(opt_freddy, K=int(max_size * K)),
                 batch_size=size,
             )
 
