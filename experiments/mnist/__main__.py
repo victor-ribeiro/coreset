@@ -29,6 +29,7 @@ from coreset.opt_freddy import opt_freddy
 from coreset.utils import craig_baseline
 from coreset.utils import random_sampler
 from coreset.environ import load_config
+from coreset.evaluator import REPEAT
 
 
 from time import time as timer
@@ -59,7 +60,7 @@ n, r, c = X_train.shape
 c = r * c
 # reg, epochs, batch_size, core_size = 10e-4, 3000, 128, 0.1
 # reg, epochs, batch_size, core_size = 10e-4, 15, 256 * 2, 0.4
-reg, epochs, batch_size, core_size = 10e-3, 4000, 128, 0.1
+reg, epochs, batch_size, core_size = 10e-3, 100, 128, 0.1
 
 # X_train, X_test = X_train.reshape((n, c)), X_test.reshape((len(X_test), c))
 
@@ -71,49 +72,50 @@ X_train, X_test, y_train, y_test = train_test_split(
     X_train, y_train, test_size=0.2, shuffle=True
 )
 n, *size = X_train.shape
-for _ in range(15):
+# for _ in range(15):
+for _ in range(REPEAT):
     # for _ in range(1):
     ##########################################################################################
     ##########################################################################################
     ##########################################################################################
-    cb = TimingCallback()
-    model = Sequential()
-    model.add(Input(size, name="image"))
-    model.add(Conv1D(filters=64, kernel_size=3, activation="relu"))
-    model.add(MaxPool1D())
-    model.add(Conv1D(filters=100, kernel_size=3, activation="relu"))
-    model.add(MaxPool1D())
-    model.add(Conv1D(filters=130, kernel_size=3, activation="relu"))
-    model.add(MaxPool1D())
+    # cb = TimingCallback()
+    # model = Sequential()
+    # model.add(Input(size, name="image"))
+    # model.add(Conv1D(filters=64, kernel_size=3, activation="relu"))
+    # model.add(MaxPool1D())
+    # model.add(Conv1D(filters=100, kernel_size=3, activation="relu"))
+    # model.add(MaxPool1D())
+    # model.add(Conv1D(filters=130, kernel_size=3, activation="relu"))
+    # model.add(MaxPool1D())
 
-    model.add(Flatten())
-    model.add(Dense(32, kernel_regularizer=l2(reg)))
-    model.add(Activation("sigmoid"))
-    model.add(Dense(100, kernel_regularizer=l2(reg)))
-    model.add(Activation("sigmoid"))
-    model.add(Dense(10, kernel_regularizer=l2(reg)))
-    model.add(Activation("softmax"))
+    # model.add(Flatten())
+    # model.add(Dense(32, kernel_regularizer=l2(reg)))
+    # model.add(Activation("sigmoid"))
+    # model.add(Dense(100, kernel_regularizer=l2(reg)))
+    # model.add(Activation("sigmoid"))
+    # model.add(Dense(10, kernel_regularizer=l2(reg)))
+    # model.add(Activation("softmax"))
 
-    model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
-    hist_ = model.fit(
-        X_train,
-        y_train,
-        batch_size=batch_size,
-        epochs=epochs,
-        validation_data=(X_test, y_test),
-        callbacks=[cb],
-    )
-    hist_ = hist_.history
-    tmp = pd.DataFrame(hist_)
-    tmp["sampler"] = "Full dataset"
-    tmp["elapsed"] = np.cumsum(cb.logs).round()
-    tmp["epoch"] = np.arange(epochs)
-    result.append(tmp)
+    # model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
+    # hist_ = model.fit(
+    #     X_train,
+    #     y_train,
+    #     batch_size=batch_size,
+    #     epochs=epochs,
+    #     validation_data=(X_test, y_test),
+    #     callbacks=[cb],
+    # )
+    # hist_ = hist_.history
+    # tmp = pd.DataFrame(hist_)
+    # tmp["sampler"] = "Full dataset"
+    # tmp["elapsed"] = np.cumsum(cb.logs).round()
+    # tmp["epoch"] = np.arange(epochs)
+    # result.append(tmp)
 
-    del hist_
-    del tmp
-    del model
-    del cb
+    # del hist_
+    # del tmp
+    # del model
+    # del cb
 
     #     ##########################################################################################
     #     ##########################################################################################
