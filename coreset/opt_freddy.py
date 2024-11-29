@@ -52,48 +52,21 @@ def opt_freddy(
 ):
     # _w como vetor de probabilidades e não como matriz nx2
     alpha, beta = 0.15, 0.75
-    # alpha, beta = 1, 1
     rng = np.random.default_rng(random_state)
     features = dataset.copy()
     n, m = features.shape
-    _w = np.zeros((n, 2))
-    # bias = np.random.normal(0, 0.25, (n, m))
-    # bias = np.zeros((n, m))
+    _w = np.zeros((n, 1))
     labels = np.zeros((n, 2))
-    for epoch in range(epochs):
+
+    for _ in range(max_iter):
         sample = rng.integers(0, n, 200)
         sample = features[sample]
-        base_util, _ = freddy(sample, K=30, return_vals=True)
-        h = base_util.max()
-        e = 0
-        _d = 0
-        lim = 0
-        for _ in range(max_iter):
-            idx = rng.integers(0, len(sample), 100)
-            ft = sample[idx]
-            util, sset = freddy(ft, K=30, alpha=alpha, beta=beta, return_vals=True)
-            sset = idx[sset]
-            labels[sset] += get_labels(sset)
-            h += util.max() - h
-            lim = rmse(util, base_util) - e
-            # lim = info(util, base_util) - e
-            _d += lim / h
-            e += lim
-        if verbose:
-            print(f"[{epoch}] :: {e:.4f}, ({alpha:.4f}, {beta:.4f}, {_d})")
-
-        # _w += (labels.max() - labels) / (labels.max() - labels.min())
-        labels += 1
-        _w = labels / labels.sum(axis=1).reshape(-1, 1)
+        idx = rng.integers(0, len(sample), 100)
+        ft = sample[idx]
+        util, sset = freddy(ft, K=30, alpha=alpha, beta=beta, return_vals=True)
+        sset = idx[sset]
+        labels[sset] += get_labels(sset)
         features = _w @ (features.T @ _w).T
-        # features += bias
-
-        # bias += step * _d
-        alpha += step * _d
-        beta += step * _d
-        if (abs(lim - e)) < tol:
-            break
-        # features = _w @ (features.T @ _w).T
     sset = freddy(features, K=K, alpha=alpha, beta=beta, batch_size=batch_size)
     np.random.shuffle(sset)
     return sset
