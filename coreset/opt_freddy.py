@@ -8,6 +8,7 @@ import math
 from itertools import batched
 
 from coreset.lazzy_greed import freddy
+from coreset.kmeans import kmeans_sampler
 from coreset.metrics import METRICS
 from coreset.utils import timeit
 
@@ -19,56 +20,57 @@ def rmse(y, y_hat):
     return error**0.5
 
 
-def get_labels(sset_idx):
-    n = len(sset_idx)
-    shape = (n, 2)
-    labels = np.zeros(shape)
-    labels[:, 1] = 1
-    return labels
-
-
-def info(w_):
-    return -((1 - w_) * np.log2(w_)).sum()
-
-
-def get_weights():
-    pass
-
-
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 
 
 @timeit
-def opt_freddy(
-    dataset,
-    K=1,
-    epochs=15,
-    step=10e-3,
-    batch_size=32,
-    max_iter=500,
-    random_state=None,
-    tol=10e-3,
-    verbose=True,
-):
+def opt_freddy(dataset, K=1, batch_size=32, max_iter=1000, random_state=42, tol=10e-3):
     # _w como vetor de probabilidades e não como matriz nx2
-    alpha, beta = 0.15, 0.75
+    alpha, beta = 1, 0.75
     rng = np.random.default_rng(random_state)
     features = dataset.copy()
-    n, m = features.shape
-    _w = np.zeros((n, 1))
-    labels = np.zeros((n, 2))
+    n, _ = features.shape
+    loss = []
 
-    for _ in range(max_iter):
-        sample = rng.integers(0, n, 200)
-        sample = features[sample]
-        idx = rng.integers(0, len(sample), 100)
-        ft = sample[idx]
-        util, sset = freddy(ft, K=30, alpha=alpha, beta=beta, return_vals=True)
-        sset = idx[sset]
-        labels[sset] += get_labels(sset)
-        features = _w @ (features.T @ _w).T
+    for __ in range(10):
+        e = 0
+        h = 10e-6
+        d = 10e-6
+        prev = None
+        w = np.zeros((n, 1))
+        for _ in range(max_iter):
+            idx = rng.integers(0, n, 300)
+            sample = features[idx]
+            util, sset = freddy(sample, K=30, alpha=alpha, beta=beta, return_vals=True)
+
+            if not isinstance(prev, np.ndarray) or util.size == 0:
+                prev = util
+                continue
+            curr_e = rmse(util, prev)
+            # h = (np.linalg.norm(util - prev)) + 10e-6
+            h += np.linalg.norm(util - prev)
+            d += (curr_e - e) / h
+
+            e = curr_e
+            sset = idx[sset]
+            w[sset] += 1
+            prev = util
+        print(f"[{__}] :: {e} ({alpha}, {beta})")
+        _w = 1 - (w / w.sum())
+        if abs(e) < tol:
+            break
+        features += (_w @ (features.T @ _w).T) + 10e-6
+        loss.append(e)
+
+        alpha += d * 10e-4
+        beta += d * 10e-4
+    # _w = 1 - (w / w.sum())
+    # features = _w @ (dataset.T @ _w).T
+
+    # exit()
     sset = freddy(features, K=K, alpha=alpha, beta=beta, batch_size=batch_size)
-    np.random.shuffle(sset)
+    # sset = kmeans_sampler(features, K=K)
     return sset
 
 

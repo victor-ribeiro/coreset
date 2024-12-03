@@ -24,7 +24,8 @@ max_size = len(data) * 0.8
 K = [0.05, 0.10, 0.15, 0.2, 0.25, 0.30, 0.4]
 if __name__ == "__main__":
     # sampling strategies
-    smpln = [freddy, opt_freddy, random_sampler, craig_baseline]
+    # smpln = [freddy, opt_freddy, random_sampler, craig_baseline]
+    smpln = [opt_freddy]
 
     covtype = BaseExperiment(
         data,
