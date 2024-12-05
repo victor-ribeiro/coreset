@@ -130,7 +130,7 @@ for i in range(REPEAT):
     freddy_model = TorchLearner(MLP, {"input_size": nsize})
     dataset = FreddyDataset(features=X_train, target=y_train, coreset_size=size)
     dataset = Loader(dataset=dataset, batch_size=batch_size)
-    hist, elapsed = train(lazy_model, dataset, loss_fn(), Adam, lr, epochs)
+    hist, elapsed = train(freddy_model, dataset, loss_fn(), Adam, lr, epochs)
     tmp = pd.DataFrame({"hist": hist, "elapsed": elapsed})
     tmp["method"] = "opt_freddy"
     result = pd.concat([result, tmp], ignore_index=True)
