@@ -10,6 +10,8 @@ from itertools import batched
 
 from coreset.metrics import METRICS
 from coreset.utils import timeit
+from coreset.kmeans import _n_cluster
+from coreset.metrics import kdist
 
 REDUCE = {"mean": np.mean, "sum": np.sum}
 
@@ -50,26 +52,25 @@ def utility_score(e, sset, /, acc=0, alpha=0.1, beta=1.1):
     norm = 1 / base_inc(alpha)
     argmax = np.maximum(e, sset)
     f_norm = alpha / (sset.sum() + acc + 1)
-    util = norm * math.log(1 + (argmax.sum()) + acc) * f_norm
+    util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
     return util + (math.log(1 + ((sset.sum() + acc) ** gamma)) * beta)
 
 
-# @timeit
+@timeit
 def freddy(
     dataset,
     base_inc=base_inc,
     alpha=0.15,
-    # alpha=1,
     metric="similarity",
     K=1,
-    batch_size=100,
+    batch_size=32,
     beta=0.75,
-    # beta=1,
     return_vals=False,
 ):
     # basic config
     base_inc = base_inc(alpha)
     idx = np.arange(len(dataset))
+    idx = np.random.permutation(idx)
     q = Queue()
     sset = []
     vals = []

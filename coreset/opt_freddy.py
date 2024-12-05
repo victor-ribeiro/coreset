@@ -47,13 +47,16 @@ def opt_freddy(dataset, K=1, batch_size=32, max_iter=200, random_state=None):
     _w = 1 - (w / w.max())  # Y
     _scr = 1 - (score / score.max())  # Z
     c = 1
-    code = np.zeros((n, 4))
-    code[..., 0] = (2 * _p) / ((_p**2) + (_w**2) + (_scr**2) + c)
-    code[..., 1] = (2 * _w) / ((_p**2) + (_w**2) + (_scr**2) + c)
-    code[..., 2] = (2 * _scr) / ((_p**2) + (_w**2) + (_scr**2) + c)
-    code[..., 3] = ((_p**2) + (_w**2) + (_scr**2) + c) / (
-        (_p**2) + (_w**2) + (_scr**2) - c
-    )
+    code = np.zeros((n, 3))
+    code[..., 0] = (3 * _p) / ((_p**2) + (_w**2) + (_scr**2))
+    code[..., 1] = (3 * _w) / ((_p**2) + (_w**2) + (_scr**2))
+    code[..., 2] = (3 * _scr) / ((_p**2) + (_w**2) + (_scr**2) + c)
+    # code[..., 0] = (3 * _p) / ((_p**2) + (_w**2) + (_scr**2) + c)
+    # code[..., 1] = (3 * _w) / ((_p**2) + (_w**2) + (_scr**2) + c)
+    # code[..., 2] = (3 * _scr) / ((_p**2) + (_w**2) + (_scr**2) + c)
+    # code[..., 3] = ((_p**2) + (_w**2) + (_scr**2) + c) / (
+    #     (_p**2) + (_w**2) + (_scr**2) - c
+    # )
     # features = code @ (features.T @ code).T
     # sset = freddy(features, K=K, alpha=alpha, beta=beta, batch_size=batch_size)
     sset = freddy(code, K=K, alpha=alpha, beta=beta, batch_size=batch_size)

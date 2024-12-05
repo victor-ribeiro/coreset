@@ -35,9 +35,15 @@ def codist(dataset, batch_size=1):
 
 
 @_register
+def kdist(dataset, centroids):
+    d = pairwise_distances(dataset, centroids)
+    return d.max() - d
+
+
+@_register
 def similarity(dataset, metric="euclidean", batch_size=1):
     # yield from (d.max() - d for d in pdist(dataset, metric, batch_size))
-    d = pdist(dataset, metric, batch_size)
+    d = pdist(dataset, metric)
     return d.max() - d
 
 

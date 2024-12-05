@@ -33,6 +33,7 @@ def _n_cluster(dataset, alpha=1, max_iter=100, tol=10e-2):
 
         if abs(val[:idx].min() - val[idx]) < tol:
             return sampler.cluster_centers_
+    # return sampler.cluster_centers_
     return ValueError("Does not converge")
 
 

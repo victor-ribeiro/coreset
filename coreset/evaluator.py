@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 REPEAT = 30
 # REPEAT = 15
-# REPEAT = 3
+# REPEAT = 1
 
 TASKS = {
     "binary_classification": "logloss",
