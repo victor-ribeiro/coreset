@@ -25,53 +25,65 @@ from sklearn.decomposition import PCA
 
 
 @timeit
-def opt_freddy(dataset, K=1, batch_size=32, max_iter=1000, random_state=42, tol=10e-3):
-    # _w como vetor de probabilidades e não como matriz nx2
-    alpha, beta = 1, 0.75
+def opt_freddy(dataset, K=1, batch_size=32, max_iter=200, random_state=None):
+    alpha, beta = 0.15, 0.75
     rng = np.random.default_rng(random_state)
-    features = dataset.copy()
+    features = dataset.copy().astype(float)
     n, _ = features.shape
-    loss = []
+    w = np.zeros(n)
+    p = np.zeros(n)
+    score = np.zeros(n)
 
-    for __ in range(10):
-        e = 0
-        h = 10e-6
-        d = 10e-6
-        prev = None
-        w = np.zeros((n, 1))
-        for _ in range(max_iter):
-            idx = rng.integers(0, n, 300)
-            sample = features[idx]
-            util, sset = freddy(sample, K=30, alpha=alpha, beta=beta, return_vals=True)
+    for _ in range(max_iter):
+        idx = rng.integers(0, n, 3000)
+        sample = features[idx]
+        util, sset = freddy(sample, K=1000, alpha=alpha, beta=beta, return_vals=True)
+        sset = idx[sset]
+        score[sset] += util / len(sset)
+        w[sset] += 1
+        p[idx] += 1
 
-            if not isinstance(prev, np.ndarray) or util.size == 0:
-                prev = util
-                continue
-            curr_e = rmse(util, prev)
-            # h = (np.linalg.norm(util - prev)) + 10e-6
-            h += np.linalg.norm(util - prev)
-            d += (curr_e - e) / h
-
-            e = curr_e
-            sset = idx[sset]
-            w[sset] += 1
-            prev = util
-        print(f"[{__}] :: {e} ({alpha}, {beta})")
-        _w = 1 - (w / w.sum())
-        if abs(e) < tol:
-            break
-        features += (_w @ (features.T @ _w).T) + 10e-6
-        loss.append(e)
-
-        alpha += d * 10e-4
-        beta += d * 10e-4
-    # _w = 1 - (w / w.sum())
-    # features = _w @ (dataset.T @ _w).T
-
-    # exit()
-    sset = freddy(features, K=K, alpha=alpha, beta=beta, batch_size=batch_size)
-    # sset = kmeans_sampler(features, K=K)
+    _p = 1 - (p / p.max())  # X
+    _w = 1 - (w / w.max())  # Y
+    _scr = 1 - (score / score.max())  # Z
+    c = 1
+    code = np.zeros((n, 4))
+    code[..., 0] = (2 * _p) / ((_p**2) + (_w**2) + (_scr**2) + c)
+    code[..., 1] = (2 * _w) / ((_p**2) + (_w**2) + (_scr**2) + c)
+    code[..., 2] = (2 * _scr) / ((_p**2) + (_w**2) + (_scr**2) + c)
+    code[..., 3] = ((_p**2) + (_w**2) + (_scr**2) + c) / (
+        (_p**2) + (_w**2) + (_scr**2) - c
+    )
+    # features = code @ (features.T @ code).T
+    # sset = freddy(features, K=K, alpha=alpha, beta=beta, batch_size=batch_size)
+    sset = freddy(code, K=K, alpha=alpha, beta=beta, batch_size=batch_size)
     return sset
+
+
+# @timeit
+# def opt_freddy(dataset, K=1, batch_size=32, max_iter=200, random_state=None):
+#     alpha, beta = 0.15, 0.75
+#     rng = np.random.default_rng(random_state)
+#     features = dataset.copy().astype(float)
+#     n, _ = features.shape
+#     w = np.zeros((n, 1))
+#     # p = np.zeros()
+#     score = np.zeros(n)
+
+#     for _ in range(max_iter):
+#         idx = rng.integers(0, n, 3000)
+#         sample = features[idx]
+#         util, sset = freddy(sample, K=500, alpha=alpha, beta=beta, return_vals=True)
+#         sset = idx[sset]
+#         score[sset] += util / len(sset)
+#         w[sset] += 1
+
+#     _w = w / w.sum()
+#     # _w = (1 - _w) ** -1
+#     _w *= score.reshape(-1, 1)
+#     features += _w @ (features.T @ _w).T + score.reshape(-1, 1)
+#     sset = freddy(features, K=K, alpha=alpha, beta=beta, batch_size=batch_size)
+#     return sset
 
 
 if __name__ == "__main__":

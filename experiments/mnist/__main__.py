@@ -4,7 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 import pandas as pd
 
-from keras.datasets import mnist
+# from keras.datasets import mnist
+from keras.datasets import fashion_mnist
 from keras.models import Sequential
 from keras.layers import (
     Activation,
@@ -54,13 +55,13 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 result = []
 
 ##########################################################################################
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
+(X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
 
 n, r, c = X_train.shape
 c = r * c
 # reg, epochs, batch_size, core_size = 10e-4, 3000, 128, 0.1
 # reg, epochs, batch_size, core_size = 10e-4, 15, 256 * 2, 0.4
-reg, epochs, batch_size, core_size = 10e-3, 100, 128, 0.1
+reg, epochs, batch_size, core_size = 10e-3, 7000, 512, 0.1
 
 # X_train, X_test = X_train.reshape((n, c)), X_test.reshape((len(X_test), c))
 
@@ -73,8 +74,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 n, *size = X_train.shape
 # for _ in range(15):
-for _ in range(REPEAT):
-    # for _ in range(1):
+# for _ in range(REPEAT):
+for _ in range(1):
     ##########################################################################################
     ##########################################################################################
     ##########################################################################################
