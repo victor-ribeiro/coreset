@@ -54,6 +54,9 @@ def utility_score(e, sset, /, acc=0, alpha=0.1, beta=1.1):
     f_norm = alpha / (sset.sum() + acc + 1)
     util = norm * math.log(1 + (argmax.sum() + acc) * f_norm)
     return util + (math.log(1 + ((sset.sum() + acc) ** gamma)) * beta)
+    # f_norm = alpha / (sset.sum() + 1)
+    # util = norm * math.log(1 + argmax.sum() * f_norm)
+    # return util + (math.log(1 + (sset.sum() ** gamma)) * beta)
 
 
 @timeit
@@ -70,7 +73,7 @@ def freddy(
     # basic config
     base_inc = base_inc(alpha)
     idx = np.arange(len(dataset))
-    idx = np.random.permutation(idx)
+    # idx = np.random.permutation(idx)
     q = Queue()
     sset = []
     vals = []
