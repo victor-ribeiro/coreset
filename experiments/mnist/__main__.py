@@ -59,8 +59,8 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 result = []
 
 ##########################################################################################
-(X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
-# (X_train, y_train), (X_test, y_test) = cifar10.load_data()
+# (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
 print(X_train.shape)
 
 n, r, c, channels = X_train.shape
