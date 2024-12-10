@@ -67,7 +67,7 @@ n, r, c, channels = X_train.shape
 c = r * c * channels
 # reg, epochs, batch_size, core_size = 10e-4, 3000, 128, 0.1
 # reg, epochs, batch_size, core_size = 10e-4, 15, 256 * 2, 0.4
-reg, epochs, batch_size, core_size = 10e-3, 150, 512, 0.4
+reg, epochs, batch_size, core_size = 10e-3, 150, 128, 0.4
 
 # X_train, X_test = X_train.reshape((n, c)), X_test.reshape((len(X_test), c))
 

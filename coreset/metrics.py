@@ -42,9 +42,17 @@ def kdist(dataset, centroids):
 
 @_register
 def similarity(dataset, metric="euclidean", batch_size=1):
-    # yield from (d.max() - d for d in pdist(dataset, metric, batch_size))
     d = pdist(dataset, metric)
-    return d.max() - d
+    return (d.max(axis=1) - d) / d.max(axis=1)
+
+
+@_register
+# def uni_similarity(dataset, batch_size=1):
+# def similarity(dataset, batch_size=1):
+#     d = pairwise_distances(dataset)
+#     d /= d.sum(axis=0)
+#     print(d.sum(axis=0))
+#     exit()
 
 
 @_register

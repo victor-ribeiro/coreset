@@ -73,7 +73,7 @@ def freddy(
     # basic config
     base_inc = base_inc(alpha)
     idx = np.arange(len(dataset))
-    # idx = np.random.permutation(idx)
+    idx = np.random.permutation(idx)
     q = Queue()
     sset = []
     vals = []
@@ -104,39 +104,9 @@ def freddy(
                 vals.append(score)
             else:
                 q.push(inc, idx_s)
-            q.push(score_t, idx_t)
+            # q.push(score_t, idx_t)
+            q.push(inc, idx_t)
     np.random.shuffle(sset)
     if return_vals:
         return np.array(vals), sset
-    return sset
-
-
-def lazy_greed_class(
-    features,
-    targets,
-    base_inc=base_inc,
-    alpha=1,
-    metric="similarity",
-    K=1,
-    batch_size=32,
-    beta=1,
-):
-
-    classes, w = np.unique(targets, return_counts=True)
-    n_class = len(classes)
-    idx = np.arange(len(features))
-    sset = []
-    k = int(K // n_class)
-    for c, w_ in zip(classes, w):
-        idx_ = idx[targets.astype(int) == c]
-        if k > len(idx_):
-            sset.append(idx_)
-            continue
-        f_ = features[idx_]
-        s_ = freddy(f_, base_inc, alpha, metric, k, batch_size, beta=beta)
-        sset.append(idx_[s_])
-
-    sset = [idx[i] for i in sset]
-    sset = np.hstack(sset)
-    np.random.shuffle(sset)
     return sset
