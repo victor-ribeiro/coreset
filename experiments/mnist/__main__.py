@@ -84,32 +84,33 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 n, *size = X_train.shape
-for _ in range(10):
+# for _ in range(10):
+for _ in range(1):
     ##########################################################################################
     ##########################################################################################
     ##########################################################################################
-    cb = TimingCallback()
-    model = ResNet50(weights=None, classes=10, input_shape=size)
-    model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
-    hist_ = model.fit(
-        X_train,
-        y_train,
-        batch_size=batch_size,
-        epochs=epochs,
-        validation_data=(X_test, y_test),
-        callbacks=[cb],
-    )
-    hist_ = hist_.history
-    tmp = pd.DataFrame(hist_)
-    tmp["sampler"] = "Full dataset"
-    tmp["elapsed"] = np.cumsum(cb.logs).round()
-    tmp["epoch"] = np.arange(epochs)
-    result.append(tmp)
+    # cb = TimingCallback()
+    # model = ResNet50(weights=None, classes=10, input_shape=size)
+    # model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
+    # hist_ = model.fit(
+    #     X_train,
+    #     y_train,
+    #     batch_size=batch_size,
+    #     epochs=epochs,
+    #     validation_data=(X_test, y_test),
+    #     callbacks=[cb],
+    # )
+    # hist_ = hist_.history
+    # tmp = pd.DataFrame(hist_)
+    # tmp["sampler"] = "Full dataset"
+    # tmp["elapsed"] = np.cumsum(cb.logs).round()
+    # tmp["epoch"] = np.arange(epochs)
+    # result.append(tmp)
 
-    del hist_
-    del tmp
-    del model
-    del cb
+    # del hist_
+    # del tmp
+    # del model
+    # del cb
 
     #     ##########################################################################################
     #     ##########################################################################################
