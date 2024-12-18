@@ -67,7 +67,7 @@ n, r, c, channels = X_train.shape
 c = r * c
 # reg, epochs, batch_size, core_size = 10e-4, 3000, 128, 0.1
 # reg, epochs, batch_size, core_size = 10e-4, 15, 256 * 2, 0.4
-reg, epochs, batch_size, core_size = 10e-5, 150, 128, 0.4
+reg, epochs, batch_size, core_size = 10e-5, 1500, 128, 0.4
 
 # X_train, X_test = X_train.reshape((n, c)), X_test.reshape((len(X_test), c))
 
@@ -149,33 +149,33 @@ for _ in range(1):
     #     ##########################################################################################
     #     ##########################################################################################
 
-    cb = TimingCallback()
-    idx = opt_freddy(ft, K=int(len(X_train) * core_size), batch_size=256)
-    X_freddy = X_train[idx]
-    y_freddy = y_train[idx]
-    model = ResNet50(weights=None, classes=10, input_shape=size)
-    model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
-    hist_ = model.fit(
-        X_freddy,
-        y_freddy,
-        batch_size=batch_size,
-        epochs=epochs,
-        validation_data=(X_test, y_test),
-        callbacks=[cb],
-    )
-    hist_ = hist_.history
+    # cb = TimingCallback()
+    # idx = opt_freddy(ft, K=int(len(X_train) * core_size), batch_size=256)
+    # X_freddy = X_train[idx]
+    # y_freddy = y_train[idx]
+    # model = ResNet50(weights=None, classes=10, input_shape=size)
+    # model.compile(loss=CategoricalCrossentropy(), metrics=["accuracy"], optimizer="sgd")
+    # hist_ = model.fit(
+    #     X_freddy,
+    #     y_freddy,
+    #     batch_size=batch_size,
+    #     epochs=epochs,
+    #     validation_data=(X_test, y_test),
+    #     callbacks=[cb],
+    # )
+    # hist_ = hist_.history
 
-    tmp = pd.DataFrame(hist_)
-    tmp["sampler"] = "opt_freddy"
-    tmp["elapsed"] = np.cumsum(cb.logs).round()
-    tmp["epoch"] = np.arange(epochs)
-    result.append(tmp)
+    # tmp = pd.DataFrame(hist_)
+    # tmp["sampler"] = "opt_freddy"
+    # tmp["elapsed"] = np.cumsum(cb.logs).round()
+    # tmp["epoch"] = np.arange(epochs)
+    # result.append(tmp)
 
-    del hist_
-    del tmp
-    del model
-    del cb
-    del ft
+    # del hist_
+    # del tmp
+    # del model
+    # del cb
+    # del ft
 
     #     ##########################################################################################
     #     ##########################################################################################
