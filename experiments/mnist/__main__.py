@@ -75,8 +75,8 @@ X_train = np.vstack([X_train, X_test])
 y_train = np.vstack([y_train, y_test])
 y_train = to_categorical(y_train)
 
-# ft = PCA(n_components=10).fit_transform(X_train.reshape((-1, (r * c * channels))))
-ft = X_train.reshape((-1, (r * c * channels)))
+ft = PCA(n_components=10).fit_transform(X_train.reshape((-1, (r * c * channels))))
+# ft = X_train.reshape((-1, (r * c * channels)))
 
 
 X_train, X_test, y_train, y_test = train_test_split(
