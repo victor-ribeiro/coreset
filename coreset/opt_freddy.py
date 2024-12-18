@@ -30,29 +30,27 @@ def get_labels(sset_idx):
 
 @timeit
 def opt_freddy(dataset, K=1, batch_size=32, max_iter=1000, random_state=None):
-    alpha, beta = 0.5, 0.75
+    alpha, beta = 0.15, 0.75
     rng = np.random.default_rng(random_state)
     features = dataset.copy().astype(float)
     n, _ = features.shape
     w = np.zeros(n)
     p = np.zeros(n)
     score = np.zeros(n)
-
     for _ in range(max_iter):
-        # idx = rng.integers(0, n, 3000)
         idx = rng.integers(0, n, int(n * 0.05))
         sample = features[idx]
         util, sset = freddy(
-            sample, K=int(n * 0.01), alpha=alpha, beta=beta, return_vals=True
+            sample, K=int(n * 0.02), alpha=alpha, beta=beta, return_vals=True
         )
         sset = idx[sset]
         score[sset] += util / len(sset)
         w[sset] += 1
         p[idx] += 1
 
-    _p = 1 - (p / p.sum())  # X
-    _w = 1 - (w / w.sum())  # Y
-    _scr = 1 - (score / score.max())  # Z
+    _p = 1 - ((p.sum() - p) / p.sum())  # X
+    _w = 1 - ((w.sum() - w) / w.sum())  # Y
+    _scr = 1 - ((score.max() - score) / score.max())  # Z
     # code = np.zeros((n, 4))
     code = np.zeros((n, 3))
     code[..., 0] = _p
@@ -62,7 +60,7 @@ def opt_freddy(dataset, K=1, batch_size=32, max_iter=1000, random_state=None):
     # code[..., 1] = (2 * _w) / ((_p**2) + (_w**2) + (_scr**2))
     # code[..., 2] = (2 * _scr) / ((_p**2) + (_w**2) + (_scr**2))
 
-    features = code @ (features.T @ code).T
+    # features = code @ (features.T @ code).T
     # sset = freddy(features, K=K, alpha=alpha, beta=beta, batch_size=batch_size)
     sset = freddy(code, K=K, alpha=alpha, beta=beta, batch_size=batch_size)
     return sset

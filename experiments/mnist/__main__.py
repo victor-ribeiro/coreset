@@ -59,12 +59,12 @@ outfile, DATA_HOME, names, tgt_name = load_config()
 result = []
 
 ##########################################################################################
-# (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
 (X_train, y_train), (X_test, y_test) = cifar10.load_data()
+# (X_train, y_train), (X_test, y_test) = cifar10.load_data()
 print(X_train.shape)
 
 n, r, c, channels = X_train.shape
-c = r * c * channels
+c = r * c
 # reg, epochs, batch_size, core_size = 10e-4, 3000, 128, 0.1
 # reg, epochs, batch_size, core_size = 10e-4, 15, 256 * 2, 0.4
 reg, epochs, batch_size, core_size = 10e-5, 150, 128, 0.4
@@ -72,7 +72,6 @@ reg, epochs, batch_size, core_size = 10e-5, 150, 128, 0.4
 # X_train, X_test = X_train.reshape((n, c)), X_test.reshape((len(X_test), c))
 
 X_train = np.vstack([X_train, X_test])
-# X_train = X_train / 255
 y_train = np.vstack([y_train, y_test])
 y_train = to_categorical(y_train)
 
@@ -85,8 +84,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 n, *size = X_train.shape
-# for _ in range(15):
-# for _ in range(REPEAT):
 for _ in range(10):
     ##########################################################################################
     ##########################################################################################

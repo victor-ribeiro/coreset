@@ -104,8 +104,7 @@ def freddy(
                 vals.append(score)
             else:
                 q.push(inc, idx_s)
-            # q.push(score_t, idx_t)
-            q.push(inc, idx_t)
+            q.push(score_t, idx_t)
     np.random.shuffle(sset)
     if return_vals:
         return np.array(vals), sset
