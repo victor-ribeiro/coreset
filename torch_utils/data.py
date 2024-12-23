@@ -19,9 +19,9 @@ import torch
 import numpy as np
 from functools import partial
 
-from coreset.kmeans import kmeans_sampler
-from coreset.utils import random_sampler
-from coreset.lazzy_greed import freddy
+from freddy.kmeans import kmeans_sampler
+from freddy.dataset.utils import random_sampler
+from freddy.lazzy_greed import freddy
 
 SAMPLING = {
     "kmeans_sampler": kmeans_sampler,

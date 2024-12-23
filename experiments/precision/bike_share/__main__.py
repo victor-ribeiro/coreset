@@ -6,11 +6,16 @@ from datetime import datetime
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.metrics import mean_squared_error
 
-from coreset.environ import load_config
-from coreset.utils import random_sampler, craig_baseline, oht_coding, transform_fn
-from coreset.lazzy_greed import freddy
-from coreset.opt_freddy import opt_freddy
-from coreset.evaluator import BaseExperiment, REPEAT
+from freddy.environ import load_config
+from freddy.dataset.utils import (
+    random_sampler,
+    craig_baseline,
+    oht_coding,
+    transform_fn,
+)
+from freddy.lazzy_greed import freddy
+from freddy.opt_freddy import opt_freddy
+from freddy.evaluator import BaseExperiment, REPEAT
 
 
 outfile, DATA_HOME, names, tgt_name = load_config()

@@ -8,11 +8,11 @@ from sklearn.preprocessing import minmax_scale
 from functools import partial
 from itertools import product
 
-from coreset.environ import load_config
-from coreset.utils import transform_fn, random_sampler
-from coreset.lazzy_greed import freddy
-from coreset.opt_freddy import opt_freddy
-from coreset.evaluator import BSizeExperiment, REPEAT
+from freddy.environ import load_config
+from freddy.dataset.utils import transform_fn, random_sampler
+from freddy.lazzy_greed import freddy
+from freddy.opt_freddy import opt_freddy
+from freddy.evaluator import BSizeExperiment, REPEAT
 
 
 outfile, DATA_HOME, names, tgt_name = load_config()

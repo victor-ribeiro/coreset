@@ -6,11 +6,16 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score
 
-from coreset.environ import load_config
-from coreset.utils import random_sampler, hash_encoding, transform_fn, craig_baseline
-from coreset.lazzy_greed import freddy
-from coreset.kmeans import kmeans_sampler
-from coreset.evaluator import BaseExperiment, TrainCurve, REPEAT
+from freddy.environ import load_config
+from freddy.dataset.utils import (
+    random_sampler,
+    hash_encoding,
+    transform_fn,
+    craig_baseline,
+)
+from freddy.lazzy_greed import freddy
+from freddy.kmeans import kmeans_sampler
+from freddy.evaluator import BaseExperiment, TrainCurve, REPEAT
 
 import matplotlib.pyplot as plt
 

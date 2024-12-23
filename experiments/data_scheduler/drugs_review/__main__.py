@@ -17,14 +17,14 @@ from sklearn.metrics import classification_report
 from sklearn.feature_extraction.text import CountVectorizer
 from functools import partial
 
-from coreset.train import train
-from coreset.lazzy_greed import freddy
-from coreset.model.basics import TorchLearner
-from coreset.model.neuralnet import MLP
-from coreset.environ import load_config
-from coreset.utils import random_sampler, craig_baseline
+from freddy.train import train
+from freddy.lazzy_greed import freddy
+from freddy.model.basics import TorchLearner
+from freddy.model.neuralnet import MLP
+from freddy.environ import load_config
+from freddy.dataset.utils import random_sampler, craig_baseline
 from torch_utils.data import sampling_dataset, BaseDataset
-from coreset.evaluator import REPEAT
+from freddy.evaluator import REPEAT
 
 outfile, DATA_HOME, names, tgt_name = load_config()
 

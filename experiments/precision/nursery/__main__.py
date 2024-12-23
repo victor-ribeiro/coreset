@@ -6,17 +6,17 @@ from xgboost import XGBClassifier
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import precision_score, recall_score, f1_score
 
-from coreset.environ import load_config
-from coreset.utils import (
+from freddy.environ import load_config
+from freddy.dataset.utils import (
     random_sampler,
     hash_encoding,
     transform_fn,
     craig_baseline,
     oht_coding,
 )
-from coreset.lazzy_greed import freddy
-from coreset.opt_freddy import opt_freddy
-from coreset.evaluator import BaseExperiment, TrainCurve, REPEAT
+from freddy.lazzy_greed import freddy
+from freddy.opt_freddy import opt_freddy
+from freddy.evaluator import BaseExperiment, TrainCurve, REPEAT
 
 import matplotlib.pyplot as plt
 

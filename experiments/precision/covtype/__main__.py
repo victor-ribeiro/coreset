@@ -7,11 +7,11 @@ from xgboost import XGBClassifier
 from sklearn.metrics import precision_score, f1_score, recall_score
 from sklearn.preprocessing import normalize
 
-from coreset.evaluator import BaseExperiment, REPEAT
-from coreset.lazzy_greed import freddy
-from coreset.opt_freddy import opt_freddy
-from coreset.utils import random_sampler, craig_baseline, transform_fn
-from coreset.environ import load_config
+from freddy.evaluator import BaseExperiment, REPEAT
+from freddy.lazzy_greed import freddy
+from freddy.opt_freddy import opt_freddy
+from freddy.dataset.utils import random_sampler, craig_baseline, transform_fn
+from freddy.environ import load_config
 
 outfile, DATA_HOME, names, tgt_name = load_config()
 

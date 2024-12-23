@@ -13,12 +13,12 @@ from sklearn.metrics import precision_score, f1_score, recall_score
 
 from xgboost import XGBClassifier
 
-from coreset.lazzy_greed import freddy
-from coreset.opt_freddy import opt_freddy
-from coreset.utils import random_sampler, craig_baseline
-from coreset.kmeans import kmeans_sampler
-from coreset.environ import load_config
-from coreset.evaluator import BaseExperiment, REPEAT
+from freddy.lazzy_greed import freddy
+from freddy.opt_freddy import opt_freddy
+from freddy.dataset.utils import random_sampler, craig_baseline
+from freddy.kmeans import kmeans_sampler
+from freddy.environ import load_config
+from freddy.evaluator import BaseExperiment, REPEAT
 
 
 def clean_sent(sent, sub_pattern=r"[\W\s]+"):

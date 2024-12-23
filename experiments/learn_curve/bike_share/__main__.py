@@ -5,17 +5,17 @@ from xgboost import XGBRegressor
 from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 from sklearn.metrics import mean_squared_error
 
-from coreset.environ import load_config
-from coreset.utils import (
+from freddy.environ import load_config
+from freddy.dataset.utils import (
     random_sampler,
     hash_encoding,
     transform_fn,
     craig_baseline,
     oht_coding,
 )
-from coreset.lazzy_greed import freddy
-from coreset.kmeans import kmeans_sampler
-from coreset.evaluator import BaseExperiment, TrainCurve, REPEAT
+from freddy.lazzy_greed import freddy
+from freddy.kmeans import kmeans_sampler
+from freddy.evaluator import BaseExperiment, TrainCurve, REPEAT
 import seaborn as sns
 import matplotlib.pyplot as plt
 

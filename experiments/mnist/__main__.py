@@ -29,12 +29,12 @@ from keras.callbacks import Callback, EarlyStopping
 from keras.applications import ResNet50
 
 
-from coreset.lazzy_greed import freddy
-from coreset.opt_freddy import opt_freddy
-from coreset.utils import craig_baseline
-from coreset.utils import random_sampler
-from coreset.environ import load_config
-from coreset.evaluator import REPEAT
+from freddy.lazzy_greed import freddy
+from freddy.opt_freddy import opt_freddy
+from freddy.dataset.utils import craig_baseline
+from freddy.dataset.utils import random_sampler
+from freddy.environ import load_config
+from freddy.evaluator import REPEAT
 
 
 from time import time as timer
